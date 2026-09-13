@@ -489,6 +489,9 @@ Route::get('/test-course', function () {
 Route::get('/test-countries', function () {
     return view('admin.countries');
 });
+Route::get('/test-dashboard', function () {
+    return view('admin.dashboard');
+});
 
 
 

@@ -1281,12 +1281,12 @@
 
                     <button class="btn-secondary" onclick="openAddCountryModal()" style="display: inline-flex; align-items: center; gap: 7px; font-weight: 600; font-size: 12px; height: 38px; padding: 0 14px; border-radius: 7px; border: 1px solid #d0d5dd; background: #ffffff; color: #344054; cursor: pointer; transition: all 0.15s ease;">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>
-                        + Add New Country
+                         Add New Country
                     </button>
 
                     <button class="btn-orange" onclick="openAddModal()">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                        + Add New University
+                         Add New University
                     </button>
                 </div>
             </div>
@@ -1394,7 +1394,7 @@
                             <div style="display: flex; gap: 8px; align-items: center;">
                                 <button type="button" id="btnOpenAddCountryModalInUni" onclick="openAddCountryModal(true)" style="background: #fff8f3; border: 1px solid rgba(245, 130, 32, 0.3); color: #f58220; font-size: 11px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 5px; outline: none; transition: all .15s ease;">
                                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-                                    <span>+ Add New Country</span>
+                                    <span> Add New Country</span>
                                 </button>
                                 <button type="button" id="toggleCountryModeBtn" onclick="toggleCountryMode()" style="background: none; border: none; color: #697386; font-size: 11px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; padding: 0; outline: none;">
                                     <span>Or Type Manually</span>
