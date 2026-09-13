@@ -1132,7 +1132,7 @@
                 <span class="nav-badge" id="navUniCountBadge">7</span>
             </a>
 
-            <a href="#" class="nav-link">
+            <a href="{{ url('/admin/courses') }}" class="nav-link">
                 <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
                     <path d="M3 10l9-6 9 6"/>
                     <path d="M5 10v9h14v-9"/>
@@ -1279,6 +1279,11 @@
                         </button>
                     </div>
 
+                    <button class="btn-secondary" onclick="openAddCountryModal()" style="display: inline-flex; align-items: center; gap: 7px; font-weight: 600; font-size: 12px; height: 38px; padding: 0 14px; border-radius: 7px; border: 1px solid #d0d5dd; background: #ffffff; color: #344054; cursor: pointer; transition: all 0.15s ease;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg>
+                        + Add New Country
+                    </button>
+
                     <button class="btn-orange" onclick="openAddModal()">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
                         + Add New University
@@ -1386,10 +1391,15 @@
                     <div class="form-group">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                             <label class="form-label" style="margin-bottom: 0;">Country Destination *</label>
-                            <button type="button" id="toggleCountryModeBtn" onclick="toggleCountryMode()" style="background: none; border: none; color: #f58220; font-size: 11px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 4px; padding: 0; outline: none;">
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-                                <span>Type New Country</span>
-                            </button>
+                            <div style="display: flex; gap: 8px; align-items: center;">
+                                <button type="button" id="btnOpenAddCountryModalInUni" onclick="openAddCountryModal(true)" style="background: #fff8f3; border: 1px solid rgba(245, 130, 32, 0.3); color: #f58220; font-size: 11px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 5px; outline: none; transition: all .15s ease;">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+                                    <span>+ Add New Country</span>
+                                </button>
+                                <button type="button" id="toggleCountryModeBtn" onclick="toggleCountryMode()" style="background: none; border: none; color: #697386; font-size: 11px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; padding: 0; outline: none;">
+                                    <span>Or Type Manually</span>
+                                </button>
+                            </div>
                         </div>
                         
                         <!-- Mode 1: Country Select Dropdown -->
@@ -1402,7 +1412,7 @@
                                 <option value="Germany">Germany</option>
                                 <option value="Singapore">Singapore</option>
                                 <option value="Ireland">Ireland</option>
-                                <option value="__TYPE_NEW__">+ Type a new country...</option>
+                                <option value="__ADD_NEW__">+ Add a new country...</option>
                             </select>
                         </div>
 
@@ -1533,6 +1543,89 @@
             <button type="button" class="btn-secondary" onclick="closeModal('deleteModal')">Cancel</button>
             <button type="button" class="btn-danger" id="confirmDeleteBtn" onclick="confirmDelete()">Delete</button>
         </div>
+    </div>
+</div>
+
+<!-- =====================================================
+     MODAL 4: ADD NEW COUNTRY (Directly from Universities)
+====================================================== -->
+<div class="modal-backdrop" id="addCountryModal" style="z-index: 1050;">
+    <div class="modal-window" style="max-width: 520px;">
+        <div class="modal-header">
+            <div>
+                <h3 class="modal-title">Add New Country</h3>
+                <div class="modal-subtitle">Register a new study abroad destination with flag or desktop image.</div>
+            </div>
+            <button class="modal-close-btn" onclick="closeModal('addCountryModal')">✕</button>
+        </div>
+        <form id="newCountryForm" onsubmit="saveNewCountry(event)">
+            <div class="modal-body">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Country Name *</label>
+                        <input type="text" id="newCountryNameInput" class="form-input" placeholder="e.g. France, Japan, Poland" required oninput="handleNewCountryNameInput(this.value)">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Country Code (ISO-3) *</label>
+                        <input type="text" id="newCountryCodeInput" class="form-input" placeholder="e.g. FRA" maxlength="3" required style="text-transform: uppercase;">
+                    </div>
+                </div>
+
+                <!-- Desktop Country Image / Flag Upload Section -->
+                <div class="form-group" style="margin-bottom: 8px;">
+                    <div id="newCountryImageSection" style="background: #f9fafb; border: 1px dashed #d0d5dd; border-radius: 8px; padding: 10px 12px; transition: all 0.2s ease;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <span style="font-size: 11px; font-weight: 600; color: #344054; display: flex; align-items: center; gap: 6px;">
+                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                                    <circle cx="8.5" cy="8.5" r="1.5"/>
+                                    <polyline points="21 15 16 10 5 21"/>
+                                </svg>
+                                Country Flag / National Image
+                            </span>
+                            <span id="newCountryImgBadge" style="font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 4px; background: #e0f2fe; color: #0284c7;">
+                                Auto Flag
+                            </span>
+                        </div>
+
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <!-- Dropzone & Thumbnail Preview -->
+                            <div id="newCountryImgDropArea" class="country-img-dropzone" onclick="document.getElementById('newCountryImageFileInput').click()" title="Click to choose or drag & drop country image from desktop" style="cursor: pointer; position: relative; width: 64px; height: 42px; border-radius: 6px; overflow: hidden; border: 1px solid #d0d5dd; background: #ffffff; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
+                                <img id="newCountryFlagPreviewImg" src="https://flagcdn.com/w80/un.png" alt="Country Preview" style="width: 100%; height: 100%; object-fit: cover;">
+                            </div>
+
+                            <!-- Upload Controls -->
+                            <div style="flex: 1; min-width: 0;">
+                                <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                                    <button type="button" class="btn-upload-logo" onclick="document.getElementById('newCountryImageFileInput').click()" style="padding: 4px 10px; font-size: 11px; height: 28px; border-radius: 6px;">
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                            <polyline points="17 8 12 3 7 8"/>
+                                            <line x1="12" y1="3" x2="12" y2="15"/>
+                                        </svg>
+                                        Choose from Desktop
+                                    </button>
+                                    <button type="button" id="btnRemoveNewCountryImg" class="btn-remove-logo" style="display: none; padding: 4px 10px; font-size: 11px; height: 28px; border-radius: 6px;" onclick="removeNewCountryImage(event)">
+                                        Reset to Auto Flag
+                                    </button>
+                                </div>
+                                <div style="font-size: 11px; color: #697386; margin-top: 4px;">
+                                    Select custom image or flag from desktop, or auto-detect from name.
+                                </div>
+                            </div>
+                        </div>
+                        <input type="file" id="newCountryImageFileInput" accept="image/*" style="display: none;" onchange="handleNewCountryImageFileSelect(event)">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" onclick="closeModal('addCountryModal')">Cancel</button>
+                <button type="submit" class="btn-orange">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+                    Save Country
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 
@@ -1874,11 +1967,10 @@
             selectEl.setAttribute('required', 'required');
             if (toggleBtn) {
                 toggleBtn.innerHTML = `
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-                    <span>Type New Country</span>
+                    <span>Or Type Manually</span>
                 `;
             }
-            if (selectEl.value === '__TYPE_NEW__') {
+            if (selectEl.value === '__ADD_NEW__' || selectEl.value === '__TYPE_NEW__') {
                 selectEl.value = availableCountries[0] || 'Canada';
             }
         }
@@ -1894,16 +1986,153 @@
     }
 
     function handleCountrySelectChange(val) {
-        if (val === '__TYPE_NEW__') {
-            setCountryInputMode('type');
-            const textInput = document.getElementById('uniCountryTextInput');
-            if (textInput) {
-                textInput.value = '';
-                textInput.focus();
-            }
+        if (val === '__ADD_NEW__' || val === '__TYPE_NEW__') {
+            openAddCountryModal(true);
         } else {
             updateCountryImagePreview();
         }
+    }
+
+    // =====================================================
+    // ADD NEW COUNTRY MODAL CONTROLLER
+    // =====================================================
+    let newCountryImageDataUrl = null;
+    let addCountryFromUniModal = false;
+
+    function openAddCountryModal(fromUniModal = false) {
+        addCountryFromUniModal = !!fromUniModal;
+        const form = document.getElementById('newCountryForm');
+        if (form) form.reset();
+        newCountryImageDataUrl = null;
+
+        const codeInput = document.getElementById('newCountryCodeInput');
+        if (codeInput && codeInput.dataset) delete codeInput.dataset.touched;
+
+        const previewImg = document.getElementById('newCountryFlagPreviewImg');
+        if (previewImg) previewImg.src = 'https://flagcdn.com/w80/un.png';
+        
+        const badge = document.getElementById('newCountryImgBadge');
+        if (badge) {
+            badge.innerText = 'Auto Flag';
+            badge.style.background = '#e0f2fe';
+            badge.style.color = '#0284c7';
+        }
+
+        const btnReset = document.getElementById('btnRemoveNewCountryImg');
+        if (btnReset) btnReset.style.display = 'none';
+
+        const fileInput = document.getElementById('newCountryImageFileInput');
+        if (fileInput) fileInput.value = '';
+
+        openModal('addCountryModal');
+        setTimeout(() => {
+            const nameInput = document.getElementById('newCountryNameInput');
+            if (nameInput) nameInput.focus();
+        }, 100);
+    }
+
+    function handleNewCountryNameInput(val) {
+        const codeInput = document.getElementById('newCountryCodeInput');
+        if (codeInput && (!codeInput.dataset || !codeInput.dataset.touched)) {
+            codeInput.value = getCountryCode(val);
+        }
+        if (!newCountryImageDataUrl) {
+            const previewImg = document.getElementById('newCountryFlagPreviewImg');
+            if (previewImg) {
+                previewImg.src = getCountryFlag(val);
+            }
+        }
+    }
+
+    function handleNewCountryImageFileSelect(event) {
+        const file = event.target.files && event.target.files[0];
+        if (!file) return;
+
+        if (!file.type.startsWith('image/')) {
+            showToast('Please select a valid image file (PNG, JPG, SVG, WEBP).');
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            newCountryImageDataUrl = e.target.result;
+            const previewImg = document.getElementById('newCountryFlagPreviewImg');
+            if (previewImg) previewImg.src = newCountryImageDataUrl;
+            const badge = document.getElementById('newCountryImgBadge');
+            if (badge) {
+                badge.innerText = 'Custom Image';
+                badge.style.background = '#dcfce7';
+                badge.style.color = '#15803d';
+            }
+            const btnReset = document.getElementById('btnRemoveNewCountryImg');
+            if (btnReset) btnReset.style.display = 'inline-flex';
+            showToast('Country image loaded from desktop!');
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function removeNewCountryImage(event) {
+        if (event) event.stopPropagation();
+        newCountryImageDataUrl = null;
+        const fileInput = document.getElementById('newCountryImageFileInput');
+        if (fileInput) fileInput.value = '';
+
+        const nameInput = document.getElementById('newCountryNameInput');
+        const countryName = nameInput ? nameInput.value.trim() : '';
+
+        const previewImg = document.getElementById('newCountryFlagPreviewImg');
+        if (previewImg) previewImg.src = getCountryFlag(countryName);
+
+        const badge = document.getElementById('newCountryImgBadge');
+        if (badge) {
+            badge.innerText = 'Auto Flag';
+            badge.style.background = '#e0f2fe';
+            badge.style.color = '#0284c7';
+        }
+        const btnReset = document.getElementById('btnRemoveNewCountryImg');
+        if (btnReset) btnReset.style.display = 'none';
+
+        showToast('Country image reset to auto flag.');
+    }
+
+    function saveNewCountry(event) {
+        event.preventDefault();
+        const nameInput = document.getElementById('newCountryNameInput');
+        const countryName = nameInput ? nameInput.value.trim() : '';
+        if (!countryName) {
+            showToast('Please enter a country name.');
+            return;
+        }
+
+        // Add to availableCountries registry
+        if (!availableCountries.includes(countryName)) {
+            availableCountries.push(countryName);
+            availableCountries.sort();
+        }
+
+        if (newCountryImageDataUrl) {
+            customCountryImages[countryName] = newCountryImageDataUrl;
+        }
+
+        // Repopulate all country dropdowns with the new country selected
+        populateCountryDropdowns(countryName);
+
+        // If this was opened from the Add/Edit University modal
+        if (addCountryFromUniModal) {
+            setCountryInputMode('select');
+            const uniSelect = document.getElementById('uniCountryInput');
+            if (uniSelect) uniSelect.value = countryName;
+            currentCountryImageDataUrl = newCountryImageDataUrl || null;
+            updateCountryImagePreview();
+        } else {
+            // Also update top country filter
+            const filterSelect = document.getElementById('countryFilterSelect');
+            if (filterSelect) filterSelect.value = countryName;
+            applyFilters();
+        }
+
+        closeModal('addCountryModal');
+        showToast(`Country "${countryName}" added successfully!`);
     }
 
     // Populate all country dropdowns and datalists
@@ -1919,10 +2148,10 @@
                 opt.textContent = c;
                 modalSelect.appendChild(opt);
             });
-            const newOpt = document.createElement('option');
-            newOpt.value = '__TYPE_NEW__';
-            newOpt.textContent = '+ Type a new country...';
-            modalSelect.appendChild(newOpt);
+            const addOpt = document.createElement('option');
+            addOpt.value = '__ADD_NEW__';
+            addOpt.textContent = '+ Add a new country...';
+            modalSelect.appendChild(addOpt);
 
             if (currentVal && availableCountries.includes(currentVal)) {
                 modalSelect.value = currentVal;
@@ -2090,6 +2319,52 @@
                         reader.onload = (ev) => {
                             currentCountryImageDataUrl = ev.target.result;
                             updateCountryImagePreview();
+                            showToast('Country image loaded from desktop!');
+                        };
+                        reader.readAsDataURL(file);
+                    } else {
+                        showToast('Please drop a valid image file.');
+                    }
+                }
+            });
+        }
+
+        // Drag and drop for new country modal image upload
+        const newCountryDropArea = document.getElementById('newCountryImgDropArea');
+        if (newCountryDropArea) {
+            ['dragenter', 'dragover'].forEach(eventName => {
+                newCountryDropArea.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    newCountryDropArea.classList.add('dragover');
+                });
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                newCountryDropArea.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    newCountryDropArea.classList.remove('dragover');
+                });
+            });
+
+            newCountryDropArea.addEventListener('drop', (e) => {
+                if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+                    const file = e.dataTransfer.files[0];
+                    if (file.type.startsWith('image/')) {
+                        const reader = new FileReader();
+                        reader.onload = (ev) => {
+                            newCountryImageDataUrl = ev.target.result;
+                            const previewImg = document.getElementById('newCountryFlagPreviewImg');
+                            if (previewImg) previewImg.src = newCountryImageDataUrl;
+                            const badge = document.getElementById('newCountryImgBadge');
+                            if (badge) {
+                                badge.innerText = 'Custom Image';
+                                badge.style.background = '#dcfce7';
+                                badge.style.color = '#15803d';
+                            }
+                            const btnReset = document.getElementById('btnRemoveNewCountryImg');
+                            if (btnReset) btnReset.style.display = 'inline-flex';
                             showToast('Country image loaded from desktop!');
                         };
                         reader.readAsDataURL(file);
@@ -2489,7 +2764,16 @@
     }
 
     function closeModal(id) {
-        document.getElementById(id).classList.remove('open');
+        const el = document.getElementById(id);
+        if (el) el.classList.remove('open');
+        if (id === 'addCountryModal' && addCountryFromUniModal) {
+            const uniSelect = document.getElementById('uniCountryInput');
+            if (uniSelect && (uniSelect.value === '__ADD_NEW__' || uniSelect.value === '__TYPE_NEW__')) {
+                uniSelect.value = availableCountries[0] || 'Canada';
+                updateCountryImagePreview();
+            }
+            addCountryFromUniModal = false;
+        }
     }
 
     // Toast

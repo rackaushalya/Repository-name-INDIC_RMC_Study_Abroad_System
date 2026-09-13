@@ -152,7 +152,7 @@ class AdminController extends Controller
             ->paginate(20);
 
         return view(
-            'admin.countries.index',
+            'admin.countries',
             compact('countries')
         );
     }
@@ -167,7 +167,7 @@ class AdminController extends Controller
             ->paginate(20);
 
         return view(
-            'admin.universities.index',
+            'admin.universities',
             compact('universities')
         );
     }
@@ -182,7 +182,7 @@ class AdminController extends Controller
             ->paginate(20);
 
         return view(
-            'admin.courses.index',
+            'admin.courses',
             compact('courses')
         );
     }

@@ -470,15 +470,26 @@ Route::middleware('auth')
 
     });
 
-    Route::get('/test-univ', function () {
+Route::get('/test-univ', function () {
     return view('admin.universities');
-
-    /*
-
-    Route::get('/test-univ', function () {
-    return view('admin.universities'); 
-
-    */
-
 });
+
+Route::get('/test-countries', function () {
+    return view('admin.countries');
+});
+
+Route::get('/test-courses', function () {
+    return view('admin.courses');
+});
+
+Route::get('/test-course', function () {
+    return view('admin.courses');
+});
+
+Route::get('/test-countries', function () {
+    return view('admin.countries');
+});
+
+
+
 
