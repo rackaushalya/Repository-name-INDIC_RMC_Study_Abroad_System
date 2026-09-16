@@ -482,13 +482,10 @@ Route::get('/test-courses', function () {
     return view('admin.courses');
 });
 
-Route::get('/test-course', function () {
-    return view('admin.courses');
+Route::get('/test-scholarships', function () {
+    return view('admin.scholarships');
 });
 
-Route::get('/test-countries', function () {
-    return view('admin.countries');
-});
 Route::get('/test-dashboard', function () {
     return view('admin.dashboard');
 });
