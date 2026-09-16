@@ -17,7 +17,7 @@ class CourseController extends Controller
             ->paginate(20);
 
         return view(
-            'admin.courses.index',
+            'admin.courses',
             compact('courses')
         );
     }
