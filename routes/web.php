@@ -278,7 +278,7 @@ Route::middleware('auth')
 |--------------------------------------------------------------------------
 */
 
-Route::middleware([])
+Route::middleware('auth')
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
