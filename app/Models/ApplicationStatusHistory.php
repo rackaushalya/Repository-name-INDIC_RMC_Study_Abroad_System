@@ -8,7 +8,7 @@ class ApplicationStatusHistory extends Model
 {
     protected $table = 'application_status_history';
 
-    protected $primaryKey = 'status_history_id';
+    protected $primaryKey = 'history_id';
 
     public $incrementing = true;
 
@@ -32,6 +32,13 @@ class ApplicationStatusHistory extends Model
         ];
     }
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | Application
+    |--------------------------------------------------------------------------
+    */
+
     public function application()
     {
         return $this->belongsTo(
@@ -40,6 +47,13 @@ class ApplicationStatusHistory extends Model
             'application_id'
         );
     }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | User Who Changed Status
+    |--------------------------------------------------------------------------
+    */
 
     public function changedBy()
     {

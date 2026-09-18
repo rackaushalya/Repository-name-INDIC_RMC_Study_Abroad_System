@@ -160,6 +160,7 @@ Route::middleware(['auth', 'role:Student'])
         Route::get('/dashboard', [StudentController::class, 'dashboard'])
             ->name('dashboard');
 
+
         /*
         |--------------------------------------------------------------------------
         | Student Profile
@@ -172,6 +173,7 @@ Route::middleware(['auth', 'role:Student'])
         Route::put('/profile', [StudentController::class, 'updateProfile'])
             ->name('profile.update');
 
+
         /*
         |--------------------------------------------------------------------------
         | Student Preferences
@@ -181,6 +183,7 @@ Route::middleware(['auth', 'role:Student'])
         Route::get('/preferences', [StudentController::class, 'preferences'])
             ->name('preferences');
 
+
         /*
         |--------------------------------------------------------------------------
         | Student Applications
@@ -189,6 +192,7 @@ Route::middleware(['auth', 'role:Student'])
 
         Route::get('/applications', [StudentController::class, 'applications'])
             ->name('applications');
+
 
         /*
         |--------------------------------------------------------------------------
@@ -218,6 +222,7 @@ Route::middleware(['auth', 'role:Student'])
 
         Route::get('/qualifications', [QualificationController::class, 'index'])
             ->name('qualifications');
+
 
         /*
         |--------------------------------------------------------------------------
@@ -622,6 +627,30 @@ Route::middleware(['auth', 'role:Admin'])
 
         /*
         |--------------------------------------------------------------------------
+        | Application Details
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get(
+            '/applications-list/{application}',
+            [AdminController::class, 'applicationShow']
+        )->name('applications-show');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Update Application Status
+        |--------------------------------------------------------------------------
+        */
+
+        Route::patch(
+            '/applications-list/{application}/status',
+            [AdminController::class, 'updateApplicationStatus']
+        )->name('applications-status');
+
+
+        /*
+        |--------------------------------------------------------------------------
         | Appointments List
         |--------------------------------------------------------------------------
         */
@@ -770,6 +799,18 @@ Route::middleware(['auth', 'role:Admin'])
         ]);
 
     });
+
+
+/*
+|--------------------------------------------------------------------------
+| Temporary Test Route
+|--------------------------------------------------------------------------
+*/
+
+Route::get(
+    '/test-applications',
+    [AdminController::class, 'applications']
+)->name('test.applications');
 
 
 /*
