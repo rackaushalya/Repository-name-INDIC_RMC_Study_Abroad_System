@@ -1,26 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
 
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>INDIC RMC | Admin Dashboard</title>
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Admin Dashboard | INDIC RMC</title>
+
 
     <style>
 
         * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
         }
 
+
         body {
-            font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI",
-                         Roboto, Arial, sans-serif;
-            background: #f7f8fa;
-            color: #172033;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f4f6fa;
+            color: #17233c;
         }
+
 
         a {
             text-decoration: none;
@@ -28,708 +33,773 @@
         }
 
 
-        /* =====================================================
-           LAYOUT
-        ===================================================== */
-
-        .app {
-            display: flex;
-            min-height: 100vh;
-        }
-
-
-        /* =====================================================
+        /* =====================================
            SIDEBAR
-        ===================================================== */
+        ====================================== */
 
         .sidebar {
-            width: 250px;
-            background: #111827;
-            color: #ffffff;
+
             position: fixed;
-            top: 0;
+
             left: 0;
-            bottom: 0;
+            top: 0;
+
+            width: 240px;
+            height: 100vh;
+
+            background: #111827;
+
+            color: white;
+
             overflow-y: auto;
-            z-index: 100;
         }
 
-        .brand {
-            height: 76px;
+
+        .logo {
+
+            height: 105px;
+
             display: flex;
+
             align-items: center;
-            padding: 0 24px;
-            border-bottom: 1px solid #252d3b;
+
+            padding: 20px;
+
+            border-bottom: 1px solid #263044;
         }
 
-        .brand-mark {
-            width: 38px;
-            height: 38px;
-            border-radius: 8px;
-            background: #f58220;
+
+        .logo-icon {
+
+            width: 40px;
+            height: 40px;
+
+            background: #ff7a18;
+
+            border-radius: 9px;
+
             display: flex;
+
             align-items: center;
             justify-content: center;
-            font-size: 13px;
-            font-weight: 700;
-            margin-right: 11px;
+
+            font-weight: bold;
+
+            margin-right: 12px;
         }
 
-        .brand-name {
+
+        .logo-text h2 {
+
             font-size: 17px;
-            font-weight: 700;
-            letter-spacing: -.3px;
-        }
 
-        .brand-subtitle {
-            font-size: 10px;
-            color: #8c96a8;
-            margin-top: 2px;
-        }
-
-
-        /* =====================================================
-           NAVIGATION
-        ===================================================== */
-
-        .nav {
-            padding: 20px 12px;
-        }
-
-        .nav-section {
-            font-size: 10px;
-            text-transform: uppercase;
-            color: #697386;
-            font-weight: 700;
-            letter-spacing: .8px;
-            padding: 0 12px;
-            margin: 18px 0 8px;
-        }
-
-        .nav-section:first-child {
-            margin-top: 0;
-        }
-
-        .nav-link {
-            height: 42px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 0 12px;
-            border-radius: 7px;
-            color: #b9c0cc;
-            font-size: 13px;
             margin-bottom: 3px;
-            transition: all .2s ease;
-        }
-
-        .nav-link:hover {
-            background: #1c2534;
-            color: #ffffff;
-        }
-
-        .nav-link.active {
-            background: #f58220;
-            color: #ffffff;
-        }
-
-        .nav-icon {
-            width: 18px;
-            height: 18px;
-            flex-shrink: 0;
         }
 
 
-        /* =====================================================
+        .logo-text span {
+
+            font-size: 11px;
+
+            color: #9ca3af;
+        }
+
+
+        .menu-section {
+
+            padding: 18px 12px 5px;
+        }
+
+
+        .menu-title {
+
+            font-size: 10px;
+
+            color: #7f8ba3;
+
+            font-weight: bold;
+
+            letter-spacing: 1px;
+
+            padding: 0 10px 8px;
+        }
+
+
+        .menu-item {
+
+            display: flex;
+
+            align-items: center;
+
+            gap: 12px;
+
+            padding: 12px 13px;
+
+            margin-bottom: 4px;
+
+            border-radius: 7px;
+
+            color: #d1d5db;
+
+            font-size: 14px;
+
+            transition: 0.2s;
+        }
+
+
+        .menu-item:hover {
+
+            background: #1f2937;
+
+            color: white;
+        }
+
+
+        .menu-item.active {
+
+            background: #ff7a18;
+
+            color: white;
+        }
+
+
+        .menu-icon {
+
+            width: 20px;
+
+            text-align: center;
+        }
+
+
+        /* =====================================
            MAIN
-        ===================================================== */
+        ====================================== */
 
         .main {
-            margin-left: 250px;
-            width: calc(100% - 250px);
+
+            margin-left: 240px;
+
             min-height: 100vh;
         }
 
 
-        /* =====================================================
+        /* =====================================
            TOPBAR
-        ===================================================== */
+        ====================================== */
 
         .topbar {
-            height: 76px;
-            background: #ffffff;
-            border-bottom: 1px solid #e7e9ee;
+
+            height: 72px;
+
+            background: white;
+
+            border-bottom: 1px solid #e5e7eb;
+
             display: flex;
+
             align-items: center;
+
             justify-content: space-between;
-            padding: 0 30px;
+
+            padding: 0 28px;
         }
 
-        .search {
-            width: 330px;
+
+        .search-box {
+
+            width: 315px;
+
             position: relative;
         }
 
-        .search input {
+
+        .search-box input {
+
             width: 100%;
-            height: 40px;
-            border: 1px solid #e1e5eb;
+
+            padding: 11px 15px 11px 40px;
+
+            border: 1px solid #dce1e8;
+
             border-radius: 7px;
-            background: #fafbfc;
-            padding: 0 14px 0 38px;
-            font-size: 12px;
+
             outline: none;
-            color: #172033;
         }
 
-        .search input:focus {
-            border-color: #f58220;
-            background: #ffffff;
+
+        .search-box input:focus {
+
+            border-color: #ff7a18;
         }
 
-        .search svg {
+
+        .search-icon {
+
             position: absolute;
-            left: 13px;
-            top: 12px;
-            width: 15px;
-            height: 15px;
-            color: #8b94a4;
+
+            left: 14px;
+
+            top: 10px;
+
+            color: #8a94a6;
         }
 
-        .topbar-right {
+
+        .admin-profile {
+
             display: flex;
+
             align-items: center;
-            gap: 22px;
+
+            gap: 12px;
         }
 
-        .notification {
-            width: 36px;
-            height: 36px;
-            border-radius: 7px;
-            border: 1px solid #e4e7ec;
+
+        .profile-circle {
+
+            width: 38px;
+            height: 38px;
+
+            border-radius: 50%;
+
+            background: #ff7a18;
+
+            color: white;
+
             display: flex;
+
             align-items: center;
             justify-content: center;
-            position: relative;
-            color: #4b5565;
+
+            font-weight: bold;
         }
 
-        .notification svg {
-            width: 17px;
-            height: 17px;
-        }
 
-        .notification-dot {
-            width: 7px;
-            height: 7px;
-            background: #f58220;
-            border-radius: 50%;
-            position: absolute;
-            top: 7px;
-            right: 7px;
-            border: 2px solid white;
-        }
+        .profile-info strong {
 
-        .profile {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding-left: 18px;
-            border-left: 1px solid #e5e7eb;
-        }
+            display: block;
 
-        .profile-avatar {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            background: #f58220;
-            color: #ffffff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
             font-size: 13px;
         }
 
-        .profile-name {
-            font-size: 12px;
-            font-weight: 600;
-        }
 
-        .profile-role {
-            font-size: 10px;
-            color: #8a93a3;
-            margin-top: 2px;
-        }
+        .profile-info span {
 
+            display: block;
 
-        /* =====================================================
-           CONTENT
-        ===================================================== */
-
-        .content {
-            padding: 28px 30px 40px;
-        }
-
-        .page-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-            margin-bottom: 24px;
-        }
-
-        .page-header h1 {
-            font-size: 23px;
-            font-weight: 700;
-            color: #111827;
-            letter-spacing: -.4px;
-        }
-
-        .page-header p {
-            margin-top: 5px;
-            font-size: 12px;
-            color: #737d8e;
-        }
-
-        .date {
             font-size: 11px;
-            color: #697386;
-            background: #ffffff;
-            border: 1px solid #e1e5eb;
-            border-radius: 7px;
-            padding: 9px 13px;
-        }
 
+            color: #8a94a6;
 
-        /* =====================================================
-           KPI CARDS
-        ===================================================== */
-
-        .kpi-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 16px;
-            margin-bottom: 20px;
-        }
-
-        .kpi {
-            background: #ffffff;
-            border: 1px solid #e4e7ec;
-            border-radius: 9px;
-            padding: 18px;
-        }
-
-        .kpi-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .kpi-label {
-            color: #737d8e;
-            font-size: 11px;
-            font-weight: 500;
-        }
-
-        .kpi-icon {
-            width: 34px;
-            height: 34px;
-            border-radius: 7px;
-            background: #fff3e9;
-            color: #f58220;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .kpi-icon svg {
-            width: 17px;
-            height: 17px;
-        }
-
-        .kpi-value {
-            font-size: 25px;
-            font-weight: 700;
-            color: #111827;
-            margin: 12px 0 5px;
-        }
-
-        .kpi-footer {
-            font-size: 10px;
-            color: #8a93a3;
-        }
-
-        .growth {
-            color: #198754;
-            font-weight: 600;
-        }
-
-
-        /* =====================================================
-           CONTENT GRID
-        ===================================================== */
-
-        .grid-main {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 18px;
-            margin-bottom: 18px;
-        }
-
-        .grid-bottom {
-            display: grid;
-            grid-template-columns: 1.7fr 1fr;
-            gap: 18px;
-        }
-
-        .panel {
-            background: #ffffff;
-            border: 1px solid #e4e7ec;
-            border-radius: 9px;
-            padding: 20px;
-        }
-
-        .panel-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 20px;
-        }
-
-        .panel-title {
-            font-size: 14px;
-            font-weight: 650;
-            color: #111827;
-        }
-
-        .panel-link {
-            font-size: 10px;
-            color: #f58220;
-            font-weight: 600;
-        }
-
-
-        /* =====================================================
-           CHART
-        ===================================================== */
-
-        .chart-area {
-            height: 220px;
-            display: flex;
-            align-items: flex-end;
-            gap: 22px;
-            padding: 10px 8px 0;
-            border-bottom: 1px solid #e7e9ed;
-        }
-
-        .bar-group {
-            height: 100%;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-end;
-        }
-
-        .bar-value {
-            width: 100%;
-            max-width: 28px;
-            background: #f58220;
-            border-radius: 4px 4px 0 0;
-        }
-
-        .bar-label {
-            font-size: 9px;
-            color: #9aa2af;
-            margin-top: 8px;
-            margin-bottom: -17px;
-        }
-
-
-        /* =====================================================
-           APPLICATION STATUS
-        ===================================================== */
-
-        .status-item {
-            margin-bottom: 18px;
-        }
-
-        .status-top {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 7px;
-        }
-
-        .status-name {
-            font-size: 11px;
-            color: #4d5666;
-        }
-
-        .status-count {
-            font-size: 11px;
-            font-weight: 600;
-            color: #172033;
-        }
-
-        .progress {
-            width: 100%;
-            height: 6px;
-            background: #eef0f3;
-            border-radius: 10px;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            height: 100%;
-            border-radius: 10px;
-            background: #f58220;
-        }
-
-        .progress-blue {
-            background: #4778d9;
-        }
-
-        .progress-green {
-            background: #3c9a69;
-        }
-
-        .progress-gray {
-            background: #8a93a3;
-        }
-
-
-        /* =====================================================
-           TABLE
-        ===================================================== */
-
-        .table-container {
-            overflow-x: auto;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        th {
-            text-align: left;
-            padding: 10px 8px;
-            border-bottom: 1px solid #e7e9ed;
-            color: #8a93a3;
-            font-size: 9px;
-            text-transform: uppercase;
-            letter-spacing: .5px;
-            font-weight: 600;
-        }
-
-        td {
-            padding: 13px 8px;
-            border-bottom: 1px solid #f0f1f3;
-            font-size: 11px;
-            color: #4b5565;
-        }
-
-        td:first-child {
-            color: #172033;
-            font-weight: 600;
-        }
-
-        .badge {
-            display: inline-block;
-            padding: 5px 8px;
-            border-radius: 5px;
-            font-size: 9px;
-            font-weight: 600;
-        }
-
-        .badge-orange {
-            background: #fff2e8;
-            color: #d9650b;
-        }
-
-        .badge-blue {
-            background: #edf3ff;
-            color: #416dc0;
-        }
-
-        .badge-green {
-            background: #edf8f2;
-            color: #32815a;
-        }
-
-
-        /* =====================================================
-           DESTINATIONS
-        ===================================================== */
-
-        .destination {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 13px 0;
-            border-bottom: 1px solid #f0f1f3;
-        }
-
-        .destination-left {
-            display: flex;
-            align-items: center;
-            gap: 11px;
-        }
-
-        .country-code {
-            width: 34px;
-            height: 34px;
-            border-radius: 7px;
-            background: #f4f5f7;
-            color: #4b5565;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 10px;
-            font-weight: 700;
-        }
-
-        .destination-name {
-            font-size: 11px;
-            font-weight: 600;
-            color: #172033;
-        }
-
-        .destination-count {
-            font-size: 9px;
-            color: #8a93a3;
             margin-top: 3px;
         }
 
-        .destination-percent {
-            font-size: 11px;
-            font-weight: 700;
-            color: #172033;
+
+        /* =====================================
+           CONTENT
+        ====================================== */
+
+        .content {
+
+            padding: 28px;
         }
 
 
-        /* =====================================================
-           APPOINTMENTS
-        ===================================================== */
+        .page-header {
 
-        .appointment {
             display: flex;
-            gap: 12px;
-            padding: 12px 0;
-            border-bottom: 1px solid #f0f1f3;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            margin-bottom: 25px;
         }
 
-        .appointment-date {
-            width: 42px;
-            height: 44px;
-            border: 1px solid #e5e7eb;
+
+        .page-header h1 {
+
+            font-size: 27px;
+
+            margin-bottom: 6px;
+        }
+
+
+        .page-header p {
+
+            color: #718096;
+
+            font-size: 14px;
+        }
+
+
+        .date-box {
+
+            padding: 10px 15px;
+
+            background: white;
+
+            border: 1px solid #e0e5ec;
+
             border-radius: 7px;
-            text-align: center;
-            padding-top: 5px;
-            flex-shrink: 0;
+
+            font-size: 13px;
+
+            color: #596579;
         }
 
-        .appointment-day {
-            display: block;
+
+        /* =====================================
+           STAT CARDS
+        ====================================== */
+
+        .stats-grid {
+
+            display: grid;
+
+            grid-template-columns: repeat(4, 1fr);
+
+            gap: 16px;
+
+            margin-bottom: 22px;
+        }
+
+
+        .stat-card {
+
+            background: white;
+
+            border: 1px solid #e2e6ec;
+
+            border-radius: 10px;
+
+            padding: 20px;
+        }
+
+
+        .stat-top {
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            margin-bottom: 15px;
+        }
+
+
+        .stat-title {
+
+            color: #68758a;
+
+            font-size: 13px;
+        }
+
+
+        .stat-icon {
+
+            width: 38px;
+            height: 38px;
+
+            border-radius: 8px;
+
+            background: #fff2e8;
+
+            color: #ff7a18;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            font-weight: bold;
+        }
+
+
+        .stat-value {
+
+            font-size: 28px;
+
+            font-weight: bold;
+
+            color: #17233c;
+        }
+
+
+        .stat-description {
+
+            margin-top: 6px;
+
+            color: #8a94a6;
+
+            font-size: 12px;
+        }
+
+
+        /* =====================================
+           DASHBOARD GRID
+        ====================================== */
+
+        .dashboard-grid {
+
+            display: grid;
+
+            grid-template-columns: 2fr 1fr;
+
+            gap: 20px;
+
+            margin-bottom: 20px;
+        }
+
+
+        .card {
+
+            background: white;
+
+            border: 1px solid #e2e6ec;
+
+            border-radius: 10px;
+
+            overflow: hidden;
+        }
+
+
+        .card-header {
+
+            padding: 18px 20px;
+
+            border-bottom: 1px solid #edf0f4;
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+        }
+
+
+        .card-header h2 {
+
             font-size: 16px;
-            font-weight: 700;
-            color: #172033;
         }
 
-        .appointment-month {
-            font-size: 8px;
-            color: #8a93a3;
+
+        .card-header a {
+
+            color: #ff7a18;
+
+            font-size: 12px;
+
+            font-weight: bold;
+        }
+
+
+        .card-header a:hover {
+
+            text-decoration: underline;
+        }
+
+
+        .card-body {
+
+            padding: 20px;
+        }
+
+
+        /* =====================================
+           TABLE
+        ====================================== */
+
+        .table-wrapper {
+
+            overflow-x: auto;
+        }
+
+
+        table {
+
+            width: 100%;
+
+            border-collapse: collapse;
+        }
+
+
+        th {
+
+            text-align: left;
+
+            padding: 13px 20px;
+
+            background: #f8fafc;
+
+            color: #6b7280;
+
+            font-size: 11px;
+
             text-transform: uppercase;
         }
 
-        .appointment-info strong {
-            display: block;
+
+        td {
+
+            padding: 15px 20px;
+
+            border-top: 1px solid #edf0f4;
+
+            font-size: 13px;
+        }
+
+
+        tr:hover td {
+
+            background: #fafafa;
+        }
+
+
+        /* =====================================
+           STATUS
+        ====================================== */
+
+        .status {
+
+            display: inline-block;
+
+            padding: 5px 9px;
+
+            border-radius: 15px;
+
             font-size: 11px;
-            color: #172033;
-            margin-bottom: 4px;
-        }
 
-        .appointment-info span {
-            font-size: 9px;
-            color: #8a93a3;
+            font-weight: bold;
         }
 
 
-        /* =====================================================
+        .status-success {
+
+            background: #e7f7ed;
+
+            color: #198754;
+        }
+
+
+        .status-warning {
+
+            background: #fff3df;
+
+            color: #c46b00;
+        }
+
+
+        .status-danger {
+
+            background: #fde8e8;
+
+            color: #c62828;
+        }
+
+
+        .status-info {
+
+            background: #e8f1ff;
+
+            color: #2767b1;
+        }
+
+
+        .empty {
+
+            text-align: center;
+
+            padding: 35px;
+
+            color: #8a94a6;
+        }
+
+
+        /* =====================================
+           APPOINTMENTS
+        ====================================== */
+
+        .appointment {
+
+            padding: 14px 0;
+
+            border-bottom: 1px solid #edf0f4;
+        }
+
+
+        .appointment:last-child {
+
+            border-bottom: none;
+        }
+
+
+        .appointment-name {
+
+            font-weight: bold;
+
+            font-size: 13px;
+        }
+
+
+        .appointment-details {
+
+            margin-top: 5px;
+
+            font-size: 12px;
+
+            color: #7b8798;
+        }
+
+
+        /* =====================================
+           QUICK ACTIONS
+        ====================================== */
+
+        .quick-actions {
+
+            display: grid;
+
+            grid-template-columns: repeat(3, 1fr);
+
+            gap: 12px;
+        }
+
+
+        .quick-action {
+
+            border: 1px solid #e5e7eb;
+
+            border-radius: 8px;
+
+            padding: 16px;
+
+            transition: 0.2s;
+        }
+
+
+        .quick-action:hover {
+
+            border-color: #ff7a18;
+
+            background: #fffaf5;
+        }
+
+
+        .quick-action strong {
+
+            display: block;
+
+            margin-bottom: 5px;
+
+            font-size: 14px;
+        }
+
+
+        .quick-action span {
+
+            color: #7b8798;
+
+            font-size: 11px;
+        }
+
+
+        /* =====================================
            RESPONSIVE
-        ===================================================== */
+        ====================================== */
 
-        @media (max-width: 1150px) {
+        @media (max-width: 1100px) {
 
-            .kpi-grid {
+            .stats-grid {
+
                 grid-template-columns: repeat(2, 1fr);
             }
 
-            .grid-main,
-            .grid-bottom {
+
+            .dashboard-grid {
+
                 grid-template-columns: 1fr;
             }
 
+
+            .quick-actions {
+
+                grid-template-columns: repeat(2, 1fr);
+            }
         }
 
 
         @media (max-width: 750px) {
 
             .sidebar {
+
                 width: 70px;
             }
 
-            .brand {
-                justify-content: center;
-                padding: 0;
-            }
 
-            .brand-mark {
-                margin: 0;
-            }
+            .logo-text,
+            .menu-title,
+            .menu-item span:not(.menu-icon) {
 
-            .brand-name,
-            .brand-subtitle,
-            .nav-section,
-            .nav-link span {
                 display: none;
             }
 
-            .nav-link {
+
+            .logo {
+
+                justify-content: center;
+
+                padding: 10px;
+            }
+
+
+            .logo-icon {
+
+                margin-right: 0;
+            }
+
+
+            .menu-item {
+
                 justify-content: center;
             }
+
 
             .main {
+
                 margin-left: 70px;
-                width: calc(100% - 70px);
             }
 
-            .search {
-                display: none;
-            }
 
-            .content {
-                padding: 20px;
-            }
+            .stats-grid {
 
-        }
-
-
-        @media (max-width: 500px) {
-
-            .kpi-grid {
                 grid-template-columns: 1fr;
             }
 
-            .profile-name,
-            .profile-role {
-                display: none;
+
+            .content {
+
+                padding: 15px;
             }
+
 
             .topbar {
-                padding: 0 18px;
+
+                padding: 0 15px;
             }
 
+
+            .search-box {
+
+                width: 200px;
+            }
+
+
+            .quick-actions {
+
+                grid-template-columns: 1fr;
+            }
         }
 
     </style>
@@ -740,652 +810,539 @@
 <body>
 
 
-<div class="app">
+<!-- =====================================
+     SIDEBAR
+====================================== -->
+
+<aside class="sidebar">
 
 
-    <!-- =====================================================
-         SIDEBAR
-    ====================================================== -->
+    <!-- LOGO -->
 
-    <aside class="sidebar">
+    <div class="logo">
 
-        <div class="brand">
+        <div class="logo-icon">
+            IR
+        </div>
 
-            <div class="brand-mark">
-                IR
+
+        <div class="logo-text">
+
+            <h2>
+                INDIC RMC
+            </h2>
+
+            <span>
+                Administration Portal
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <!-- OVERVIEW -->
+
+    <div class="menu-section">
+
+        <div class="menu-title">
+            OVERVIEW
+        </div>
+
+
+        <a href="{{ route('admin.dashboard') }}"
+           class="menu-item active">
+
+            <span class="menu-icon">
+                ▦
+            </span>
+
+            <span>
+                Dashboard
+            </span>
+
+        </a>
+
+    </div>
+
+
+    <!-- MANAGEMENT -->
+
+    <div class="menu-section">
+
+        <div class="menu-title">
+            MANAGEMENT
+        </div>
+
+
+        <!-- USERS -->
+
+        <a href="{{ route('admin.users') }}"
+           class="menu-item">
+
+            <span class="menu-icon">
+                ♙
+            </span>
+
+            <span>
+                Users
+            </span>
+
+        </a>
+
+
+        <!-- STUDENTS -->
+
+        <a href="{{ route('admin.students') }}"
+           class="menu-item">
+
+            <span class="menu-icon">
+                ♙
+            </span>
+
+            <span>
+                Students
+            </span>
+
+        </a>
+
+
+        <!-- CONSULTANTS -->
+
+        <a href="{{ route('admin.consultants') }}"
+           class="menu-item">
+
+            <span class="menu-icon">
+                ♙
+            </span>
+
+            <span>
+                Consultants
+            </span>
+
+        </a>
+
+
+        <!-- APPLICATIONS -->
+
+        <a href="{{ route('admin.applications-list') }}"
+           class="menu-item">
+
+            <span class="menu-icon">
+                ▤
+            </span>
+
+            <span>
+                Applications
+            </span>
+
+        </a>
+
+
+        <!-- APPOINTMENTS -->
+
+        <a href="{{ route('admin.appointments-list') }}"
+           class="menu-item">
+
+            <span class="menu-icon">
+                ▣
+            </span>
+
+            <span>
+                Appointments
+            </span>
+
+        </a>
+
+    </div>
+
+
+    <!-- STUDY ABROAD -->
+
+    <div class="menu-section">
+
+        <div class="menu-title">
+            STUDY ABROAD
+        </div>
+
+
+        <!-- COUNTRIES -->
+
+        <a href="{{ route('admin.countries-list') }}"
+           class="menu-item">
+
+            <span class="menu-icon">
+                ◎
+            </span>
+
+            <span>
+                Countries
+            </span>
+
+        </a>
+
+
+        <!-- UNIVERSITIES -->
+
+        <a href="{{ route('admin.universities-list') }}"
+           class="menu-item">
+
+            <span class="menu-icon">
+                ⌂
+            </span>
+
+            <span>
+                Universities
+            </span>
+
+        </a>
+
+
+        <!-- COURSES -->
+
+        <a href="{{ route('admin.courses-list') }}"
+           class="menu-item">
+
+            <span class="menu-icon">
+                ▤
+            </span>
+
+            <span>
+                Courses
+            </span>
+
+        </a>
+
+    </div>
+
+
+    <!-- SYSTEM -->
+
+    <div class="menu-section">
+
+        <div class="menu-title">
+            SYSTEM
+        </div>
+
+
+        <!-- USER MANAGEMENT -->
+
+        <a href="{{ route('admin.users') }}"
+           class="menu-item">
+
+            <span class="menu-icon">
+                ⚙
+            </span>
+
+            <span>
+                User Management
+            </span>
+
+        </a>
+
+    </div>
+
+
+</aside>
+
+
+
+<!-- =====================================
+     MAIN
+====================================== -->
+
+<main class="main">
+
+
+    <!-- =================================
+         TOP BAR
+    ================================== -->
+
+    <header class="topbar">
+
+
+        <!-- SEARCH -->
+
+        <div class="search-box">
+
+            <span class="search-icon">
+                ⌕
+            </span>
+
+
+            <input
+                type="text"
+                placeholder="Search students, applications..."
+            >
+
+        </div>
+
+
+
+        <!-- ADMIN PROFILE -->
+
+        <div class="admin-profile">
+
+
+            <div class="profile-circle">
+
+                {{ strtoupper(
+                    substr(
+                        auth()->user()->first_name ?? 'A',
+                        0,
+                        1
+                    )
+                ) }}
+
             </div>
 
-            <div>
-                <div class="brand-name">
-                    INDIC RMC
-                </div>
 
-                <div class="brand-subtitle">
-                    Administration Portal
-                </div>
+            <div class="profile-info">
+
+                <strong>
+
+                    {{ auth()->user()->first_name ?? 'Admin' }}
+
+                    {{ auth()->user()->last_name ?? 'User' }}
+
+                </strong>
+
+
+                <span>
+                    Administrator
+                </span>
+
             </div>
 
         </div>
 
 
-        <nav class="nav">
+    </header>
 
 
-            <div class="nav-section">
-                Overview
-            </div>
 
-            <a href="#" class="nav-link active">
+    <!-- =================================
+         CONTENT
+    ================================== -->
 
-                <svg class="nav-icon" viewBox="0 0 24 24" fill="none"
-                     stroke="currentColor" stroke-width="1.8">
-                    <rect x="3" y="3" width="7" height="7"/>
-                    <rect x="14" y="3" width="7" height="7"/>
-                    <rect x="3" y="14" width="7" height="7"/>
-                    <rect x="14" y="14" width="7" height="7"/>
-                </svg>
+    <section class="content">
 
-                <span>Dashboard</span>
 
-            </a>
+        <!-- PAGE HEADER -->
 
+        <div class="page-header">
 
-            <div class="nav-section">
-                Management
-            </div>
 
+            <div>
 
-            <a href="#" class="nav-link">
+                <h1>
+                    Admin Dashboard
+                </h1>
 
-                <svg class="nav-icon" viewBox="0 0 24 24" fill="none"
-                     stroke="currentColor" stroke-width="1.8">
-                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
-                    <circle cx="9" cy="7" r="4"/>
-                    <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
-                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                </svg>
 
-                <span>Students</span>
-
-            </a>
-
-
-            <a href="#" class="nav-link">
-
-                <svg class="nav-icon" viewBox="0 0 24 24" fill="none"
-                     stroke="currentColor" stroke-width="1.8">
-                    <circle cx="12" cy="7" r="4"/>
-                    <path d="M5.5 21a6.5 6.5 0 0 1 13 0"/>
-                </svg>
-
-                <span>Consultants</span>
-
-            </a>
-
-
-            <a href="#" class="nav-link">
-
-                <svg class="nav-icon" viewBox="0 0 24 24" fill="none"
-                     stroke="currentColor" stroke-width="1.8">
-                    <path d="M6 2h12v20H6z"/>
-                    <path d="M9 6h6"/>
-                    <path d="M9 10h6"/>
-                    <path d="M9 14h4"/>
-                </svg>
-
-                <span>Applications</span>
-
-            </a>
-
-
-            <a href="#" class="nav-link">
-
-                <svg class="nav-icon" viewBox="0 0 24 24" fill="none"
-                     stroke="currentColor" stroke-width="1.8">
-                    <rect x="3" y="4" width="18" height="17" rx="2"/>
-                    <path d="M16 2v4"/>
-                    <path d="M8 2v4"/>
-                    <path d="M3 10h18"/>
-                </svg>
-
-                <span>Appointments</span>
-
-            </a>
-
-
-            <div class="nav-section">
-                Study Abroad
-            </div>
-
-
-            <a href="#" class="nav-link">
-
-                <svg class="nav-icon" viewBox="0 0 24 24" fill="none"
-                     stroke="currentColor" stroke-width="1.8">
-                    <circle cx="12" cy="12" r="9"/>
-                    <path d="M3 12h18"/>
-                    <path d="M12 3c3 3 3 15 0 18"/>
-                    <path d="M12 3c-3 3-3 15 0 18"/>
-                </svg>
-
-                <span>Countries</span>
-
-            </a>
-
-
-            <a href="#" class="nav-link">
-
-                <svg class="nav-icon" viewBox="0 0 24 24" fill="none"
-                     stroke="currentColor" stroke-width="1.8">
-                    <path d="M3 21h18"/>
-                    <path d="M5 21V8l7-5 7 5v13"/>
-                    <path d="M9 21v-6h6v6"/>
-                </svg>
-
-                <span>Universities</span>
-
-            </a>
-
-
-            <a href="#" class="nav-link">
-
-                <svg class="nav-icon" viewBox="0 0 24 24" fill="none"
-                     stroke="currentColor" stroke-width="1.8">
-                    <path d="M3 10l9-6 9 6"/>
-                    <path d="M5 10v9h14v-9"/>
-                    <path d="M9 19v-5h6v5"/>
-                </svg>
-
-                <span>Courses</span>
-
-            </a>
-
-
-            <a href="#" class="nav-link">
-
-                <svg class="nav-icon" viewBox="0 0 24 24" fill="none"
-                     stroke="currentColor" stroke-width="1.8">
-                    <path d="M12 3v18"/>
-                    <path d="M17 7H9.5a3 3 0 0 0 0 6H14.5a3 3 0 0 1 0 6H7"/>
-                </svg>
-
-                <span>Scholarships</span>
-
-            </a>
-
-
-            <a href="#" class="nav-link">
-
-                <svg class="nav-icon" viewBox="0 0 24 24" fill="none"
-                     stroke="currentColor" stroke-width="1.8">
-                    <path d="M5 12l4 4L19 6"/>
-                </svg>
-
-                <span>Eligibility Rules</span>
-
-            </a>
-
-
-            <div class="nav-section">
-                CRM & Intelligence
-            </div>
-
-
-            <a href="#" class="nav-link">
-
-                <svg class="nav-icon" viewBox="0 0 24 24" fill="none"
-                     stroke="currentColor" stroke-width="1.8">
-                    <path d="M3 12h18"/>
-                    <path d="M5 12a7 7 0 0 1 14 0"/>
-                    <path d="M5 12a7 7 0 0 0 14 0"/>
-                </svg>
-
-                <span>CRM</span>
-
-            </a>
-
-
-            <a href="#" class="nav-link">
-
-                <svg class="nav-icon" viewBox="0 0 24 24" fill="none"
-                     stroke="currentColor" stroke-width="1.8">
-                    <path d="M4 19V5"/>
-                    <path d="M4 19h17"/>
-                    <path d="M7 15l4-5 3 3 5-7"/>
-                </svg>
-
-                <span>Reports & Analytics</span>
-
-            </a>
-
-
-            <div class="nav-section">
-                System
-            </div>
-
-
-            <a href="#" class="nav-link">
-
-                <svg class="nav-icon" viewBox="0 0 24 24" fill="none"
-                     stroke="currentColor" stroke-width="1.8">
-                    <circle cx="12" cy="12" r="3"/>
-                    <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-1.5 1.5-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1 1.55V20h-2v-.41a1.7 1.7 0 0 0-1-1.55 1.7 1.7 0 0 0-1.88.34l-.06.06-1.5-1.5.06-.06A1.7 1.7 0 0 0 7.4 15a1.7 1.7 0 0 0-1.55-1H5v-2h.85a1.7 1.7 0 0 0 1.55-1 1.7 1.7 0 0 0-.34-1.88L7 9.06l1.5-1.5.06.06a1.7 1.7 0 0 0 1.88.34 1.7 1.7 0 0 0 1-1.55V6h2v.41a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.88-.34l.06-.06 1.5 1.5-.06.06a1.7 1.7 0 0 0-.34 1.88 1.7 1.7 0 0 0 1.55 1H20v2h-.41a1.7 1.7 0 0 0-1.55 1z"/>
-                </svg>
-
-                <span>Settings</span>
-
-            </a>
-
-
-            <a href="#" class="nav-link">
-
-                <svg class="nav-icon" viewBox="0 0 24 24" fill="none"
-                     stroke="currentColor" stroke-width="1.8">
-                    <rect x="4" y="4" width="16" height="16" rx="2"/>
-                    <path d="M8 8h8"/>
-                    <path d="M8 12h8"/>
-                    <path d="M8 16h5"/>
-                </svg>
-
-                <span>Audit Logs</span>
-
-            </a>
-
-
-        </nav>
-
-    </aside>
-
-
-
-    <!-- =====================================================
-         MAIN
-    ====================================================== -->
-
-    <main class="main">
-
-
-        <!-- TOPBAR -->
-
-        <header class="topbar">
-
-            <div class="search">
-
-                <svg viewBox="0 0 24 24" fill="none"
-                     stroke="currentColor" stroke-width="2">
-                    <circle cx="11" cy="11" r="7"/>
-                    <path d="m20 20-4-4"/>
-                </svg>
-
-                <input
-                    type="text"
-                    placeholder="Search students, applications..."
-                >
+                <p>
+                    Overview of INDIC RMC system activity.
+                </p>
 
             </div>
 
 
-            <div class="topbar-right">
+            <div class="date-box">
 
-                <div class="notification">
+                {{ now()->format('d F Y') }}
 
-                    <svg viewBox="0 0 24 24" fill="none"
-                         stroke="currentColor" stroke-width="1.8">
-                        <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/>
-                        <path d="M10 21h4"/>
-                    </svg>
+            </div>
 
-                    <span class="notification-dot"></span>
+
+        </div>
+
+
+
+        <!-- =================================
+             FIRST STAT ROW
+        ================================== -->
+
+        <div class="stats-grid">
+
+
+            <!-- TOTAL USERS -->
+
+            <div class="stat-card">
+
+                <div class="stat-top">
+
+                    <span class="stat-title">
+                        Total Users
+                    </span>
+
+
+                    <div class="stat-icon">
+                        U
+                    </div>
 
                 </div>
 
 
-                <div class="profile">
+                <div class="stat-value">
 
-                    <div class="profile-avatar">
+                    {{ $stats['total_users'] ?? 0 }}
+
+                </div>
+
+
+                <div class="stat-description">
+
+                    Registered system users
+
+                </div>
+
+            </div>
+
+
+
+            <!-- TOTAL STUDENTS -->
+
+            <div class="stat-card">
+
+                <div class="stat-top">
+
+                    <span class="stat-title">
+                        Total Students
+                    </span>
+
+
+                    <div class="stat-icon">
+                        S
+                    </div>
+
+                </div>
+
+
+                <div class="stat-value">
+
+                    {{ $stats['total_students'] ?? 0 }}
+
+                </div>
+
+
+                <div class="stat-description">
+
+                    Registered students
+
+                </div>
+
+            </div>
+
+
+
+            <!-- CONSULTANTS -->
+
+            <div class="stat-card">
+
+                <div class="stat-top">
+
+                    <span class="stat-title">
+                        Total Consultants
+                    </span>
+
+
+                    <div class="stat-icon">
+                        C
+                    </div>
+
+                </div>
+
+
+                <div class="stat-value">
+
+                    {{ $stats['total_consultants'] ?? 0 }}
+
+                </div>
+
+
+                <div class="stat-description">
+
+                    Registered consultants
+
+                </div>
+
+            </div>
+
+
+
+            <!-- APPLICATIONS -->
+
+            <div class="stat-card">
+
+                <div class="stat-top">
+
+                    <span class="stat-title">
+                        Applications
+                    </span>
+
+
+                    <div class="stat-icon">
                         A
                     </div>
 
-                    <div>
-                        <div class="profile-name">
-                            Admin User
-                        </div>
+                </div>
 
-                        <div class="profile-role">
-                            Administrator
-                        </div>
-                    </div>
+
+                <div class="stat-value">
+
+                    {{ $stats['total_applications'] ?? 0 }}
+
+                </div>
+
+
+                <div class="stat-description">
+
+                    Student applications
 
                 </div>
 
             </div>
 
-        </header>
+
+        </div>
 
 
 
-        <!-- =====================================================
-             PAGE CONTENT
-        ====================================================== -->
+        <!-- =================================
+             SECOND STAT ROW
+        ================================== -->
 
-        <section class="content">
-
-
-            <div class="page-header">
-
-                <div>
-
-                    <h1>Dashboard</h1>
-
-                    <p>
-                        Overview of INDIC RMC consultancy operations.
-                    </p>
-
-                </div>
-
-                <div class="date">
-                    11 September 2026
-                </div>
-
-            </div>
+        <div class="stats-grid">
 
 
+            <!-- COUNTRIES -->
 
-            <!-- =================================================
-                 KPI CARDS
-            ================================================== -->
+            <div class="stat-card">
 
-            <div class="kpi-grid">
+                <div class="stat-top">
+
+                    <span class="stat-title">
+                        Active Countries
+                    </span>
 
 
-                <div class="kpi">
-
-                    <div class="kpi-header">
-
-                        <span class="kpi-label">
-                            Total Students
-                        </span>
-
-                        <div class="kpi-icon">
-
-                            <svg viewBox="0 0 24 24" fill="none"
-                                 stroke="currentColor" stroke-width="1.8">
-                                <circle cx="9" cy="7" r="4"/>
-                                <path d="M2 21a7 7 0 0 1 14 0"/>
-                                <path d="M16 4.5a4 4 0 0 1 0 7.5"/>
-                                <path d="M18 14a6 6 0 0 1 4 7"/>
-                            </svg>
-
-                        </div>
-
-                    </div>
-
-                    <div class="kpi-value">
-                        1,248
-                    </div>
-
-                    <div class="kpi-footer">
-                        <span class="growth">+12.5%</span>
-                        compared with last month
+                    <div class="stat-icon">
+                        C
                     </div>
 
                 </div>
 
 
+                <div class="stat-value">
 
-                <div class="kpi">
-
-                    <div class="kpi-header">
-
-                        <span class="kpi-label">
-                            Active Consultants
-                        </span>
-
-                        <div class="kpi-icon">
-
-                            <svg viewBox="0 0 24 24" fill="none"
-                                 stroke="currentColor" stroke-width="1.8">
-                                <circle cx="12" cy="7" r="4"/>
-                                <path d="M5 21a7 7 0 0 1 14 0"/>
-                            </svg>
-
-                        </div>
-
-                    </div>
-
-                    <div class="kpi-value">
-                        18
-                    </div>
-
-                    <div class="kpi-footer">
-                        2 added this month
-                    </div>
+                    {{ $stats['total_countries'] ?? 0 }}
 
                 </div>
 
 
+                <div class="stat-description">
 
-                <div class="kpi">
-
-                    <div class="kpi-header">
-
-                        <span class="kpi-label">
-                            Consultancy Requests
-                        </span>
-
-                        <div class="kpi-icon">
-
-                            <svg viewBox="0 0 24 24" fill="none"
-                                 stroke="currentColor" stroke-width="1.8">
-                                <rect x="4" y="3" width="16" height="18" rx="2"/>
-                                <path d="M8 7h8"/>
-                                <path d="M8 11h8"/>
-                                <path d="M8 15h5"/>
-                            </svg>
-
-                        </div>
-
-                    </div>
-
-                    <div class="kpi-value">
-                        325
-                    </div>
-
-                    <div class="kpi-footer">
-                        <span class="growth">+8.4%</span>
-                        this month
-                    </div>
-
-                </div>
-
-
-
-                <div class="kpi">
-
-                    <div class="kpi-header">
-
-                        <span class="kpi-label">
-                            Upcoming Consultations
-                        </span>
-
-                        <div class="kpi-icon">
-
-                            <svg viewBox="0 0 24 24" fill="none"
-                                 stroke="currentColor" stroke-width="1.8">
-                                <rect x="3" y="4" width="18" height="17" rx="2"/>
-                                <path d="M16 2v4"/>
-                                <path d="M8 2v4"/>
-                                <path d="M3 10h18"/>
-                            </svg>
-
-                        </div>
-
-                    </div>
-
-                    <div class="kpi-value">
-                        42
-                    </div>
-
-                    <div class="kpi-footer">
-                        Scheduled within 7 days
-                    </div>
-
-                </div>
-
-
-            </div>
-
-
-
-            <!-- =================================================
-                 CHART + STATUS
-            ================================================== -->
-
-            <div class="grid-main">
-
-
-                <div class="panel">
-
-                    <div class="panel-header">
-
-                        <h2 class="panel-title">
-                            Student Registrations
-                        </h2>
-
-                        <a href="#" class="panel-link">
-                            View Report
-                        </a>
-
-                    </div>
-
-
-                    <div class="chart-area">
-
-                        <div class="bar-group">
-                            <div class="bar-value" style="height:35%;"></div>
-                            <span class="bar-label">Jan</span>
-                        </div>
-
-                        <div class="bar-group">
-                            <div class="bar-value" style="height:44%;"></div>
-                            <span class="bar-label">Feb</span>
-                        </div>
-
-                        <div class="bar-group">
-                            <div class="bar-value" style="height:53%;"></div>
-                            <span class="bar-label">Mar</span>
-                        </div>
-
-                        <div class="bar-group">
-                            <div class="bar-value" style="height:47%;"></div>
-                            <span class="bar-label">Apr</span>
-                        </div>
-
-                        <div class="bar-group">
-                            <div class="bar-value" style="height:62%;"></div>
-                            <span class="bar-label">May</span>
-                        </div>
-
-                        <div class="bar-group">
-                            <div class="bar-value" style="height:70%;"></div>
-                            <span class="bar-label">Jun</span>
-                        </div>
-
-                        <div class="bar-group">
-                            <div class="bar-value" style="height:78%;"></div>
-                            <span class="bar-label">Jul</span>
-                        </div>
-
-                        <div class="bar-group">
-                            <div class="bar-value" style="height:73%;"></div>
-                            <span class="bar-label">Aug</span>
-                        </div>
-
-                        <div class="bar-group">
-                            <div class="bar-value" style="height:88%;"></div>
-                            <span class="bar-label">Sep</span>
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-
-                <!-- APPLICATION STATUS -->
-
-                <div class="panel">
-
-                    <div class="panel-header">
-
-                        <h2 class="panel-title">
-                            Consultancy Requests
-                        </h2>
-
-                        <a href="#" class="panel-link">
-                            View All
-                        </a>
-
-                    </div>
-
-
-                    <div class="status-item">
-
-                        <div class="status-top">
-                            <span class="status-name">Submitted</span>
-                            <span class="status-count">78</span>
-                        </div>
-
-                        <div class="progress">
-                            <div class="progress-fill" style="width:78%;"></div>
-                        </div>
-
-                    </div>
-
-
-                    <div class="status-item">
-
-                        <div class="status-top">
-                            <span class="status-name">Under Review</span>
-                            <span class="status-count">54</span>
-                        </div>
-
-                        <div class="progress">
-                            <div class="progress-fill progress-blue"
-                                 style="width:60%;"></div>
-                        </div>
-
-                    </div>
-
-
-                    <div class="status-item">
-
-                        <div class="status-top">
-                            <span class="status-name">Consultant Assigned</span>
-                            <span class="status-count">42</span>
-                        </div>
-
-                        <div class="progress">
-                            <div class="progress-fill progress-green"
-                                 style="width:48%;"></div>
-                        </div>
-
-                    </div>
-
-
-                    <div class="status-item">
-
-                        <div class="status-top">
-                            <span class="status-name">Follow-up Required</span>
-                            <span class="status-count">25</span>
-                        </div>
-
-                        <div class="progress">
-                            <div class="progress-fill progress-gray"
-                                 style="width:28%;"></div>
-                        </div>
-
-                    </div>
+                    Available destinations
 
                 </div>
 
@@ -1393,254 +1350,34 @@
 
 
 
-            <!-- =================================================
-                 RECENT APPLICATIONS + DESTINATIONS
-            ================================================== -->
+            <!-- UNIVERSITIES -->
 
-            <div class="grid-bottom">
+            <div class="stat-card">
 
+                <div class="stat-top">
 
-                <div class="panel">
-
-                    <div class="panel-header">
-
-                        <h2 class="panel-title">
-                            Recent Consultancy Requests
-                        </h2>
-
-                        <a href="#" class="panel-link">
-                            View All
-                        </a>
-
-                    </div>
+                    <span class="stat-title">
+                        Universities
+                    </span>
 
 
-                    <div class="table-container">
-
-                        <table>
-
-                            <thead>
-
-                                <tr>
-                                    <th>Student</th>
-                                    <th>Country</th>
-                                    <th>Study Program</th>
-                                    <th>Status</th>
-                                </tr>
-
-                            </thead>
-
-
-                            <tbody>
-
-                                <tr>
-
-                                    <td>Kasun Perera</td>
-
-                                    <td>Australia</td>
-
-                                    <td>Computer Science</td>
-
-                                    <td>
-                                        <span class="badge badge-orange">
-                                            Under Review
-                                        </span>
-                                    </td>
-
-                                </tr>
-
-
-                                <tr>
-
-                                    <td>Amal Silva</td>
-
-                                    <td>Canada</td>
-
-                                    <td>Information Technology</td>
-
-                                    <td>
-                                        <span class="badge badge-blue">
-                                            Consultant Assigned
-                                        </span>
-                                    </td>
-
-                                </tr>
-
-
-                                <tr>
-
-                                    <td>Nimal Fernando</td>
-
-                                    <td>New Zealand</td>
-
-                                    <td>Software Engineering</td>
-
-                                    <td>
-                                        <span class="badge badge-green">
-                                            Completed
-                                        </span>
-                                    </td>
-
-                                </tr>
-
-
-                                <tr>
-
-                                    <td>Sarah Perera</td>
-
-                                    <td>United Kingdom</td>
-
-                                    <td>Business Management</td>
-
-                                    <td>
-                                        <span class="badge badge-orange">
-                                            Submitted
-                                        </span>
-                                    </td>
-
-                                </tr>
-
-                            </tbody>
-
-                        </table>
-
+                    <div class="stat-icon">
+                        U
                     </div>
 
                 </div>
 
 
+                <div class="stat-value">
 
-                <!-- DESTINATIONS -->
+                    {{ $stats['total_universities'] ?? 0 }}
 
-                <div class="panel">
-
-                    <div class="panel-header">
-
-                        <h2 class="panel-title">
-                            Popular Destinations
-                        </h2>
-
-                        <a href="#" class="panel-link">
-                            Details
-                        </a>
-
-                    </div>
+                </div>
 
 
-                    <div class="destination">
+                <div class="stat-description">
 
-                        <div class="destination-left">
-
-                            <div class="country-code">
-                                AU
-                            </div>
-
-                            <div>
-
-                                <div class="destination-name">
-                                    Australia
-                                </div>
-
-                                <div class="destination-count">
-                                    420 students
-                                </div>
-
-                            </div>
-
-                        </div>
-
-                        <div class="destination-percent">
-                            34%
-                        </div>
-
-                    </div>
-
-
-                    <div class="destination">
-
-                        <div class="destination-left">
-
-                            <div class="country-code">
-                                CA
-                            </div>
-
-                            <div>
-
-                                <div class="destination-name">
-                                    Canada
-                                </div>
-
-                                <div class="destination-count">
-                                    285 students
-                                </div>
-
-                            </div>
-
-                        </div>
-
-                        <div class="destination-percent">
-                            23%
-                        </div>
-
-                    </div>
-
-
-                    <div class="destination">
-
-                        <div class="destination-left">
-
-                            <div class="country-code">
-                                UK
-                            </div>
-
-                            <div>
-
-                                <div class="destination-name">
-                                    United Kingdom
-                                </div>
-
-                                <div class="destination-count">
-                                    210 students
-                                </div>
-
-                            </div>
-
-                        </div>
-
-                        <div class="destination-percent">
-                            17%
-                        </div>
-
-                    </div>
-
-
-                    <div class="destination">
-
-                        <div class="destination-left">
-
-                            <div class="country-code">
-                                NZ
-                            </div>
-
-                            <div>
-
-                                <div class="destination-name">
-                                    New Zealand
-                                </div>
-
-                                <div class="destination-count">
-                                    145 students
-                                </div>
-
-                            </div>
-
-                        </div>
-
-                        <div class="destination-percent">
-                            12%
-                        </div>
-
-                    </div>
+                    Active universities
 
                 </div>
 
@@ -1648,123 +1385,635 @@
 
 
 
-            <!-- =================================================
-                 UPCOMING CONSULTATIONS
-            ================================================== -->
+            <!-- COURSES -->
 
-            <div class="panel" style="margin-top:18px;">
+            <div class="stat-card">
 
-                <div class="panel-header">
+                <div class="stat-top">
 
-                    <h2 class="panel-title">
-                        Upcoming Consultations
+                    <span class="stat-title">
+                        Courses
+                    </span>
+
+
+                    <div class="stat-icon">
+                        C
+                    </div>
+
+                </div>
+
+
+                <div class="stat-value">
+
+                    {{ $stats['total_courses'] ?? 0 }}
+
+                </div>
+
+
+                <div class="stat-description">
+
+                    Active courses
+
+                </div>
+
+            </div>
+
+
+
+            <!-- APPOINTMENTS -->
+
+            <div class="stat-card">
+
+                <div class="stat-top">
+
+                    <span class="stat-title">
+                        Appointments
+                    </span>
+
+
+                    <div class="stat-icon">
+                        A
+                    </div>
+
+                </div>
+
+
+                <div class="stat-value">
+
+                    {{ $stats['total_appointments'] ?? 0 }}
+
+                </div>
+
+
+                <div class="stat-description">
+
+                    Total appointments
+
+                </div>
+
+            </div>
+
+
+        </div>
+
+
+
+        <!-- =================================
+             APPLICATIONS + APPOINTMENTS
+        ================================== -->
+
+        <div class="dashboard-grid">
+
+
+            <!-- =================================
+                 RECENT APPLICATIONS
+            ================================== -->
+
+            <div class="card">
+
+
+                <div class="card-header">
+
+                    <h2>
+                        Recent Applications
                     </h2>
 
-                    <a href="#" class="panel-link">
-                        View Calendar
+
+                    <a href="{{ route('admin.applications-list') }}">
+                        View All
                     </a>
 
                 </div>
 
 
-                <div class="appointment">
 
-                    <div class="appointment-date">
+                <div class="table-wrapper">
 
-                        <span class="appointment-day">
-                            12
-                        </span>
-
-                        <span class="appointment-month">
-                            Sep
-                        </span>
-
-                    </div>
+                    <table>
 
 
-                    <div class="appointment-info">
+                        <thead>
 
-                        <strong>
-                            Kasun Perera
-                        </strong>
+                            <tr>
 
-                        <span>
-                            Australia • 10:00 AM • Online • Consultant: Methuli
-                        </span>
+                                <th>
+                                    Student
+                                </th>
 
-                    </div>
+                                <th>
+                                    Application
+                                </th>
+
+                                <th>
+                                    Status
+                                </th>
+
+                                <th>
+                                    Submitted
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+
+
+                        <tbody>
+
+
+                            @forelse($recentApplications as $application)
+
+
+                                <tr>
+
+
+                                    <!-- STUDENT -->
+
+                                    <td>
+
+                                        @if(
+                                            $application->student &&
+                                            $application->student->user
+                                        )
+
+                                            {{ $application->student->user->first_name }}
+
+                                            {{ $application->student->user->last_name }}
+
+                                        @else
+
+                                            Unknown Student
+
+                                        @endif
+
+                                    </td>
+
+
+
+                                    <!-- APPLICATION ID -->
+
+                                    <td>
+
+                                        #{{ $application->application_id ?? $application->id }}
+
+                                    </td>
+
+
+
+                                    <!-- STATUS -->
+
+                                    <td>
+
+
+                                        @php
+
+                                            $status =
+                                                $application->application_status
+                                                ?? $application->status
+                                                ?? 'Pending';
+
+
+                                            $statusClass =
+                                                match(
+                                                    strtolower($status)
+                                                ) {
+
+                                                    'approved',
+                                                    'completed'
+                                                        => 'status-success',
+
+                                                    'rejected',
+                                                    'cancelled'
+                                                        => 'status-danger',
+
+                                                    'under review',
+                                                    'pending'
+                                                        => 'status-warning',
+
+                                                    default
+                                                        => 'status-info',
+                                                };
+
+                                        @endphp
+
+
+                                        <span class="status {{ $statusClass }}">
+
+                                            {{ $status }}
+
+                                        </span>
+
+
+                                    </td>
+
+
+
+                                    <!-- SUBMITTED DATE -->
+
+                                    <td>
+
+
+                                        @if($application->submitted_at)
+
+                                            {{ \Carbon\Carbon::parse(
+                                                $application->submitted_at
+                                            )->format('d M Y') }}
+
+                                        @else
+
+                                            -
+
+                                        @endif
+
+
+                                    </td>
+
+
+                                </tr>
+
+
+                            @empty
+
+
+                                <tr>
+
+                                    <td
+                                        colspan="4"
+                                        class="empty"
+                                    >
+
+                                        No applications found.
+
+                                    </td>
+
+                                </tr>
+
+
+                            @endforelse
+
+
+                        </tbody>
+
+
+                    </table>
 
                 </div>
 
-
-                <div class="appointment">
-
-                    <div class="appointment-date">
-
-                        <span class="appointment-day">
-                            13
-                        </span>
-
-                        <span class="appointment-month">
-                            Sep
-                        </span>
-
-                    </div>
-
-
-                    <div class="appointment-info">
-
-                        <strong>
-                            Amal Silva
-                        </strong>
-
-                        <span>
-                            Canada • 11:30 AM • Online • Consultant: Nethara
-                        </span>
-
-                    </div>
-
-                </div>
-
-
-                <div class="appointment">
-
-                    <div class="appointment-date">
-
-                        <span class="appointment-day">
-                            15
-                        </span>
-
-                        <span class="appointment-month">
-                            Sep
-                        </span>
-
-                    </div>
-
-
-                    <div class="appointment-info">
-
-                        <strong>
-                            Sarah Perera
-                        </strong>
-
-                        <span>
-                            United Kingdom • 02:00 PM • Physical • Consultant: Rukshan
-                        </span>
-
-                    </div>
-
-                </div>
 
             </div>
 
 
-        </section>
 
-    </main>
+            <!-- =================================
+                 UPCOMING APPOINTMENTS
+            ================================== -->
 
-</div>
+            <div class="card">
+
+
+                <div class="card-header">
+
+                    <h2>
+                        Upcoming Appointments
+                    </h2>
+
+
+                    <a href="{{ route('admin.appointments-list') }}">
+                        View All
+                    </a>
+
+                </div>
+
+
+
+                <div class="card-body">
+
+
+                    @forelse(
+                        $upcomingAppointments
+                        as $appointment
+                    )
+
+
+                        <div class="appointment">
+
+
+                            <!-- STUDENT NAME -->
+
+                            <div class="appointment-name">
+
+
+                                @if(
+                                    $appointment->student &&
+                                    $appointment->student->user
+                                )
+
+                                    {{ $appointment->student->user->first_name }}
+
+                                    {{ $appointment->student->user->last_name }}
+
+                                @else
+
+                                    Student
+
+                                @endif
+
+
+                            </div>
+
+
+
+                            <!-- DATE + TIME -->
+
+                            <div class="appointment-details">
+
+
+                                {{ $appointment->appointment_date
+
+                                    ? \Carbon\Carbon::parse(
+                                        $appointment->appointment_date
+                                    )->format('d M Y')
+
+                                    : 'Date not available'
+                                }}
+
+
+
+                                @if($appointment->start_time)
+
+                                    • {{ $appointment->start_time }}
+
+                                @endif
+
+
+                            </div>
+
+
+
+                            <!-- STATUS -->
+
+                            <div style="margin-top: 7px;">
+
+
+                                @php
+
+                                    $appointmentStatus =
+                                        $appointment->appointment_status
+                                        ?? 'Pending';
+
+
+                                    $appointmentClass =
+                                        match(
+                                            strtolower(
+                                                $appointmentStatus
+                                            )
+                                        ) {
+
+                                            'confirmed'
+                                                => 'status-success',
+
+                                            'cancelled',
+                                            'rejected'
+                                                => 'status-danger',
+
+                                            'requested',
+                                            'pending'
+                                                => 'status-warning',
+
+                                            default
+                                                => 'status-info',
+                                        };
+
+                                @endphp
+
+
+                                <span
+                                    class="status {{ $appointmentClass }}"
+                                >
+
+                                    {{ $appointmentStatus }}
+
+                                </span>
+
+
+                            </div>
+
+
+                        </div>
+
+
+                    @empty
+
+
+                        <div class="empty">
+
+                            No upcoming appointments.
+
+                        </div>
+
+
+                    @endforelse
+
+
+                </div>
+
+
+            </div>
+
+
+        </div>
+
+
+
+        <!-- =================================
+             QUICK ACTIONS
+        ================================== -->
+
+        <div class="card">
+
+
+            <div class="card-header">
+
+                <h2>
+                    Quick Actions
+                </h2>
+
+            </div>
+
+
+
+            <div class="card-body">
+
+
+                <div class="quick-actions">
+
+
+                    <!-- USER MANAGEMENT -->
+
+                    <a
+                        href="{{ route('admin.users') }}"
+                        class="quick-action"
+                    >
+
+                        <strong>
+                            User Management
+                        </strong>
+
+                        <span>
+                            Manage users, roles and account status
+                        </span>
+
+                    </a>
+
+
+
+                    <!-- STUDENTS -->
+
+                    <a
+                        href="{{ route('admin.students') }}"
+                        class="quick-action"
+                    >
+
+                        <strong>
+                            Students
+                        </strong>
+
+                        <span>
+                            View registered students
+                        </span>
+
+                    </a>
+
+
+
+                    <!-- CONSULTANTS -->
+
+                    <a
+                        href="{{ route('admin.consultants') }}"
+                        class="quick-action"
+                    >
+
+                        <strong>
+                            Consultants
+                        </strong>
+
+                        <span>
+                            Manage consultants
+                        </span>
+
+                    </a>
+
+
+
+                    <!-- APPLICATIONS -->
+
+                    <a
+                        href="{{ route('admin.applications-list') }}"
+                        class="quick-action"
+                    >
+
+                        <strong>
+                            Applications
+                        </strong>
+
+                        <span>
+                            Review student applications
+                        </span>
+
+                    </a>
+
+
+
+                    <!-- APPOINTMENTS -->
+
+                    <a
+                        href="{{ route('admin.appointments-list') }}"
+                        class="quick-action"
+                    >
+
+                        <strong>
+                            Appointments
+                        </strong>
+
+                        <span>
+                            View and manage appointments
+                        </span>
+
+                    </a>
+
+
+
+                    <!-- COUNTRIES -->
+
+                    <a
+                        href="{{ route('admin.countries-list') }}"
+                        class="quick-action"
+                    >
+
+                        <strong>
+                            Countries
+                        </strong>
+
+                        <span>
+                            Manage study destinations
+                        </span>
+
+                    </a>
+
+
+
+                    <!-- UNIVERSITIES -->
+
+                    <a
+                        href="{{ route('admin.universities-list') }}"
+                        class="quick-action"
+                    >
+
+                        <strong>
+                            Universities
+                        </strong>
+
+                        <span>
+                            Manage universities
+                        </span>
+
+                    </a>
+
+
+
+                    <!-- COURSES -->
+
+                    <a
+                        href="{{ route('admin.courses-list') }}"
+                        class="quick-action"
+                    >
+
+                        <strong>
+                            Courses
+                        </strong>
+
+                        <span>
+                            Manage available courses
+                        </span>
+
+                    </a>
+
+
+                </div>
+
+
+            </div>
+
+
+        </div>
+
+
+    </section>
+
+
+</main>
 
 
 </body>
+
 </html>

@@ -814,32 +814,32 @@
             Main
         </div>
 
-        <a href="#" class="menu-item active">
+        <a href="{{ url("/student/dashboard") }}" class="menu-item active">
             <div class="menu-icon">▦</div>
             <span>Dashboard</span>
         </a>
 
-        <a href="#" class="menu-item">
+        <a href="{{ url("/student/profile") }}" class="menu-item">
             <div class="menu-icon">○</div>
             <span>My Profile</span>
         </a>
 
-        <a href="#" class="menu-item">
+        <a href="{{ url("/student/qualifications") }}" class="menu-item">
             <div class="menu-icon">▣</div>
             <span>Qualifications</span>
         </a>
 
-        <a href="#" class="menu-item">
+        <a href="{{ url("/student/english-qualifications") }}" class="menu-item">
             <div class="menu-icon">□</div>
             <span>English Qualifications</span>
         </a>
 
-        <a href="#" class="menu-item">
+        <a href="{{ url("/student/work-experience") }}" class="menu-item">
             <div class="menu-icon">↗</div>
             <span>Work Experience</span>
         </a>
 
-        <a href="#" class="menu-item">
+        <a href="{{ url("/student/preferences") }}" class="menu-item">
             <div class="menu-icon">◉</div>
             <span>Study Preferences</span>
         </a>
@@ -855,37 +855,37 @@
             Study Abroad
         </div>
 
-        <a href="#" class="menu-item">
+        <a href="{{ url("/student/applications") }}" class="menu-item">
             <div class="menu-icon">▱</div>
             <span>Consultancy Application</span>
         </a>
 
-        <a href="#" class="menu-item">
+        <a href="{{ url("/student/recommendations") }}" class="menu-item">
             <div class="menu-icon">⌂</div>
             <span>Recommendations</span>
         </a>
 
-        <a href="#" class="menu-item">
+        <a href="{{ url("/student/appointments") }}" class="menu-item">
             <div class="menu-icon">□</div>
             <span>Appointments</span>
         </a>
 
-        <a href="#" class="menu-item">
+        <a href="{{ url("/student/consultations") }}" class="menu-item">
             <div class="menu-icon">◷</div>
             <span>Consultations</span>
         </a>
 
-        <a href="#" class="menu-item">
+        <a href="{{ url("/student/follow-ups") }}" class="menu-item">
             <div class="menu-icon">↻</div>
             <span>Follow-ups</span>
         </a>
 
-        <a href="#" class="menu-item">
+        <a href="{{ url("/student/fund-requirement") }}" class="menu-item">
             <div class="menu-icon">▤</div>
             <span>Fund Requirement</span>
         </a>
 
-        <a href="#" class="menu-item">
+        <a href="{{ url("/student/documents") }}" class="menu-item">
             <div class="menu-icon">▧</div>
             <span>Required Documents</span>
         </a>
@@ -901,15 +901,18 @@
             Account
         </div>
 
-        <a href="#" class="menu-item">
+        <a href="{{ url("/student/settings") }}" class="menu-item">
             <div class="menu-icon">⚙</div>
             <span>Account Settings</span>
         </a>
 
-        <a href="#" class="menu-item">
-            <div class="menu-icon">→</div>
-            <span>Logout</span>
-        </a>
+        <form method="POST" action="{{ route('logout') }}" style="margin:0;">
+            @csrf
+            <button type="submit" class="menu-item" style="width:100%; border:0; background:transparent; cursor:pointer; text-align:left;">
+                <div class="menu-icon">→</div>
+                <span>Logout</span>
+            </button>
+        </form>
 
     </div>
 
@@ -954,7 +957,7 @@
 
             <!-- NOTIFICATION -->
 
-            <div class="notification">
+            <a href="{{ url("/student/notifications") }}" class="notification" aria-label="Notifications">
 
                 ♧
 
@@ -1173,7 +1176,7 @@
                         Consultancy Application Status
                     </h2>
 
-                    <a href="#" class="view-link">
+                    <a href="{{ url("/student/applications") }}" class="view-link">
                         View Details
                     </a>
 
@@ -1287,7 +1290,7 @@
                         My Consultant
                     </h2>
 
-                    <a href="#" class="view-link">
+                    <a href="{{ url("/student/profile") }}" class="view-link">
                         View Profile
                     </a>
 
@@ -1325,7 +1328,7 @@
                         15 September 2026 | 10:30 AM
                     </div>
 
-                    <a href="#" class="appointment-button">
+                    <a href="{{ url("/student/appointments") }}" class="appointment-button">
                         View Appointment
                     </a>
 
@@ -1354,7 +1357,7 @@
                         Recommended Study Options
                     </h2>
 
-                    <a href="#" class="view-link">
+                    <a href="{{ url("/student/recommendations") }}" class="view-link">
                         View All
                     </a>
 
@@ -1455,7 +1458,7 @@
                         Recent Notifications
                     </h2>
 
-                    <a href="#" class="view-link">
+                    <a href="{{ url("/student/notifications") }}" class="view-link">
                         View All
                     </a>
 
@@ -1555,7 +1558,7 @@
                     Fund Requirement Summary
                 </h2>
 
-                <a href="#" class="view-link">
+                <a href="{{ url("/student/fund-requirement") }}" class="view-link">
                     View Details
                 </a>
 

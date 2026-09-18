@@ -8,6 +8,8 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
@@ -41,7 +43,7 @@ class AuthController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->route('dashboard');
+        return $this->redirectByRole($user);
     }
 
     public function showRegister()
@@ -85,7 +87,7 @@ class AuthController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->route('dashboard');
+        return $this->redirectByRole($user);
     }
 
     public function logout(Request $request)
@@ -96,5 +98,133 @@ class AuthController extends Controller
         $request->session()->regenerateToken();
 
         return redirect()->route('login');
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Forgot Password
+    |--------------------------------------------------------------------------
+    */
+
+    public function showForgotPassword()
+    {
+        return view('auth.forgot-password');
+    }
+
+    public function sendResetLink(Request $request)
+    {
+        $request->validate([
+            'email' => ['required', 'email'],
+        ]);
+
+        $user = User::where('email', $request->email)->first();
+
+        if (!$user) {
+            return back()->withErrors([
+                'email' => 'No account was found with this email address.',
+            ])->withInput();
+        }
+
+        $token = Str::random(64);
+
+        DB::table('password_reset_tokens')->updateOrInsert(
+            ['email' => $user->email],
+            [
+                'token' => Hash::make($token),
+                'created_at' => now(),
+            ]
+        );
+
+        return redirect()->route('password.reset', [
+            'token' => $token,
+            'email' => $user->email,
+        ])->with('status', 'Password reset link generated successfully.');
+    }
+
+    public function showResetPassword(Request $request)
+    {
+        return view('auth.reset-password', [
+            'token' => $request->token,
+            'email' => $request->email,
+        ]);
+    }
+
+    public function resetPassword(Request $request)
+    {
+        $validated = $request->validate([
+            'token' => ['required'],
+            'email' => ['required', 'email'],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+        ]);
+
+        $resetRecord = DB::table('password_reset_tokens')
+            ->where('email', $validated['email'])
+            ->first();
+
+        if (!$resetRecord) {
+            return back()->withErrors([
+                'email' => 'Invalid or expired password reset request.',
+            ]);
+        }
+
+        if (!Hash::check($validated['token'], $resetRecord->token)) {
+            return back()->withErrors([
+                'email' => 'Invalid or expired password reset request.',
+            ]);
+        }
+
+        $createdAt = \Carbon\Carbon::parse($resetRecord->created_at);
+
+        if ($createdAt->addMinutes(60)->isPast()) {
+            DB::table('password_reset_tokens')
+                ->where('email', $validated['email'])
+                ->delete();
+
+            return back()->withErrors([
+                'email' => 'This password reset link has expired.',
+            ]);
+        }
+
+        $user = User::where('email', $validated['email'])->first();
+
+        if (!$user) {
+            return back()->withErrors([
+                'email' => 'User account not found.',
+            ]);
+        }
+
+        $user->update([
+            'password_hash' => Hash::make($validated['password']),
+        ]);
+
+        DB::table('password_reset_tokens')
+            ->where('email', $validated['email'])
+            ->delete();
+
+        return redirect()->route('login')->with(
+            'status',
+            'Your password has been reset successfully. You can now log in.'
+        );
+    }
+
+    /**
+     * Redirect the authenticated user to the correct dashboard
+     * according to their role.
+     */
+    private function redirectByRole(User $user)
+    {
+        $roleName = $user->role?->role_name;
+
+        return match ($roleName) {
+            'Admin' => redirect()->route('admin.dashboard'),
+
+            'Consultant' => redirect()->route('consultant.dashboard'),
+
+            'Student' => redirect()->route('student.dashboard'),
+
+            default => redirect()->route('login')->withErrors([
+                'email' => 'Your account role is not configured correctly.',
+            ]),
+        };
     }
 }

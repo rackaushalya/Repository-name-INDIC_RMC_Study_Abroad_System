@@ -54,6 +54,11 @@ class User extends Authenticatable
         return $this->hasOne(Student::class, 'user_id', 'user_id');
     }
 
+    public function getAuthPassword()
+{
+    return $this->password_hash;
+}
+
     public function notifications()
     {
         return $this->hasMany(Notification::class, 'user_id', 'user_id');
