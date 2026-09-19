@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -42,6 +43,23 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'last_login_at' => 'datetime',
         ];
+    }
+
+    protected function profileImageUrl(): Attribute
+    {
+        return Attribute::get(function () {
+            $image = $this->profile_image;
+
+            if (!$image) {
+                return null;
+            }
+
+            if (str_starts_with($image, 'http')) {
+                return $image;
+            }
+
+            return asset('storage/' . $image);
+        });
     }
 
     public function role()

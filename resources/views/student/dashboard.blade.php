@@ -6,6 +6,8 @@
 
     <title>INDIC RMC - Student Dashboard</title>
 
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
     <style>
 
         /* =========================
@@ -814,33 +816,23 @@
             Main
         </div>
 
-        <a href="{{ url("/student/dashboard") }}" class="menu-item active">
-            <div class="menu-icon">▦</div>
+        <a href="{{ route('student.dashboard') }}" class="menu-item active">
+            <div class="menu-icon"><i class="bi bi-grid-1x2-fill"></i></div>
             <span>Dashboard</span>
         </a>
 
-        <a href="{{ url("/student/profile") }}" class="menu-item">
-            <div class="menu-icon">○</div>
+        <a href="{{ route('student.profile') }}" class="menu-item">
+            <div class="menu-icon"><i class="bi bi-person-fill"></i></div>
             <span>My Profile</span>
         </a>
 
-        <a href="{{ url("/student/qualifications") }}" class="menu-item">
-            <div class="menu-icon">▣</div>
+        <a href="{{ route('student.qualifications') }}" class="menu-item">
+            <div class="menu-icon"><i class="bi bi-mortarboard-fill"></i></div>
             <span>Qualifications</span>
         </a>
 
-        <a href="{{ url("/student/english-qualifications") }}" class="menu-item">
-            <div class="menu-icon">□</div>
-            <span>English Qualifications</span>
-        </a>
-
-        <a href="{{ url("/student/work-experience") }}" class="menu-item">
-            <div class="menu-icon">↗</div>
-            <span>Work Experience</span>
-        </a>
-
-        <a href="{{ url("/student/preferences") }}" class="menu-item">
-            <div class="menu-icon">◉</div>
+        <a href="{{ route('student.preferences') }}" class="menu-item">
+            <div class="menu-icon"><i class="bi bi-sliders"></i></div>
             <span>Study Preferences</span>
         </a>
 
@@ -855,38 +847,38 @@
             Study Abroad
         </div>
 
-        <a href="{{ url("/student/applications") }}" class="menu-item">
-            <div class="menu-icon">▱</div>
+        <a href="#" class="menu-item">
+            <div class="menu-icon"><i class="bi bi-file-earmark-text-fill"></i></div>
             <span>Consultancy Application</span>
         </a>
 
-        <a href="{{ url("/student/recommendations") }}" class="menu-item">
-            <div class="menu-icon">⌂</div>
+        <a href="#" class="menu-item">
+            <div class="menu-icon"><i class="bi bi-star-fill"></i></div>
             <span>Recommendations</span>
         </a>
 
-        <a href="{{ url("/student/appointments") }}" class="menu-item">
-            <div class="menu-icon">□</div>
+        <a href="#" class="menu-item">
+            <div class="menu-icon"><i class="bi bi-calendar2-check-fill"></i></div>
             <span>Appointments</span>
         </a>
 
-        <a href="{{ url("/student/consultations") }}" class="menu-item">
-            <div class="menu-icon">◷</div>
+        <a href="#" class="menu-item">
+            <div class="menu-icon"><i class="bi bi-chat-dots-fill"></i></div>
             <span>Consultations</span>
         </a>
 
-        <a href="{{ url("/student/follow-ups") }}" class="menu-item">
-            <div class="menu-icon">↻</div>
+        <a href="#" class="menu-item">
+            <div class="menu-icon"><i class="bi bi-arrow-repeat"></i></div>
             <span>Follow-ups</span>
         </a>
 
-        <a href="{{ url("/student/fund-requirement") }}" class="menu-item">
-            <div class="menu-icon">▤</div>
+        <a href="#" class="menu-item">
+            <div class="menu-icon"><i class="bi bi-cash-coin"></i></div>
             <span>Fund Requirement</span>
         </a>
 
-        <a href="{{ url("/student/documents") }}" class="menu-item">
-            <div class="menu-icon">▧</div>
+        <a href="{{ route('student.documents') }}" class="menu-item">
+            <div class="menu-icon"><i class="bi bi-folder2-open"></i></div>
             <span>Required Documents</span>
         </a>
 
@@ -901,15 +893,15 @@
             Account
         </div>
 
-        <a href="{{ url("/student/settings") }}" class="menu-item">
-            <div class="menu-icon">⚙</div>
+        <a href="{{ route('student.account.edit') }}" class="menu-item">
+            <div class="menu-icon"><i class="bi bi-gear-fill"></i></div>
             <span>Account Settings</span>
         </a>
 
-        <form method="POST" action="{{ route('logout') }}" style="margin:0;">
+        <form method="POST" action="{{ route('logout') }}">
             @csrf
-            <button type="submit" class="menu-item" style="width:100%; border:0; background:transparent; cursor:pointer; text-align:left;">
-                <div class="menu-icon">→</div>
+            <button type="submit" class="menu-item" style="background:none;border:none;width:100%;text-align:left;cursor:pointer;font-family:inherit;">
+                <div class="menu-icon"><i class="bi bi-box-arrow-right"></i></div>
                 <span>Logout</span>
             </button>
         </form>
@@ -939,7 +931,7 @@
         <div class="search-container">
 
             <div class="search-icon">
-                ⌕
+                <i class="bi bi-search"></i>
             </div>
 
             <input
@@ -957,9 +949,9 @@
 
             <!-- NOTIFICATION -->
 
-            <a href="{{ url("/student/notifications") }}" class="notification" aria-label="Notifications">
+            <div class="notification">
 
-                ♧
+                <i class="bi bi-bell-fill"></i>
 
                 <div class="notification-badge">
                     3
@@ -970,16 +962,20 @@
 
             <!-- USER -->
 
-            <div class="user">
+            <a href="{{ route('student.account.edit') }}" class="user" style="text-decoration:none; color:inherit;">
 
-                <div class="user-avatar">
-                    DG
-                </div>
+                @if ($student->user->profile_image_url ?? null)
+                    <img src="{{ $student->user->profile_image_url }}" class="user-avatar" alt="" style="object-fit: cover;">
+                @else
+                    <div class="user-avatar">
+                        {{ strtoupper(substr($student->user->first_name ?? 'S', 0, 1) . substr($student->user->last_name ?? '', 0, 1)) }}
+                    </div>
+                @endif
 
                 <div class="user-info">
 
                     <strong>
-                        Student Name
+                        {{ trim(($student->user->first_name ?? '') . ' ' . ($student->user->last_name ?? '')) ?: 'Student' }}
                     </strong>
 
                     <span>
@@ -988,7 +984,7 @@
 
                 </div>
 
-            </div>
+            </a>
 
         </div>
 
@@ -1010,7 +1006,7 @@
             <div>
 
                 <h1>
-                    Welcome back, Student!
+                    Welcome back, {{ $student->user->first_name ?? 'Student' }}!
                 </h1>
 
                 <p>
@@ -1020,7 +1016,7 @@
             </div>
 
             <div class="date">
-                11 September 2026
+                {{ now()->format('d F Y') }}
             </div>
 
         </div>
@@ -1138,11 +1134,11 @@
                         </div>
 
                         <div class="summary-value">
-                            85%
+                            {{ $profileCompletion['percentage'] }}%
                         </div>
 
                         <div class="summary-status">
-                            Almost complete
+                            {{ $profileCompletion['label'] }}
                         </div>
 
                     </div>
@@ -1176,7 +1172,7 @@
                         Consultancy Application Status
                     </h2>
 
-                    <a href="{{ url("/student/applications") }}" class="view-link">
+                    <a href="#" class="view-link">
                         View Details
                     </a>
 
@@ -1290,7 +1286,7 @@
                         My Consultant
                     </h2>
 
-                    <a href="{{ url("/student/profile") }}" class="view-link">
+                    <a href="#" class="view-link">
                         View Profile
                     </a>
 
@@ -1328,7 +1324,7 @@
                         15 September 2026 | 10:30 AM
                     </div>
 
-                    <a href="{{ url("/student/appointments") }}" class="appointment-button">
+                    <a href="#" class="appointment-button">
                         View Appointment
                     </a>
 
@@ -1357,7 +1353,7 @@
                         Recommended Study Options
                     </h2>
 
-                    <a href="{{ url("/student/recommendations") }}" class="view-link">
+                    <a href="#" class="view-link">
                         View All
                     </a>
 
@@ -1458,7 +1454,7 @@
                         Recent Notifications
                     </h2>
 
-                    <a href="{{ url("/student/notifications") }}" class="view-link">
+                    <a href="#" class="view-link">
                         View All
                     </a>
 
@@ -1558,7 +1554,7 @@
                     Fund Requirement Summary
                 </h2>
 
-                <a href="{{ url("/student/fund-requirement") }}" class="view-link">
+                <a href="#" class="view-link">
                     View Details
                 </a>
 
