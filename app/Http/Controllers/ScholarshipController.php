@@ -22,7 +22,7 @@ class ScholarshipController extends Controller
             ->paginate(20);
 
         return view(
-            'admin.scholarships.index',
+            'admin.scholarships',
             compact('scholarships')
         );
     }

@@ -61,7 +61,7 @@ class HomeController extends Controller
             ->orderBy('university_name')
             ->get();
 
-        return view('pages.universities', compact('universities'));
+        return view('public.universities', compact('universities'));
     }
 
     public function courses()

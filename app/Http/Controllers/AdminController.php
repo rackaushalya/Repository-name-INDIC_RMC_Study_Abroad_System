@@ -138,7 +138,7 @@ class AdminController extends Controller
             ->paginate(20);
 
         return view(
-            'admin.consultants.index',
+            'admin.consultants',
             compact('consultants')
         );
     }

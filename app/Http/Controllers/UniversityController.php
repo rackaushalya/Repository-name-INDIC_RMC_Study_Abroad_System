@@ -15,7 +15,7 @@ class UniversityController extends Controller
             ->paginate(20);
 
         return view(
-            'admin.universities.index',
+            'admin.universities',
             compact('universities')
         );
     }
