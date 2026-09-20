@@ -16,6 +16,12 @@ class StudentController extends Controller
 
         $applications = $student
             ? $student->applications()
+                ->with([
+                    'preferredCountry',
+                    'preferredCourse',
+                    'preferredIntake',
+                    'statusHistory.changedBy'
+                ])
                 ->latest('submitted_at')
                 ->get()
             : collect();
@@ -216,6 +222,12 @@ class StudentController extends Controller
 
         $applications = $student
             ? $student->applications()
+                ->with([
+                    'preferredCountry',
+                    'preferredCourse',
+                    'preferredIntake',
+                    'statusHistory.changedBy'
+                ])
                 ->latest('submitted_at')
                 ->paginate(10)
             : collect();

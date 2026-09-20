@@ -135,11 +135,36 @@ Route::middleware('auth')->prefix('student')->name('student.')->group(function (
     Route::get('/applications', [StudentController::class, 'applications'])
         ->name('applications');
 
+        /*
+        |--------------------------------------------------------------------------
+        | Student Preferences
+        |--------------------------------------------------------------------------
+        */
+
     Route::get('/recommendations', [StudentController::class, 'recommendations'])
         ->name('recommendations');
 
     Route::get('/appointments', [StudentController::class, 'appointments'])
         ->name('appointments');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Student Applications
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get('/applications', [StudentController::class, 'applications'])
+            ->name('applications');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Student Recommendations
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get('/recommendations', [StudentController::class, 'recommendations'])
+            ->name('recommendations');
 
 
     /*
@@ -179,6 +204,27 @@ Route::middleware('auth')->prefix('student')->name('student.')->group(function (
         QualificationController::class,
         'deleteEnglish'
     ])->name('qualifications.english.delete');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Academic Qualifications
+        |--------------------------------------------------------------------------
+        */
+
+        Route::post('/qualifications/academic', [
+            QualificationController::class,
+            'storeAcademic'
+        ])->name('qualifications.academic.store');
+
+        Route::put('/qualifications/academic/{qualification}', [
+            QualificationController::class,
+            'updateAcademic'
+        ])->name('qualifications.academic.update');
+
+        Route::delete('/qualifications/academic/{qualification}', [
+            QualificationController::class,
+            'deleteAcademic'
+        ])->name('qualifications.academic.delete');
 
 
     Route::post('/qualifications/work-experience', [
@@ -404,6 +450,37 @@ Route::prefix('admin')
             [AdminController::class, 'applications']
         )->name('applications-list');
 
+
+        /*
+        |--------------------------------------------------------------------------
+        | Application Details
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get(
+            '/applications-list/{application}',
+            [AdminController::class, 'applicationShow']
+        )->name('applications-show');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Update Application Status
+        |--------------------------------------------------------------------------
+        */
+
+        Route::patch(
+            '/applications-list/{application}/status',
+            [AdminController::class, 'updateApplicationStatus']
+        )->name('applications-status');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Appointments List
+        |--------------------------------------------------------------------------
+        */
+
         Route::get(
             '/appointments-list',
             [AdminController::class, 'appointments']
@@ -521,6 +598,18 @@ Route::prefix('admin')
         ]);
 
     });
+
+
+/*
+|--------------------------------------------------------------------------
+| Temporary Test Route
+|--------------------------------------------------------------------------
+*/
+
+Route::get(
+    '/test-applications',
+    [AdminController::class, 'applications']
+)->name('test.applications');
 
 
 /*

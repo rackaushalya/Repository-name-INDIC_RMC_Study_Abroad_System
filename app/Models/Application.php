@@ -12,6 +12,8 @@ class Application extends Model
 
     public $incrementing = true;
 
+    public $timestamps = false;
+
     protected $keyType = 'int';
 
     protected $fillable = [
@@ -30,9 +32,15 @@ class Application extends Model
     {
         return [
             'submitted_at' => 'datetime',
-            'updated_at' => 'datetime',
         ];
     }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Student
+    |--------------------------------------------------------------------------
+    */
 
     public function student()
     {
@@ -43,6 +51,13 @@ class Application extends Model
         );
     }
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | Preferred Country
+    |--------------------------------------------------------------------------
+    */
+
     public function preferredCountry()
     {
         return $this->belongsTo(
@@ -51,6 +66,13 @@ class Application extends Model
             'country_id'
         );
     }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Preferred Course
+    |--------------------------------------------------------------------------
+    */
 
     public function preferredCourse()
     {
@@ -61,6 +83,13 @@ class Application extends Model
         );
     }
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | Preferred Intake
+    |--------------------------------------------------------------------------
+    */
+
     public function preferredIntake()
     {
         return $this->belongsTo(
@@ -69,6 +98,13 @@ class Application extends Model
             'intake_id'
         );
     }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Recommendations
+    |--------------------------------------------------------------------------
+    */
 
     public function recommendations()
     {
@@ -79,6 +115,13 @@ class Application extends Model
         );
     }
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | Appointments
+    |--------------------------------------------------------------------------
+    */
+
     public function appointments()
     {
         return $this->hasMany(
@@ -86,5 +129,21 @@ class Application extends Model
             'application_id',
             'application_id'
         );
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Application Status History
+    |--------------------------------------------------------------------------
+    */
+
+    public function statusHistory()
+    {
+        return $this->hasMany(
+            ApplicationStatusHistory::class,
+            'application_id',
+            'application_id'
+        )->orderBy('changed_at', 'asc');
     }
 }

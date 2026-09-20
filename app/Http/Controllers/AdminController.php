@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Application;
+use App\Models\ApplicationStatusHistory;
 use App\Models\Appointment;
 use App\Models\Consultant;
 use App\Models\Country;
@@ -274,7 +275,6 @@ class AdminController extends Controller
         return view(
             'admin.users.edit',
             compact(
-                'user',
                 'roles'
             )
         );
@@ -608,6 +608,115 @@ class AdminController extends Controller
             'admin.applications.index',
             compact('applications')
         );
+    }
+
+
+    /**
+     * View a single application
+     */
+    public function applicationShow(Application $application)
+    {
+        $application->load([
+            'student.user',
+            'preferredCountry',
+            'preferredCourse.university',
+            'preferredIntake',
+            'statusHistory.changedBy'
+        ]);
+
+        return view(
+            'admin.applications.show',
+            compact('application')
+        );
+    }
+
+
+    /**
+     * Update Application Status
+     */
+    public function updateApplicationStatus(
+        Request $request,
+        Application $application
+    ) {
+        $validated = $request->validate([
+            'application_status' => [
+                'required',
+                'in:Submitted,Under Review,Approved,Rejected,Cancelled'
+            ],
+
+            'remarks' => [
+                'nullable',
+                'string',
+                'max:2000'
+            ],
+        ]);
+
+
+        $oldStatus = $application->application_status;
+
+        $newStatus = $validated['application_status'];
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Prevent duplicate status history records
+        |--------------------------------------------------------------------------
+        */
+
+        if ($oldStatus === $newStatus) {
+            return redirect()
+                ->route(
+                    'admin.applications-show',
+                    $application
+                )
+                ->with(
+                    'error',
+                    'The application is already in this status.'
+                );
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Update Application
+        |--------------------------------------------------------------------------
+        */
+
+        $application->update([
+            'application_status' => $newStatus,
+        ]);
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Create Status History
+        |--------------------------------------------------------------------------
+        */
+
+        ApplicationStatusHistory::create([
+            'application_id' => $application->application_id,
+
+            'old_status' => $oldStatus,
+
+            'new_status' => $newStatus,
+
+            'changed_by' => Auth::id(),
+
+            'remarks' => $validated['remarks'] ?? null,
+
+            'changed_at' => now(),
+        ]);
+
+
+        return redirect()
+            ->route(
+                'admin.applications-show',
+                $application
+            )
+            ->with(
+                'success',
+                'Application status updated successfully.'
+            );
     }
 
 
