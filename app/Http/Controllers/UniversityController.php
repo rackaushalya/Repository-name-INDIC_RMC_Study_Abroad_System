@@ -5,18 +5,22 @@ namespace App\Http\Controllers;
 use App\Models\Country;
 use App\Models\University;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class UniversityController extends Controller
 {
     public function index()
     {
-        $universities = University::with('country')
+        $universities = University::with(['country', 'courses'])
             ->latest('university_id')
-            ->paginate(20);
+            ->get();
+
+        $countries = Country::orderBy('country_name')
+            ->get();
 
         return view(
             'admin.universities',
-            compact('universities')
+            compact('universities', 'countries')
         );
     }
 
@@ -34,55 +38,21 @@ class UniversityController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'country_id' => [
-                'required',
-                'exists:countries,country_id'
-            ],
-            'university_name' => [
-                'required',
-                'string',
-                'max:255'
-            ],
-            'university_code' => [
-                'required',
-                'string',
-                'max:50',
-                'unique:universities,university_code'
-            ],
-            'website' => [
-                'nullable',
-                'url',
-                'max:255'
-            ],
-            'city' => [
-                'nullable',
-                'string',
-                'max:100'
-            ],
-            'address' => [
-                'nullable',
-                'string',
-                'max:255'
-            ],
-            'ranking' => [
-                'nullable',
-                'integer',
-                'min:1'
-            ],
-            'description' => [
-                'nullable',
-                'string'
-            ],
-            'is_active' => [
-                'boolean'
-            ],
-        ]);
+        $validated = $request->validate(
+            $this->rules()
+        );
 
         $validated['is_active'] =
-            $request->boolean('is_active');
+            $request->boolean('is_active', true);
 
-        University::create($validated);
+        $university = University::create($validated);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => 'University created successfully.',
+                'university' => $this->freshPayload($university),
+            ], 201);
+        }
 
         return redirect()
             ->route('admin.universities.index')
@@ -121,7 +91,61 @@ class UniversityController extends Controller
         Request $request,
         University $university
     ) {
-        $validated = $request->validate([
+        $validated = $request->validate(
+            $this->rules($university)
+        );
+
+        $validated['is_active'] =
+            $request->boolean('is_active');
+
+        $university->update($validated);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => 'University updated successfully.',
+                'university' => $this->freshPayload($university),
+            ]);
+        }
+
+        return redirect()
+            ->route('admin.universities.index')
+            ->with(
+                'success',
+                'University updated successfully.'
+            );
+    }
+
+    public function destroy(Request $request, University $university)
+    {
+        $university->update([
+            'is_active' => false
+        ]);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => 'University deactivated successfully.',
+                'university' => $this->freshPayload($university),
+            ]);
+        }
+
+        return redirect()
+            ->route('admin.universities.index')
+            ->with(
+                'success',
+                'University deactivated successfully.'
+            );
+    }
+
+    private function freshPayload(University $university): array
+    {
+        return $university
+            ->fresh(['country', 'courses'])
+            ->toAdminArray();
+    }
+
+    private function rules(?University $university = null): array
+    {
+        return [
             'country_id' => [
                 'required',
                 'exists:countries,country_id'
@@ -132,17 +156,32 @@ class UniversityController extends Controller
                 'max:255'
             ],
             'university_code' => [
-                'required',
+                'nullable',
                 'string',
                 'max:50',
-                'unique:universities,university_code,' .
-                $university->university_id .
-                ',university_id'
+                Rule::unique('universities', 'university_code')
+                    ->ignore($university?->university_id, 'university_id')
             ],
             'website' => [
                 'nullable',
                 'url',
                 'max:255'
+            ],
+            'contact_email' => [
+                'nullable',
+                'email',
+                'max:255'
+            ],
+            'category' => [
+                'nullable',
+                'string',
+                'max:150'
+            ],
+            'logo_image' => [
+                'nullable',
+                'string',
+                'starts_with:data:image/',
+                'max:2000000'
             ],
             'city' => [
                 'nullable',
@@ -166,32 +205,6 @@ class UniversityController extends Controller
             'is_active' => [
                 'boolean'
             ],
-        ]);
-
-        $validated['is_active'] =
-            $request->boolean('is_active');
-
-        $university->update($validated);
-
-        return redirect()
-            ->route('admin.universities.index')
-            ->with(
-                'success',
-                'University updated successfully.'
-            );
-    }
-
-    public function destroy(University $university)
-    {
-        $university->update([
-            'is_active' => false
-        ]);
-
-        return redirect()
-            ->route('admin.universities.index')
-            ->with(
-                'success',
-                'University deactivated successfully.'
-            );
+        ];
     }
 }

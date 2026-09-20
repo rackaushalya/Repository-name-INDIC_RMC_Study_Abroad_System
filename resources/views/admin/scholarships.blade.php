@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>INDIC RMC | Scholarship Management</title>
 
     <style>
@@ -1310,13 +1311,6 @@
 
                     <select class="filter-select" id="countryFilter">
                         <option value="ALL">All Countries</option>
-                        <option value="Canada">Canada</option>
-                        <option value="United Kingdom">United Kingdom</option>
-                        <option value="United States">United States</option>
-                        <option value="Singapore">Singapore</option>
-                        <option value="Germany">Germany</option>
-                        <option value="Australia">Australia</option>
-                        <option value="Ireland">Ireland</option>
                     </select>
 
                     <select class="filter-select" id="levelFilter">
@@ -1621,295 +1615,90 @@
      SCRIPTS & STATE MANAGEMENT
 ====================================================== -->
 <script>
-    // Initial Universities Directory with Flags
-    const universityDirectory = [
-        { name: "University of Toronto", country: "Canada", flag: "https://flagcdn.com/w40/ca.png" },
-        { name: "University of British Columbia", country: "Canada", flag: "https://flagcdn.com/w40/ca.png" },
-        { name: "McGill University", country: "Canada", flag: "https://flagcdn.com/w40/ca.png" },
-        { name: "University of Oxford", country: "United Kingdom", flag: "https://flagcdn.com/w40/gb.png" },
-        { name: "University of Cambridge", country: "United Kingdom", flag: "https://flagcdn.com/w40/gb.png" },
-        { name: "Imperial College London", country: "United Kingdom", flag: "https://flagcdn.com/w40/gb.png" },
-        { name: "Harvard University", country: "United States", flag: "https://flagcdn.com/w40/us.png" },
-        { name: "MIT", country: "United States", flag: "https://flagcdn.com/w40/us.png" },
-        { name: "Stanford University", country: "United States", flag: "https://flagcdn.com/w40/us.png" },
-        { name: "National University of Singapore", country: "Singapore", flag: "https://flagcdn.com/w40/sg.png" },
-        { name: "Nanyang Technological University", country: "Singapore", flag: "https://flagcdn.com/w40/sg.png" },
-        { name: "Technical University of Munich", country: "Germany", flag: "https://flagcdn.com/w40/de.png" },
-        { name: "Heidelberg University", country: "Germany", flag: "https://flagcdn.com/w40/de.png" },
-        { name: "University of Melbourne", country: "Australia", flag: "https://flagcdn.com/w40/au.png" },
-        { name: "University of Sydney", country: "Australia", flag: "https://flagcdn.com/w40/au.png" },
-        { name: "Trinity College Dublin", country: "Ireland", flag: "https://flagcdn.com/w40/ie.png" }
-    ];
+    @php
+        $universityDirectory = $universities->map(fn ($u) => [
+            'id' => $u->university_id,
+            'name' => $u->university_name,
+            'country' => $u->country?->country_name ?? '',
+            'flag' => $u->country?->flag_image,
+        ])->values();
+    @endphp
 
-    // Initial Accredited Scholarships Dataset (14 Leading Global Awards)
-    let scholarshipsData = [
-        {
-            id: 1,
-            code: "SCH-TOR-01",
-            name: "Lester B. Pearson International Scholarship",
-            university: "University of Toronto",
-            country: "Canada",
-            flag: "https://flagcdn.com/w40/ca.png",
-            coverage: "Full",
-            amount: "100% Tuition + Living Allowance & Books",
-            level: "Undergraduate",
-            field: "All Undergraduate Disciplines",
-            minGpa: "3.8 / 4.0 (92%+)",
-            deadline: "2026-11-30",
-            quota: "37 International Scholars annually",
-            category: "Merit-Based",
-            eligibility: "High school graduating seniors recognized for exceptional academic achievement, creative leadership, and impactful community contribution.",
-            description: "The most prestigious and competitive scholarship for international students at U of T, covering tuition, books, incidental fees, and four years of residence support.",
-            active: true
-        },
-        {
-            id: 2,
-            code: "SCH-OXF-02",
-            name: "Rhodes Scholarship for International Scholars",
-            university: "University of Oxford",
-            country: "United Kingdom",
-            flag: "https://flagcdn.com/w40/gb.png",
-            coverage: "Full",
-            amount: "100% University Fees + £19,240 Annual Stipend",
-            level: "Postgraduate",
-            field: "All Postgraduate Degrees",
-            minGpa: "3.7 / 4.0 or First Class Honors",
-            deadline: "2026-10-15",
-            quota: "100 Global Scholars",
-            category: "Merit-Based",
-            eligibility: "Outstanding undergraduate scholars with exceptional intellect, character, leadership potential, and commitment to global public service.",
-            description: "The world's oldest and most renowned graduate fellowship supporting study in any postgraduate degree program at the University of Oxford.",
-            active: true
-        },
-        {
-            id: 3,
-            code: "SCH-CAM-03",
-            name: "Gates Cambridge Scholarship",
-            university: "University of Cambridge",
-            country: "United Kingdom",
-            flag: "https://flagcdn.com/w40/gb.png",
-            coverage: "Full",
-            amount: "Full Cost of Study + Airfare & Family Allowance",
-            level: "Postgraduate",
-            field: "PhD and Master's Degrees",
-            minGpa: "3.8 / 4.0 (Top 5% of graduating class)",
-            deadline: "2026-12-05",
-            quota: "80 Full Cost Scholarships",
-            category: "Merit-Based",
-            eligibility: "Citizen of any country outside the UK applying for a full-time residential postgraduate course at Cambridge University.",
-            description: "Endowed by the Bill & Melinda Gates Foundation to build a global network of future leaders dedicated to improving the lives of others.",
-            active: true
-        },
-        {
-            id: 4,
-            code: "SCH-HAR-04",
-            name: "Harvard Presidential Doctoral Fellowship",
-            university: "Harvard University",
-            country: "United States",
-            flag: "https://flagcdn.com/w40/us.png",
-            coverage: "Full",
-            amount: "$48,500 Living Stipend + 100% Tuition & Health",
-            level: "PhD",
-            field: "Sciences, Public Health & Engineering",
-            minGpa: "3.85 / 4.0",
-            deadline: "2026-12-15",
-            quota: "25 Doctoral Fellows",
-            category: "Research Fellowship",
-            eligibility: "Exceptional applicants demonstrating breakthrough potential in biomedical, computational, or social policy research.",
-            description: "Five full years of guaranteed doctoral funding, health coverage, and interdisciplinary travel grants across Harvard faculties.",
-            active: true
-        },
-        {
-            id: 5,
-            code: "SCH-MIT-05",
-            name: "MIT Dean of Engineering International Merit Award",
-            university: "MIT",
-            country: "United States",
-            flag: "https://flagcdn.com/w40/us.png",
-            coverage: "Grant",
-            amount: "$35,000 Annual Tuition Grant",
-            level: "Undergraduate",
-            field: "Engineering & Computer Science",
-            minGpa: "3.9 / 4.0",
-            deadline: "2027-01-05",
-            quota: "30 Engineering Grants",
-            category: "Merit-Based",
-            eligibility: "First-year engineering admits with superior mathematical and physics competition honours or patent credits.",
-            description: "Merit grant co-funded by MIT School of Engineering alumni foundation to attract top international inventors and computer scientists.",
-            active: true
-        },
-        {
-            id: 6,
-            code: "SCH-STA-06",
-            name: "Knight-Hennessy Global Scholars Program",
-            university: "Stanford University",
-            country: "United States",
-            flag: "https://flagcdn.com/w40/us.png",
-            coverage: "Full",
-            amount: "100% Tuition + Living & Educational Travel Grant",
-            level: "All Levels",
-            field: "All Stanford Graduate Degrees (JD, MD, MBA, PhD)",
-            minGpa: "3.7 / 4.0",
-            deadline: "2026-10-08",
-            quota: "85 Scholars",
-            category: "Merit-Based",
-            eligibility: "High-independence thinkers with purposeful leadership credentials applying to any graduate degree at Stanford University.",
-            description: "A multicultural, multidisciplinary community of graduate students receiving experiential leadership training through the Denning House.",
-            active: true
-        },
-        {
-            id: 7,
-            code: "SCH-NUS-07",
-            name: "NUS Global Merit Scholarship",
-            university: "National University of Singapore",
-            country: "Singapore",
-            flag: "https://flagcdn.com/w40/sg.png",
-            coverage: "Full",
-            amount: "100% Tuition Fee Subsidy + S$6,000 Annual Allowance",
-            level: "Undergraduate",
-            field: "Computing, Business & STEM",
-            minGpa: "3.75 / 4.0 (Top 5%)",
-            deadline: "2027-02-15",
-            quota: "50 Awards",
-            category: "Merit-Based",
-            eligibility: "High school leavers with outstanding academic achievements, stellar co-curricular activities, and strong leadership.",
-            description: "Includes subsidized accommodation allowance, one-time computer grant, and guaranteed overseas student exchange program placement.",
-            active: true
-        },
-        {
-            id: 8,
-            code: "SCH-TUM-08",
-            name: "DAAD Helmut-Schmidt Master's Grant",
-            university: "Technical University of Munich",
-            country: "Germany",
-            flag: "https://flagcdn.com/w40/de.png",
-            coverage: "Stipend",
-            amount: "€934 Monthly Stipend + Travel Subsidy & Health Insurance",
-            level: "Postgraduate",
-            field: "Automotive, Mobility & Sustainable Governance",
-            minGpa: "German Scale 2.0 or better (~85%)",
-            deadline: "2026-11-15",
-            quota: "40 International Fellows",
-            category: "Government Grant",
-            eligibility: "Graduates from developing and emerging nations pursuing governance, engineering, or sustainability master's degrees.",
-            description: "Federal Foreign Office program supporting international leaders to acquire academic qualifications relevant to social development.",
-            active: true
-        },
-        {
-            id: 9,
-            code: "SCH-HEI-09",
-            name: "Heidelberg Excellence Research Fellowship",
-            university: "Heidelberg University",
-            country: "Germany",
-            flag: "https://flagcdn.com/w40/de.png",
-            coverage: "Stipend",
-            amount: "€1,850 Monthly Fellowship + Research Consumables Grant",
-            level: "PhD",
-            field: "Molecular Biotechnology & Life Sciences",
-            minGpa: "1.8 (German Scale)",
-            deadline: "2027-01-30",
-            quota: "15 Doctoral Researchers",
-            category: "Research Fellowship",
-            eligibility: "Applicants holding an outstanding M.Sc. in biochemistry or molecular medicine with primary authorship publications.",
-            description: "Prestigious doctoral scholarship at Germany's oldest university, collaborating with the German Cancer Research Center (DKFZ).",
-            active: true
-        },
-        {
-            id: 10,
-            code: "SCH-MEL-10",
-            name: "Melbourne Chancellor's Scholarship",
-            university: "University of Melbourne",
-            country: "Australia",
-            flag: "https://flagcdn.com/w40/au.png",
-            coverage: "Full",
-            amount: "100% Tuition Remission + A$10,000 Annual Living Allowance",
-            level: "Undergraduate",
-            field: "Commerce, Arts, Science & Biomedicine",
-            minGpa: "ATAR 99.90 or equivalent international 98%+",
-            deadline: "2026-11-20",
-            quota: "20 International Scholars",
-            category: "Merit-Based",
-            eligibility: "Top-tier school leavers who have achieved an Australian Year 12 ATAR score of 99.90+ or equivalent international board credential.",
-            description: "Guaranteed pathway to graduate study, Melbourne Global mobility grant of A$2,500, and comprehensive peer mentoring.",
-            active: true
-        },
-        {
-            id: 11,
-            code: "SCH-SYD-11",
-            name: "Sydney International Student Award",
-            university: "University of Sydney",
-            country: "Australia",
-            flag: "https://flagcdn.com/w40/au.png",
-            coverage: "Partial",
-            amount: "20% Tuition Fee Reduction for Program Duration",
-            level: "All Levels",
-            field: "All Eligible Degrees",
-            minGpa: "3.2 / 4.0 (80%)",
-            deadline: "2027-01-15",
-            quota: "Uncapped for qualifying nationalities",
-            category: "Merit-Based",
-            eligibility: "Eligible international citizens holding an unconditional offer for undergraduate or postgraduate coursework.",
-            description: "Strategic contribution to tuition fees to support high-calibre global scholars pursuing degrees across Sydney faculties.",
-            active: true
-        },
-        {
-            id: 12,
-            code: "SCH-TCD-12",
-            name: "Trinity Global Excellence Postgraduate Scholarship",
-            university: "Trinity College Dublin",
-            country: "Ireland",
-            flag: "https://flagcdn.com/w40/ie.png",
-            coverage: "Grant",
-            amount: "€5,000 Direct Tuition Fee Reduction",
-            level: "Postgraduate",
-            field: "Computer Science, Business & Humanities",
-            minGpa: "2.1 Honors (75%+)",
-            deadline: "2027-03-31",
-            quota: "60 Awards annually",
-            category: "Merit-Based",
-            eligibility: "Non-EU fee status students holding an unconditional or conditional offer for full-time master's degree admission.",
-            description: "Awarded based on academic excellence, applicant cover essay, and anticipated contributions to the Trinity College campus community.",
-            active: true
-        },
-        {
-            id: 13,
-            code: "SCH-UBC-13",
-            name: "UBC International Major Entrance Scholarship (IMES)",
-            university: "University of British Columbia",
-            country: "Canada",
-            flag: "https://flagcdn.com/w40/ca.png",
-            coverage: "Grant",
-            amount: "$20,000 / year (Renewable for 4 Years = $80,000)",
-            level: "Undergraduate",
-            field: "All Undergraduate Faculties",
-            minGpa: "3.7 / 4.0 (88%+)",
-            deadline: "2027-01-15",
-            quota: "50 Renewable Grants",
-            category: "Merit-Based",
-            eligibility: "Secondary school graduates applying directly to UBC Vancouver or Okanagan campuses with exceptional academic and extracurricular profile.",
-            description: "Significant tuition assistance renewable across all four years of full-time undergraduate study provided academic standing is maintained.",
-            active: true
-        },
-        {
-            id: 14,
-            code: "SCH-IMP-14",
-            name: "Imperial College Future Leaders in AI Fellowship",
-            university: "Imperial College London",
-            country: "United Kingdom",
-            flag: "https://flagcdn.com/w40/gb.png",
-            coverage: "Grant",
-            amount: "£25,000 Direct Tuition & Research Consumables Award",
-            level: "Postgraduate",
-            field: "Artificial Intelligence, Robotics & Machine Learning",
-            minGpa: "3.6 / 4.0 (First Class Degree)",
-            deadline: "2026-11-10",
-            quota: "10 Industry Fellowships",
-            category: "Research Fellowship",
-            eligibility: "Accepted candidates in M.Sc. Computing (AI & Machine Learning) with proven software development or neural network experience.",
-            description: "Sponsored by European AI innovation hubs offering direct mentor matching with London machine learning laboratory scientists.",
-            active: true
+    const SCHOLARSHIPS_URL = @json(url('/admin/scholarships'));
+    const CSRF_TOKEN = document.querySelector('meta[name="csrf-token"]').content;
+
+    // Country name -> ISO alpha-2 (used to pick a flag image)
+    const countryIsoMap = {
+        'afghanistan': 'af', 'albania': 'al', 'algeria': 'dz', 'andorra': 'ad', 'angola': 'ao',
+        'argentina': 'ar', 'armenia': 'am', 'australia': 'au', 'austria': 'at', 'azerbaijan': 'az',
+        'bahamas': 'bs', 'bahrain': 'bh', 'bangladesh': 'bd', 'barbados': 'bb', 'belarus': 'by',
+        'belgium': 'be', 'belize': 'bz', 'benin': 'bj', 'bhutan': 'bt', 'bolivia': 'bo',
+        'bosnia and herzegovina': 'ba', 'botswana': 'bw', 'brazil': 'br', 'brunei': 'bn', 'bulgaria': 'bg',
+        'cambodia': 'kh', 'cameroon': 'cm', 'canada': 'ca', 'chile': 'cl', 'china': 'cn',
+        'colombia': 'co', 'costa rica': 'cr', 'croatia': 'hr', 'cuba': 'cu', 'cyprus': 'cy',
+        'czech republic': 'cz', 'czechia': 'cz', 'denmark': 'dk', 'ecuador': 'ec', 'egypt': 'eg',
+        'estonia': 'ee', 'ethiopia': 'et', 'fiji': 'fj', 'finland': 'fi', 'france': 'fr',
+        'georgia': 'ge', 'germany': 'de', 'ghana': 'gh', 'greece': 'gr', 'hong kong': 'hk',
+        'hungary': 'hu', 'iceland': 'is', 'india': 'in', 'indonesia': 'id', 'iran': 'ir',
+        'iraq': 'iq', 'ireland': 'ie', 'israel': 'il', 'italy': 'it', 'jamaica': 'jm',
+        'japan': 'jp', 'jordan': 'jo', 'kazakhstan': 'kz', 'kenya': 'ke', 'kuwait': 'kw',
+        'latvia': 'lv', 'lebanon': 'lb', 'lithuania': 'lt', 'luxembourg': 'lu', 'malaysia': 'my',
+        'maldives': 'mv', 'malta': 'mt', 'mauritius': 'mu', 'mexico': 'mx', 'monaco': 'mc',
+        'morocco': 'ma', 'nepal': 'np', 'netherlands': 'nl', 'new zealand': 'nz', 'nigeria': 'ng',
+        'norway': 'no', 'oman': 'om', 'pakistan': 'pk', 'philippines': 'ph', 'poland': 'pl',
+        'portugal': 'pt', 'qatar': 'qa', 'romania': 'ro', 'russia': 'ru', 'saudi arabia': 'sa',
+        'serbia': 'rs', 'singapore': 'sg', 'slovakia': 'sk', 'slovenia': 'si', 'south africa': 'za',
+        'south korea': 'kr', 'korea': 'kr', 'spain': 'es', 'sri lanka': 'lk', 'sweden': 'se',
+        'switzerland': 'ch', 'taiwan': 'tw', 'thailand': 'th', 'turkey': 'tr', 'ukraine': 'ua',
+        'united arab emirates': 'ae', 'uae': 'ae', 'united kingdom': 'gb', 'uk': 'gb',
+        'united states': 'us', 'usa': 'us', 'vietnam': 'vn', 'zimbabwe': 'zw'
+    };
+
+    function getCountryFlag(name) {
+        const iso = countryIsoMap[(name || '').toLowerCase().trim()];
+        return 'https://flagcdn.com/w40/' + (iso || 'un') + '.png';
+    }
+
+    // Universities loaded from the database (a scholarship is attached to one of these)
+    const universityDirectory = @json($universityDirectory).map(u => ({
+        ...u,
+        flag: u.flag || getCountryFlag(u.country)
+    }));
+
+    function withFlag(scholarship) {
+        const uni = universityDirectory.find(u => u.id === scholarship.universityId);
+        return { ...scholarship, flag: uni ? uni.flag : getCountryFlag(scholarship.country) };
+    }
+
+    // Scholarships loaded from the database
+    let scholarshipsData = @json($scholarships->map->toAdminArray()->values()).map(withFlag);
+
+    // JSON request helper for the scholarship resource endpoints
+    async function apiRequest(url, method, body) {
+        const response = await fetch(url, {
+            method,
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': CSRF_TOKEN,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            credentials: 'same-origin',
+            body: body ? JSON.stringify(body) : undefined
+        });
+
+        let data = null;
+        try { data = await response.json(); } catch (err) { /* non-JSON response */ }
+
+        if (!response.ok) {
+            let message = (data && data.message) || ('Request failed (' + response.status + ').');
+            if (data && data.errors) {
+                message = Object.values(data.errors)[0][0];
+            }
+            throw new Error(message);
         }
-    ];
+        return data;
+    }
 
     // State Variables
     let currentView = 'table';
@@ -1932,8 +1721,18 @@
         const uniFilter = document.getElementById('universityFilter');
         const uniSelect = document.getElementById('scholarshipUniversitySelect');
 
+        const countryFilter = document.getElementById('countryFilter');
+
         uniFilter.innerHTML = '<option value="ALL">All Universities</option>';
         uniSelect.innerHTML = '<option value="">Select University...</option>';
+        countryFilter.innerHTML = '<option value="ALL">All Countries</option>';
+
+        Array.from(new Set(universityDirectory.map(u => u.country).filter(Boolean))).sort().forEach(name => {
+            const opt = document.createElement('option');
+            opt.value = name;
+            opt.textContent = name;
+            countryFilter.appendChild(opt);
+        });
 
         universityDirectory.forEach(u => {
             const opt1 = document.createElement('option');
@@ -1942,15 +1741,15 @@
             uniFilter.appendChild(opt1);
 
             const opt2 = document.createElement('option');
-            opt2.value = u.name;
+            opt2.value = u.id;
             opt2.textContent = u.name + ' (' + u.country + ')';
             uniSelect.appendChild(opt2);
         });
     }
 
     // Auto-sync Country when University is chosen in modal
-    function syncCountryFromUniversity(uniName) {
-        const found = universityDirectory.find(u => u.name === uniName);
+    function syncCountryFromUniversity(uniId) {
+        const found = universityDirectory.find(u => String(u.id) === String(uniId));
         const countryInput = document.getElementById('scholarshipCountryInput');
         if (found) {
             countryInput.value = found.country;
@@ -2107,7 +1906,7 @@
         if (coverage === 'Partial') return 'Partial Tuition';
         if (coverage === 'Grant') return 'Cash Grant';
         if (coverage === 'Stipend') return 'Living Stipend';
-        return coverage;
+        return escapeHtml(coverage);
     }
 
     // Helper: Deadline formatting
@@ -2175,7 +1974,7 @@
                 </td>
                 <td>
                     <div class="country-pill">
-                        <img src="${s.flag}" alt="${s.country}" class="country-flag-icon" onerror="this.style.display='none'">
+                        <img src="${escapeHtml(s.flag)}" alt="${escapeHtml(s.country)}" class="country-flag-icon" onerror="this.style.display='none'">
                         <span>${escapeHtml(s.university)}</span>
                     </div>
                     <div style="font-size: 10px; color: #8c96a8; margin-top: 2px;">${escapeHtml(s.country)}</div>
@@ -2258,7 +2057,7 @@
                 </div>
 
                 <div class="country-pill">
-                    <img src="${s.flag}" alt="${s.country}" class="country-flag-icon" onerror="this.style.display='none'">
+                    <img src="${escapeHtml(s.flag)}" alt="${escapeHtml(s.country)}" class="country-flag-icon" onerror="this.style.display='none'">
                     <div>
                         <div style="font-weight: 600; color: #172033; font-size: 12px;">${escapeHtml(s.university)}</div>
                         <div style="font-size: 10px; color: #8a93a3;">${escapeHtml(s.country)}</div>
@@ -2419,6 +2218,10 @@
 
     // Open Add Scholarship Modal
     function openAddScholarshipModal() {
+        if (universityDirectory.length === 0) {
+            showToast('Add a university first \u2014 every scholarship must belong to a university.');
+            return;
+        }
         document.getElementById('addEditModalTitle').textContent = 'Add New Scholarship Program';
         document.getElementById('scholarshipIdField').value = '';
         document.getElementById('scholarshipForm').reset();
@@ -2436,7 +2239,7 @@
         document.getElementById('scholarshipIdField').value = s.id;
         document.getElementById('scholarshipCodeInput').value = s.code || '';
         document.getElementById('scholarshipNameInput').value = s.name || '';
-        document.getElementById('scholarshipUniversitySelect').value = s.university || '';
+        document.getElementById('scholarshipUniversitySelect').value = s.universityId || '';
         document.getElementById('scholarshipCountryInput').value = s.country || '';
         document.getElementById('scholarshipCoverageSelect').value = s.coverage || 'Full';
         document.getElementById('scholarshipAmountInput').value = s.amount || '';
@@ -2453,83 +2256,55 @@
         openModal('addEditScholarshipModal');
     }
 
-    // Handle Save (Add or Update)
-    function handleSaveScholarship(e) {
+    // Handle Save (Add or Update) - persists to the database
+    async function handleSaveScholarship(e) {
         e.preventDefault();
 
         const idVal = document.getElementById('scholarshipIdField').value;
-        const code = document.getElementById('scholarshipCodeInput').value.trim();
-        const name = document.getElementById('scholarshipNameInput').value.trim();
-        const uni = document.getElementById('scholarshipUniversitySelect').value;
-        const country = document.getElementById('scholarshipCountryInput').value;
-        const coverage = document.getElementById('scholarshipCoverageSelect').value;
-        const amount = document.getElementById('scholarshipAmountInput').value.trim();
-        const level = document.getElementById('scholarshipLevelSelect').value;
-        const field = document.getElementById('scholarshipFieldInput').value.trim();
-        const minGpa = document.getElementById('scholarshipGpaInput').value.trim();
-        const deadline = document.getElementById('scholarshipDeadlineInput').value;
-        const quota = document.getElementById('scholarshipQuotaInput').value.trim();
-        const category = document.getElementById('scholarshipCategorySelect').value;
-        const eligibility = document.getElementById('scholarshipEligibilityInput').value.trim();
-        const description = document.getElementById('scholarshipDescInput').value.trim();
-        const active = document.getElementById('scholarshipActiveCheckbox').checked;
+        const payload = {
+            university_id: document.getElementById('scholarshipUniversitySelect').value,
+            scholarship_code: document.getElementById('scholarshipCodeInput').value.trim(),
+            scholarship_name: document.getElementById('scholarshipNameInput').value.trim(),
+            coverage_type: document.getElementById('scholarshipCoverageSelect').value,
+            award_value: document.getElementById('scholarshipAmountInput').value.trim(),
+            degree_level: document.getElementById('scholarshipLevelSelect').value,
+            field_of_study: document.getElementById('scholarshipFieldInput').value.trim() || 'All Disciplines',
+            min_gpa: document.getElementById('scholarshipGpaInput').value.trim() || null,
+            application_deadline: document.getElementById('scholarshipDeadlineInput').value || null,
+            quota: document.getElementById('scholarshipQuotaInput').value.trim() || null,
+            category: document.getElementById('scholarshipCategorySelect').value,
+            eligibility: document.getElementById('scholarshipEligibilityInput').value.trim() || null,
+            description: document.getElementById('scholarshipDescInput').value.trim() || null,
+            is_active: document.getElementById('scholarshipActiveCheckbox').checked
+        };
 
-        const uniObj = universityDirectory.find(u => u.name === uni);
-        const flag = uniObj ? uniObj.flag : 'https://flagcdn.com/w40/un.png';
+        const submitBtn = document.querySelector('#scholarshipForm button[type="submit"]');
+        submitBtn.disabled = true;
 
-        if (idVal) {
-            // Update existing
-            const idx = scholarshipsData.findIndex(s => s.id === parseInt(idVal, 10));
-            if (idx !== -1) {
-                scholarshipsData[idx] = {
-                    ...scholarshipsData[idx],
-                    code,
-                    name,
-                    university: uni,
-                    country,
-                    flag,
-                    coverage,
-                    amount,
-                    level,
-                    field: field || 'All Disciplines',
-                    minGpa,
-                    deadline,
-                    quota,
-                    category,
-                    eligibility,
-                    description,
-                    active
-                };
+        try {
+            const result = await apiRequest(
+                idVal ? SCHOLARSHIPS_URL + '/' + idVal : SCHOLARSHIPS_URL,
+                idVal ? 'PUT' : 'POST',
+                payload
+            );
+            const saved = withFlag(result.scholarship);
+
+            if (idVal) {
+                const idx = scholarshipsData.findIndex(item => item.id === parseInt(idVal, 10));
+                if (idx !== -1) scholarshipsData[idx] = saved;
                 showToast('Scholarship program updated successfully!');
+            } else {
+                scholarshipsData.unshift(saved);
+                showToast('New scholarship program created successfully!');
             }
-        } else {
-            // Add new
-            const newId = scholarshipsData.length > 0 ? Math.max(...scholarshipsData.map(s => s.id)) + 1 : 1;
-            const newScholarship = {
-                id: newId,
-                code,
-                name,
-                university: uni,
-                country,
-                flag,
-                coverage,
-                amount,
-                level,
-                field: field || 'All Disciplines',
-                minGpa,
-                deadline,
-                quota,
-                category,
-                eligibility,
-                description,
-                active
-            };
-            scholarshipsData.unshift(newScholarship);
-            showToast('New scholarship program created successfully!');
-        }
 
-        closeModal('addEditScholarshipModal');
-        renderScholarships();
+            closeModal('addEditScholarshipModal');
+            renderScholarships();
+        } catch (err) {
+            showToast(err.message);
+        } finally {
+            submitBtn.disabled = false;
+        }
     }
 
     // View Eligibility & Details Modal
@@ -2636,12 +2411,17 @@
         deletingScholarshipId = id;
         document.getElementById('deleteScholarshipName').textContent = s.name + ' (' + s.code + ')';
 
-        document.getElementById('confirmDeleteBtn').onclick = function() {
-            scholarshipsData = scholarshipsData.filter(item => item.id !== deletingScholarshipId);
-            selectedScholarshipIds.delete(deletingScholarshipId);
-            closeModal('deleteScholarshipModal');
-            showToast('Scholarship program deactivated and withdrawn.');
-            renderScholarships();
+        document.getElementById('confirmDeleteBtn').onclick = async function() {
+            try {
+                const result = await apiRequest(SCHOLARSHIPS_URL + '/' + deletingScholarshipId, 'DELETE');
+                const idx = scholarshipsData.findIndex(item => item.id === deletingScholarshipId);
+                if (idx !== -1) scholarshipsData[idx] = withFlag(result.scholarship);
+                closeModal('deleteScholarshipModal');
+                showToast('Scholarship program deactivated and withdrawn.');
+                renderScholarships();
+            } catch (err) {
+                showToast(err.message);
+            }
         };
 
         openModal('deleteScholarshipModal');

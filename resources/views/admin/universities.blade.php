@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>INDIC RMC | University Management</title>
 
     <style>
@@ -1258,13 +1259,6 @@
 
                     <select id="countryFilterSelect" class="filter-select">
                         <option value="ALL">Filter by Country</option>
-                        <option value="Canada">Canada</option>
-                        <option value="United Kingdom">United Kingdom</option>
-                        <option value="United States">United States</option>
-                        <option value="Australia">Australia</option>
-                        <option value="Germany">Germany</option>
-                        <option value="Singapore">Singapore</option>
-                        <option value="Ireland">Ireland</option>
                     </select>
                 </div>
 
@@ -1282,7 +1276,7 @@
 
                     <button class="btn-orange" onclick="openAddModal()">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                        + Add New University
+                         Add New University
                     </button>
                 </div>
             </div>
@@ -1385,82 +1379,10 @@
 
                 <div class="form-grid">
                     <div class="form-group">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                            <label class="form-label" style="margin-bottom: 0;">Country Destination *</label>
-                            <button type="button" id="toggleCountryModeBtn" onclick="toggleCountryMode()" style="background: none; border: none; color: #f58220; font-size: 11px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 4px; padding: 0; outline: none;">
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-                                <span>Type New Country</span>
-                            </button>
-                        </div>
-                        
-                        <!-- Mode 1: Country Select Dropdown -->
-                        <div id="countrySelectContainer">
-                            <select id="uniCountryInput" class="form-select-modal" required onchange="handleCountrySelectChange(this.value)">
-                                <option value="Canada">Canada</option>
-                                <option value="United Kingdom">United Kingdom</option>
-                                <option value="United States">United States</option>
-                                <option value="Australia">Australia</option>
-                                <option value="Germany">Germany</option>
-                                <option value="Singapore">Singapore</option>
-                                <option value="Ireland">Ireland</option>
-                                <option value="__TYPE_NEW__">+ Type a new country...</option>
-                            </select>
-                        </div>
-
-                        <!-- Mode 2: Type Any Country Text Input -->
-                        <div id="countryTypeContainer" style="display: none;">
-                            <div style="display: flex; gap: 8px;">
-                                <input type="text" id="uniCountryTextInput" list="countryDatalist" class="form-input" placeholder="Type country name (e.g. France, Japan)..." autocomplete="off" oninput="handleCountryTextInput(this.value)">
-                                <button type="button" class="btn-secondary" onclick="setCountryInputMode('select')" style="padding: 0 12px; font-size: 11px; font-weight: 600; white-space: nowrap; height: 38px; border: 1px solid #dcdfe6; border-radius: 8px; background: #fff; cursor: pointer; color: #475467;">
-                                    Use Dropdown
-                                </button>
-                            </div>
-                            <datalist id="countryDatalist"></datalist>
-                        </div>
-
-                        <!-- Country Image / Flag Upload Section -->
-                        <div id="countryImageSection" style="margin-top: 8px; background: #f9fafb; border: 1px dashed #d0d5dd; border-radius: 8px; padding: 8px 10px; transition: all 0.2s ease;">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                                <span style="font-size: 11px; font-weight: 600; color: #344054; display: flex; align-items: center; gap: 5px;">
-                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-                                        <circle cx="8.5" cy="8.5" r="1.5"/>
-                                        <polyline points="21 15 16 10 5 21"/>
-                                    </svg>
-                                    Country Image / Flag
-                                </span>
-                                <span id="countryImgBadge" style="font-size: 9px; font-weight: 600; padding: 2px 6px; border-radius: 4px; background: #e0f2fe; color: #0284c7;">
-                                    Auto Flag
-                                </span>
-                            </div>
-
-                            <div style="display: flex; align-items: center; gap: 10px;">
-                                <!-- Dropzone & Thumbnail Preview -->
-                                <div id="countryImgDropArea" class="country-img-dropzone" onclick="document.getElementById('countryImageFileInput').click()" title="Click to choose or drag & drop country image from desktop" style="cursor: pointer; position: relative; width: 56px; height: 36px; border-radius: 6px; overflow: hidden; border: 1px solid #d0d5dd; background: #ffffff; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
-                                    <img id="countryFlagPreviewImg" src="https://flagcdn.com/w80/ca.png" alt="Country Preview" style="width: 100%; height: 100%; object-fit: cover;">
-                                </div>
-
-                                <!-- Upload Controls -->
-                                <div style="flex: 1; min-width: 0;">
-                                    <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
-                                        <button type="button" class="btn-upload-logo" onclick="document.getElementById('countryImageFileInput').click()" style="padding: 3px 8px; font-size: 10px; height: 26px; border-radius: 5px;">
-                                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                                                <polyline points="17 8 12 3 7 8"/>
-                                                <line x1="12" y1="3" x2="12" y2="15"/>
-                                            </svg>
-                                            Choose from Desktop
-                                        </button>
-                                        <button type="button" id="btnRemoveCountryImg" class="btn-remove-logo" style="display: none; padding: 3px 8px; font-size: 10px; height: 26px; border-radius: 5px;" onclick="removeUploadedCountryImage(event)">
-                                            Reset
-                                        </button>
-                                    </div>
-                                    <div style="font-size: 10px; color: #697386; margin-top: 3px;">
-                                        Upload custom image or flag from desktop, or auto-detect.
-                                    </div>
-                                </div>
-                            </div>
-                            <input type="file" id="countryImageFileInput" accept="image/*" style="display: none;" onchange="handleCountryImageFileSelect(event)">
+                        <label class="form-label">Country Destination *</label>
+                        <select id="uniCountryInput" class="form-select-modal" required></select>
+                        <div style="font-size: 10px; color: #697386; margin-top: 4px;">
+                            Countries are managed on the <a href="{{ url('/admin/countries') }}" style="color: #f58220; font-weight: 600;">Countries</a> page.
                         </div>
                     </div>
                     <div class="form-group">
@@ -1472,7 +1394,7 @@
                 <div class="form-grid">
                     <div class="form-group">
                         <label class="form-label">Global Ranking (QS World) *</label>
-                        <input type="text" id="uniRankingInput" class="form-input" placeholder="e.g. #21 QS World" required>
+                        <input type="number" min="1" step="1" id="uniRankingInput" class="form-input" placeholder="e.g. 21" required>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Admissions Contact Email *</label>
@@ -1489,6 +1411,13 @@
                         <label class="form-label">Official Website URL</label>
                         <input type="url" id="uniWebsiteInput" class="form-input" placeholder="https://www.university.edu">
                     </div>
+                </div>
+
+                <div class="form-group">
+                    <label style="display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 500; color: #374151; cursor: pointer;">
+                        <input type="checkbox" id="uniActiveCheckbox" checked>
+                        <span>Active partner (visible to student applicants and consultants)</span>
+                    </label>
                 </div>
             </div>
             <div class="modal-footer">
@@ -1527,12 +1456,12 @@
     <div class="modal-window" style="max-width: 420px; text-align: center;">
         <div class="modal-body" style="padding-top: 28px;">
             <div style="width: 50px; height: 50px; border-radius: 50%; background: #fef2f2; color: #dc2626; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; font-size: 24px;">⚠</div>
-            <h3 class="modal-title" style="margin-bottom: 8px;">Delete University</h3>
-            <p style="font-size: 12px; color: #697386;" id="deleteConfirmText">Are you sure you want to remove this university from the consultancy directory? This action cannot be undone.</p>
+            <h3 class="modal-title" style="margin-bottom: 8px;">Deactivate University</h3>
+            <p style="font-size: 12px; color: #697386;" id="deleteConfirmText">Are you sure you want to deactivate this university?</p>
         </div>
         <div class="modal-footer" style="justify-content: center;">
             <button type="button" class="btn-secondary" onclick="closeModal('deleteModal')">Cancel</button>
-            <button type="button" class="btn-danger" id="confirmDeleteBtn" onclick="confirmDelete()">Delete</button>
+            <button type="button" class="btn-danger" id="confirmDeleteBtn" onclick="confirmDelete()">Deactivate</button>
         </div>
     </div>
 </div>
@@ -1546,246 +1475,18 @@
      INTERACTIVE CONTROLLER JAVASCRIPT
 ====================================================== -->
 <script>
-    // Initial Partner Universities Dataset
-    const initialUniversities = [
-        {
-            id: "UNI-CAN-01",
-            name: "University of Toronto",
-            shortCode: "UofT",
-            type: "Public Research University",
-            logo: "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=100&auto=format&fit=crop&q=80",
-            country: "Canada",
-            countryCode: "CAN",
-            flag: "https://flagcdn.com/w80/ca.png",
-            city: "Toronto, Ontario",
-            ranking: "#21 QS World",
-            rankingNum: 21,
-            email: "admissions.international@utoronto.ca",
-            website: "https://utoronto.ca",
-            courses: [
-                { name: "M.Sc. Advanced Computer Science & AI", degreeLevel: "Master's", duration: "2 Years", tuition: "CAD $47,800 / yr", intakes: "Sep 2025, Jan 2026", ielts: "7.0" },
-                { name: "Master of Business Administration (Rotman MBA)", degreeLevel: "MBA", duration: "20 Months", tuition: "CAD $64,500 / yr", intakes: "Sep 2025", ielts: "7.0" },
-                { name: "B.Sc. Mechanical Engineering (Co-op)", degreeLevel: "Bachelor's", duration: "4 Years", tuition: "CAD $42,200 / yr", intakes: "Sep 2025", ielts: "6.5" }
-            ]
-        },
-        {
-            id: "UNI-GBR-02",
-            name: "Imperial College London",
-            shortCode: "ICL",
-            type: "Public Research University",
-            logo: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=100&auto=format&fit=crop&q=80",
-            country: "United Kingdom",
-            countryCode: "GBR",
-            flag: "https://flagcdn.com/w80/gb.png",
-            city: "London, England",
-            ranking: "#2 QS World",
-            rankingNum: 2,
-            email: "international-admissions@imperial.ac.uk",
-            website: "https://imperial.ac.uk",
-            courses: [
-                { name: "M.Sc. Computing (Artificial Intelligence)", degreeLevel: "Master's", duration: "1 Year", tuition: "£41,750 / yr", intakes: "Oct 2025", ielts: "7.0" },
-                { name: "M.Sc. Climate Change & Finance", degreeLevel: "Master's", duration: "1 Year", tuition: "£39,000 / yr", intakes: "Oct 2025", ielts: "7.0" },
-                { name: "B.Eng. Aerospace & Aeronautical Engineering", degreeLevel: "Bachelor's", duration: "3 Years", tuition: "£37,900 / yr", intakes: "Oct 2025", ielts: "6.5" }
-            ]
-        },
-        {
-            id: "UNI-USA-03",
-            name: "Columbia University",
-            shortCode: "Columbia",
-            type: "Ivy League Private Research University",
-            logo: "https://images.unsplash.com/photo-1562774053-701939374585?w=100&auto=format&fit=crop&q=80",
-            country: "United States",
-            countryCode: "USA",
-            flag: "https://flagcdn.com/w80/us.png",
-            city: "New York City, New York",
-            ranking: "#34 QS World",
-            rankingNum: 34,
-            email: "gradadmissions@columbia.edu",
-            website: "https://columbia.edu",
-            courses: [
-                { name: "M.S. Data Science (DSI)", degreeLevel: "Master's", duration: "1.5 Years", tuition: "USD $58,200 / yr", intakes: "Sep 2025", ielts: "7.5" },
-                { name: "Columbia Business School Full-Time MBA", degreeLevel: "MBA", duration: "2 Years", tuition: "USD $84,496 / yr", intakes: "Aug 2025, Jan 2026", ielts: "7.5" },
-                { name: "M.S. Financial Engineering (IEOR)", degreeLevel: "Master's", duration: "1 Year", tuition: "USD $62,000 / yr", intakes: "Sep 2025", ielts: "7.0" }
-            ]
-        },
-        {
-            id: "UNI-AUS-04",
-            name: "University of Melbourne",
-            shortCode: "UniMelb",
-            type: "Group of Eight Research University",
-            logo: "https://images.unsplash.com/photo-1576495199011-eb94736d05d6?w=100&auto=format&fit=crop&q=80",
-            country: "Australia",
-            countryCode: "AUS",
-            flag: "https://flagcdn.com/w80/au.png",
-            city: "Melbourne, Victoria",
-            ranking: "#13 QS World",
-            rankingNum: 13,
-            email: "study-abroad@unimelb.edu.au",
-            website: "https://unimelb.edu.au",
-            courses: [
-                { name: "Master of Information Technology (Cyber Security)", degreeLevel: "Master's", duration: "2 Years", tuition: "AUD $51,680 / yr", intakes: "Feb 2026, Jul 2025", ielts: "6.5" },
-                { name: "Bachelor of Commerce (Finance & Economics)", degreeLevel: "Bachelor's", duration: "3 Years", tuition: "AUD $47,232 / yr", intakes: "Feb 2026, Jul 2025", ielts: "6.5" }
-            ]
-        },
-        {
-            id: "UNI-DEU-05",
-            name: "Technical University of Munich",
-            shortCode: "TUM",
-            type: "TU9 Technical University",
-            logo: "https://images.unsplash.com/photo-1590012314607-cda9d9b699ae?w=100&auto=format&fit=crop&q=80",
-            country: "Germany",
-            countryCode: "DEU",
-            flag: "https://flagcdn.com/w80/de.png",
-            city: "Munich, Bavaria",
-            ranking: "#28 QS World",
-            rankingNum: 28,
-            email: "studium@tum.de",
-            website: "https://tum.de",
-            courses: [
-                { name: "M.Sc. Informatics (Computer Science)", degreeLevel: "Master's", duration: "2 Years", tuition: "€4,000 / sem", intakes: "Oct 2025, Apr 2026", ielts: "6.5" },
-                { name: "M.Sc. Robotics, Cognition, Intelligence", degreeLevel: "Master's", duration: "2 Years", tuition: "€6,000 / sem", intakes: "Oct 2025", ielts: "6.5" }
-            ]
-        },
-        {
-            id: "UNI-SGP-06",
-            name: "National University of Singapore",
-            shortCode: "NUS",
-            type: "Autonomous Research University",
-            logo: "https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=100&auto=format&fit=crop&q=80",
-            country: "Singapore",
-            countryCode: "SGP",
-            flag: "https://flagcdn.com/w80/sg.png",
-            city: "Kent Ridge, Singapore",
-            ranking: "#8 QS World",
-            rankingNum: 8,
-            email: "admissions.intl@nus.edu.sg",
-            website: "https://nus.edu.sg",
-            courses: [
-                { name: "M.Sc. Computer Science (AI Track)", degreeLevel: "Master's", duration: "1.5 Years", tuition: "SGD $54,500 total", intakes: "Aug 2025, Jan 2026", ielts: "6.5" },
-                { name: "NUS MBA (Full-Time)", degreeLevel: "MBA", duration: "17 Months", tuition: "SGD $87,000 total", intakes: "Aug 2025", ielts: "7.0" }
-            ]
-        },
-        {
-            id: "UNI-IRL-07",
-            name: "Trinity College Dublin",
-            shortCode: "TCD",
-            type: "Collegiate Research University",
-            logo: "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=100&auto=format&fit=crop&q=80",
-            country: "Ireland",
-            countryCode: "IRL",
-            flag: "https://flagcdn.com/w80/ie.png",
-            city: "Dublin, Ireland",
-            ranking: "#87 QS World",
-            rankingNum: 87,
-            email: "international.admissions@tcd.ie",
-            website: "https://tcd.ie",
-            courses: [
-                { name: "M.Sc. High Performance Computing & Cloud", degreeLevel: "Master's", duration: "1 Year", tuition: "€25,400 / yr", intakes: "Sep 2025", ielts: "6.5" },
-                { name: "M.Sc. International Management", degreeLevel: "Master's", duration: "1 Year", tuition: "€23,800 / yr", intakes: "Sep 2025", ielts: "7.0" }
-            ]
-        }
-    ];
+    @php
+        $countryDirectory = $countries->map(fn ($c) => [
+            'id' => $c->country_id,
+            'name' => $c->country_name,
+            'flag' => $c->flag_image,
+            'active' => (bool) $c->is_active,
+        ])->values();
+    @endphp
 
-    let universities = [...initialUniversities];
-    let activeSort = { column: 'ranking', ascending: true };
-    let deleteTargetId = null;
-    let currentLogoDataUrl = null;
-
-    // Dynamic Countries Registry
-    const defaultCountries = [
-        "Australia",
-        "Canada",
-        "Germany",
-        "Ireland",
-        "Singapore",
-        "United Kingdom",
-        "United States"
-    ];
-    let availableCountries = Array.from(new Set([
-        ...defaultCountries,
-        ...universities.map(u => u.country)
-    ])).sort();
-
-    let countryInputMode = 'select'; // 'select' | 'type'
-    let customCountryImages = {};
-    let currentCountryImageDataUrl = null;
-
-    // Handle Country image selected from desktop
-    function handleCountryImageFileSelect(event) {
-        const file = event.target.files && event.target.files[0];
-        if (!file) return;
-
-        if (!file.type.startsWith('image/')) {
-            showToast('Please select a valid image file (PNG, JPG, SVG, WEBP).');
-            return;
-        }
-
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            currentCountryImageDataUrl = e.target.result;
-            updateCountryImagePreview();
-            showToast('Country image loaded from desktop!');
-        };
-        reader.readAsDataURL(file);
-    }
-
-    // Reset uploaded country image back to auto-detected flag
-    function removeUploadedCountryImage(event) {
-        if (event) event.stopPropagation();
-        currentCountryImageDataUrl = null;
-        const fileInput = document.getElementById('countryImageFileInput');
-        if (fileInput) fileInput.value = '';
-
-        const countryName = (countryInputMode === 'type')
-            ? document.getElementById('uniCountryTextInput').value.trim()
-            : document.getElementById('uniCountryInput').value.trim();
-
-        if (countryName && customCountryImages[countryName]) {
-            delete customCountryImages[countryName];
-        }
-
-        updateCountryImagePreview();
-        showToast('Country image reset to auto flag.');
-    }
-
-    // Update Country Image preview & badge
-    function updateCountryImagePreview() {
-        const previewImg = document.getElementById('countryFlagPreviewImg');
-        const badge = document.getElementById('countryImgBadge');
-        const btnReset = document.getElementById('btnRemoveCountryImg');
-        if (!previewImg) return;
-
-        const countryName = (countryInputMode === 'type')
-            ? document.getElementById('uniCountryTextInput').value.trim()
-            : document.getElementById('uniCountryInput').value.trim();
-
-        const customFlag = currentCountryImageDataUrl || customCountryImages[countryName];
-
-        if (customFlag) {
-            previewImg.src = customFlag;
-            if (badge) {
-                badge.innerText = 'Custom Image';
-                badge.style.background = '#dcfce7';
-                badge.style.color = '#15803d';
-            }
-            if (btnReset) btnReset.style.display = 'inline-flex';
-        } else {
-            const flagUrl = getCountryFlag(countryName);
-            previewImg.src = flagUrl;
-            if (badge) {
-                badge.innerText = 'Auto Flag';
-                badge.style.background = '#e0f2fe';
-                badge.style.color = '#0284c7';
-            }
-            if (btnReset) btnReset.style.display = 'none';
-        }
-    }
-
-    function handleCountryTextInput(val) {
-        if (!currentCountryImageDataUrl) {
-            updateCountryImagePreview();
-        }
-    }
+    const UNIVERSITIES_URL = @json(url('/admin/universities'));
+    const CSRF_TOKEN = document.querySelector('meta[name="csrf-token"]').content;
+    const DEFAULT_LOGO = 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=100&auto=format&fit=crop&q=80';
 
     // Country flag ISO 2-letter mapping dictionary
     const countryIsoMap = {
@@ -1822,146 +1523,97 @@
         if (code) {
             return `https://flagcdn.com/w80/${code}.png`;
         }
-        if (clean.length === 2 && /^[a-z]{2}$/.test(clean)) {
-            return `https://flagcdn.com/w80/${clean}.png`;
-        }
         return 'https://flagcdn.com/w80/un.png';
     }
 
-    function getCountryCode(countryName) {
-        if (!countryName) return 'GEN';
-        const clean = countryName.trim().toUpperCase();
-        if (clean.length <= 3 && /^[A-Z]{2,3}$/.test(clean)) return clean;
-        const codes = {
-            'CANADA': 'CAN', 'UNITED KINGDOM': 'GBR', 'UNITED STATES': 'USA',
-            'AUSTRALIA': 'AUS', 'GERMANY': 'DEU', 'SINGAPORE': 'SGP',
-            'IRELAND': 'IRL', 'FRANCE': 'FRA', 'JAPAN': 'JPN', 'SWITZERLAND': 'CHE',
-            'NEW ZEALAND': 'NZL', 'NETHERLANDS': 'NLD', 'INDIA': 'IND', 'CHINA': 'CHN',
-            'SPAIN': 'ESP', 'ITALY': 'ITA', 'SWEDEN': 'SWE', 'SOUTH KOREA': 'KOR',
-            'UNITED ARAB EMIRATES': 'UAE', 'UAE': 'UAE', 'MALAYSIA': 'MYS', 'AUSTRIA': 'AUT'
+    // XSS sanitization helper (values now come from the database)
+    function escapeHtml(str) {
+        if (str === null || str === undefined) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    // JSON request helper for the university resource endpoints
+    async function apiRequest(url, method, body) {
+        const response = await fetch(url, {
+            method,
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': CSRF_TOKEN,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            credentials: 'same-origin',
+            body: body ? JSON.stringify(body) : undefined
+        });
+
+        let data = null;
+        try { data = await response.json(); } catch (err) { /* non-JSON response */ }
+
+        if (!response.ok) {
+            let message = (data && data.message) || ('Request failed (' + response.status + ').');
+            if (data && data.errors) {
+                message = Object.values(data.errors)[0][0];
+            }
+            throw new Error(message);
+        }
+        return data;
+    }
+
+    // Countries and universities loaded from the database
+    const countryDirectory = @json($countryDirectory);
+
+    function prepareUniversity(u) {
+        return {
+            ...u,
+            flag: u.flag || getCountryFlag(u.country),
+            ranking: u.ranking ? '#' + u.ranking + ' QS World' : 'Unranked',
+            rankingNum: u.ranking || 999
         };
-        if (codes[clean]) return codes[clean];
-        const alphaOnly = clean.replace(/[^A-Z]/g, '');
-        return alphaOnly.substring(0, 3) || 'UNI';
     }
 
-    // Set Country input mode: 'select' (dropdown) or 'type' (text field)
-    function setCountryInputMode(mode) {
-        countryInputMode = mode;
-        const selectContainer = document.getElementById('countrySelectContainer');
-        const typeContainer = document.getElementById('countryTypeContainer');
-        const toggleBtn = document.getElementById('toggleCountryModeBtn');
-        const selectEl = document.getElementById('uniCountryInput');
-        const textInputEl = document.getElementById('uniCountryTextInput');
+    let universities = @json($universities->map->toAdminArray()->values()).map(prepareUniversity);
+    let activeSort = { column: 'ranking', ascending: true };
+    let deleteTargetId = null;
+    let currentLogoDataUrl = null;
 
-        if (!selectContainer || !typeContainer) return;
-
-        if (mode === 'type') {
-            selectContainer.style.display = 'none';
-            typeContainer.style.display = 'block';
-            selectEl.removeAttribute('required');
-            textInputEl.setAttribute('required', 'required');
-            if (toggleBtn) {
-                toggleBtn.innerHTML = `
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
-                    <span>Use Dropdown</span>
-                `;
-            }
-            textInputEl.focus();
-        } else {
-            selectContainer.style.display = 'block';
-            typeContainer.style.display = 'none';
-            textInputEl.removeAttribute('required');
-            selectEl.setAttribute('required', 'required');
-            if (toggleBtn) {
-                toggleBtn.innerHTML = `
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-                    <span>Type New Country</span>
-                `;
-            }
-            if (selectEl.value === '__TYPE_NEW__') {
-                selectEl.value = availableCountries[0] || 'Canada';
-            }
-        }
-        updateCountryImagePreview();
-    }
-
-    function toggleCountryMode() {
-        if (countryInputMode === 'select') {
-            setCountryInputMode('type');
-        } else {
-            setCountryInputMode('select');
-        }
-    }
-
-    function handleCountrySelectChange(val) {
-        if (val === '__TYPE_NEW__') {
-            setCountryInputMode('type');
-            const textInput = document.getElementById('uniCountryTextInput');
-            if (textInput) {
-                textInput.value = '';
-                textInput.focus();
-            }
-        } else {
-            updateCountryImagePreview();
-        }
-    }
-
-    // Populate all country dropdowns and datalists
-    function populateCountryDropdowns(selectedVal = null) {
-        // 1. Modal Select
+    // Populate the modal country select and the top filter from the countries table
+    function populateCountryDropdowns(selectedId = null) {
         const modalSelect = document.getElementById('uniCountryInput');
-        if (modalSelect) {
-            const currentVal = selectedVal || modalSelect.value;
-            modalSelect.innerHTML = '';
-            availableCountries.forEach(c => {
-                const opt = document.createElement('option');
-                opt.value = c;
-                opt.textContent = c;
-                modalSelect.appendChild(opt);
-            });
-            const newOpt = document.createElement('option');
-            newOpt.value = '__TYPE_NEW__';
-            newOpt.textContent = '+ Type a new country...';
-            modalSelect.appendChild(newOpt);
+        modalSelect.innerHTML = '';
 
-            if (currentVal && availableCountries.includes(currentVal)) {
-                modalSelect.value = currentVal;
-            } else if (availableCountries.length > 0) {
-                modalSelect.value = availableCountries[0];
-            }
+        // New universities can only be attached to active countries; keep the current one when editing
+        const choices = countryDirectory.filter(c => c.active || String(c.id) === String(selectedId));
+        if (choices.length === 0) {
+            const opt = document.createElement('option');
+            opt.value = '';
+            opt.textContent = 'No countries available';
+            modalSelect.appendChild(opt);
+        }
+        choices.forEach(c => {
+            const opt = document.createElement('option');
+            opt.value = c.id;
+            opt.textContent = c.name + (c.active ? '' : ' (inactive)');
+            modalSelect.appendChild(opt);
+        });
+        if (selectedId) {
+            modalSelect.value = selectedId;
         }
 
-        // 2. Datalist for autocomplete typing
-        const datalist = document.getElementById('countryDatalist');
-        if (datalist) {
-            datalist.innerHTML = '';
-            availableCountries.forEach(c => {
-                const opt = document.createElement('option');
-                opt.value = c;
-                datalist.appendChild(opt);
-            });
-        }
-
-        // 3. Top filter select
         const filterSelect = document.getElementById('countryFilterSelect');
-        if (filterSelect) {
-            const curFilter = filterSelect.value || 'ALL';
-            filterSelect.innerHTML = '<option value="ALL">Filter by Country</option>';
-            availableCountries.forEach(c => {
-                const opt = document.createElement('option');
-                opt.value = c;
-                opt.textContent = c;
-                filterSelect.appendChild(opt);
-            });
-            if (curFilter && (curFilter === 'ALL' || availableCountries.includes(curFilter))) {
-                filterSelect.value = curFilter;
-            } else {
-                filterSelect.value = 'ALL';
-            }
-        }
-
-        updateCountryImagePreview();
+        const curFilter = filterSelect.value || 'ALL';
+        filterSelect.innerHTML = '<option value="ALL">Filter by Country</option>';
+        countryDirectory.forEach(c => {
+            const opt = document.createElement('option');
+            opt.value = c.name;
+            opt.textContent = c.name;
+            filterSelect.appendChild(opt);
+        });
+        filterSelect.value = countryDirectory.some(c => c.name === curFilter) ? curFilter : 'ALL';
     }
 
     // Handle Logo file selected from desktop
@@ -2014,6 +1666,7 @@
     // Initialize
     document.addEventListener('DOMContentLoaded', () => {
         populateCountryDropdowns();
+        sortUniversities();
         renderTable();
         renderCards();
 
@@ -2063,44 +1716,11 @@
                 }
             });
         }
-
-        // Drag and drop for country image upload
-        const countryDropArea = document.getElementById('countryImgDropArea');
-        if (countryDropArea) {
-            ['dragenter', 'dragover'].forEach(eventName => {
-                countryDropArea.addEventListener(eventName, (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    countryDropArea.classList.add('dragover');
-                });
-            });
-
-            ['dragleave', 'drop'].forEach(eventName => {
-                countryDropArea.addEventListener(eventName, (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    countryDropArea.classList.remove('dragover');
-                });
-            });
-
-            countryDropArea.addEventListener('drop', (e) => {
-                if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-                    const file = e.dataTransfer.files[0];
-                    if (file.type.startsWith('image/')) {
-                        const reader = new FileReader();
-                        reader.onload = (ev) => {
-                            currentCountryImageDataUrl = ev.target.result;
-                            updateCountryImagePreview();
-                            showToast('Country image loaded from desktop!');
-                        };
-                        reader.readAsDataURL(file);
-                    } else {
-                        showToast('Please drop a valid image file.');
-                    }
-                }
-            });
-        }
     });
+
+    function inactiveBadge(uni) {
+        return uni.active ? '' : ' <span style="font-size: 10px; font-weight: 600; padding: 1px 6px; border-radius: 4px; background: #f3f4f6; color: #6b7280;">Inactive</span>';
+    }
 
     // Render Table
     function renderTable(data = universities) {
@@ -2109,6 +1729,7 @@
 
         if (data.length === 0) {
             tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; padding: 40px; color: #8a93a3;">No universities match your search or country criteria.</td></tr>`;
+            updateStats(0);
             return;
         }
 
@@ -2116,31 +1737,32 @@
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td>
-                    <img src="${uni.logo}" alt="${uni.name}" class="uni-logo-thumb">
+                    <img src="${escapeHtml(uni.logo || DEFAULT_LOGO)}" alt="${escapeHtml(uni.name)}" class="uni-logo-thumb">
                 </td>
                 <td>
                     <div class="uni-identity">
                         <div>
-                            <div class="uni-name-text">${uni.name}</div>
-                            <div class="uni-meta-text">${uni.shortCode || ''} • ${uni.type || 'University'}</div>
+                            <div class="uni-name-text">${escapeHtml(uni.name)}${inactiveBadge(uni)}</div>
+                            <div class="uni-meta-text">${escapeHtml(uni.shortCode)} • ${escapeHtml(uni.type || 'University')}</div>
                         </div>
                     </div>
                 </td>
                 <td>
                     <span class="country-pill">
-                        <img src="${uni.flag || 'https://flagcdn.com/w80/un.png'}" class="country-flag-icon" alt="${uni.country}">
-                        ${uni.country}
+                        <img src="${escapeHtml(uni.flag)}" class="country-flag-icon" alt="${escapeHtml(uni.country)}">
+                        ${escapeHtml(uni.country)}
                     </span>
-                    <div class="uni-meta-text">${uni.city}</div>
+                    <div class="uni-meta-text">${escapeHtml(uni.city)}</div>
                 </td>
                 <td>
-                    <span class="ranking-pill">${uni.ranking}</span>
+                    <span class="ranking-pill">${escapeHtml(uni.ranking)}</span>
                 </td>
                 <td>
-                    <span class="email-chip" onclick="copyEmail('${uni.email}')" title="Click to copy email">
+                    ${uni.email ? `
+                    <span class="email-chip" data-email="${escapeHtml(uni.email)}" onclick="copyEmail(this.dataset.email)" title="Click to copy email">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                        ${uni.email}
-                    </span>
+                        ${escapeHtml(uni.email)}
+                    </span>` : '&mdash;'}
                 </td>
                 <td>
                     <div class="actions-cell">
@@ -2151,7 +1773,7 @@
                         <button class="btn-icon-action" onclick="openEditModal('${uni.id}')" title="Edit details">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                         </button>
-                        <button class="btn-icon-action delete" onclick="openDeleteModal('${uni.id}')" title="Delete university">
+                        <button class="btn-icon-action delete" onclick="openDeleteModal('${uni.id}')" title="Deactivate university">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                         </button>
                     </div>
@@ -2173,27 +1795,27 @@
             card.className = 'uni-grid-card';
             card.innerHTML = `
                 <div class="card-top">
-                    <img src="${uni.logo}" class="uni-logo-thumb" style="width: 48px; height: 48px;" alt="${uni.name}">
+                    <img src="${escapeHtml(uni.logo || DEFAULT_LOGO)}" class="uni-logo-thumb" style="width: 48px; height: 48px;" alt="${escapeHtml(uni.name)}">
                     <div class="card-details">
-                        <div class="uni-name-text">${uni.name}</div>
+                        <div class="uni-name-text">${escapeHtml(uni.name)}${inactiveBadge(uni)}</div>
                         <div class="uni-meta-text" style="display: flex; align-items: center; gap: 6px; margin-top: 2px;">
-                            <img src="${uni.flag || 'https://flagcdn.com/w80/un.png'}" class="country-flag-icon" alt="${uni.country}">
-                            <span>${uni.city}, ${uni.country}</span>
+                            <img src="${escapeHtml(uni.flag)}" class="country-flag-icon" alt="${escapeHtml(uni.country)}">
+                            <span>${escapeHtml([uni.city, uni.country].filter(Boolean).join(', '))}</span>
                         </div>
                         <div style="margin-top: 8px;">
-                            <span class="ranking-pill">${uni.ranking}</span>
+                            <span class="ranking-pill">${escapeHtml(uni.ranking)}</span>
                         </div>
                     </div>
                 </div>
                 <div style="font-size: 11px; color: #4b5565;">
-                    <div><strong>Email:</strong> ${uni.email}</div>
+                    <div><strong>Email:</strong> ${escapeHtml(uni.email) || 'N/A'}</div>
                     <div style="margin-top: 3px;"><strong>Programs:</strong> ${uni.courses ? uni.courses.length : 0} accredited courses</div>
                 </div>
                 <div class="card-actions">
                     <button class="btn-view-courses" onclick="viewCourses('${uni.id}')">View Courses</button>
                     <div style="display: flex; gap: 6px;">
                         <button class="btn-icon-action" onclick="openEditModal('${uni.id}')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
-                        <button class="btn-icon-action delete" onclick="openDeleteModal('${uni.id}')"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+                        <button class="btn-icon-action delete" onclick="openDeleteModal('${uni.id}')" title="Deactivate university"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
                     </div>
                 </div>
             `;
@@ -2223,20 +1845,14 @@
         renderCards(filtered);
     }
 
-    // Sort Table
-    function sortTable(column) {
-        if (activeSort.column === column) {
-            activeSort.ascending = !activeSort.ascending;
-        } else {
-            activeSort.column = column;
-            activeSort.ascending = true;
-        }
-
+    // Sort the in-memory list by the active column
+    function sortUniversities() {
+        const column = activeSort.column;
         universities.sort((a, b) => {
             let valA, valB;
             if (column === 'ranking') {
-                valA = a.rankingNum || 999;
-                valB = b.rankingNum || 999;
+                valA = a.rankingNum;
+                valB = b.rankingNum;
             } else {
                 valA = (a[column] || '').toLowerCase();
                 valB = (b[column] || '').toLowerCase();
@@ -2246,7 +1862,18 @@
             if (valA > valB) return activeSort.ascending ? 1 : -1;
             return 0;
         });
+    }
 
+    // Sort Table
+    function sortTable(column) {
+        if (activeSort.column === column) {
+            activeSort.ascending = !activeSort.ascending;
+        } else {
+            activeSort.column = column;
+            activeSort.ascending = true;
+        }
+
+        sortUniversities();
         applyFilters();
     }
 
@@ -2283,7 +1910,7 @@
         if (!uni) return;
 
         document.getElementById('courseModalTitle').innerText = `${uni.name}`;
-        document.getElementById('courseModalSubtitle').innerText = `${uni.city}, ${uni.country} • ${uni.ranking}`;
+        document.getElementById('courseModalSubtitle').innerText = `${[uni.city, uni.country].filter(Boolean).join(', ')} • ${uni.ranking}`;
 
         const container = document.getElementById('coursesListContainer');
         container.innerHTML = '';
@@ -2292,21 +1919,22 @@
             container.innerHTML = `<div style="text-align:center; padding:20px; color:#8a93a3;">No courses registered yet.</div>`;
         } else {
             uni.courses.forEach(c => {
-                const badgeClass = c.degreeLevel.toLowerCase().includes('mba') ? 'degree-badge mba' : (c.degreeLevel.toLowerCase().includes('bachelor') ? 'degree-badge bachelor' : 'degree-badge');
+                const level = (c.degreeLevel || '').toLowerCase();
+                const badgeClass = level.includes('mba') ? 'degree-badge mba' : (level.includes('bachelor') ? 'degree-badge bachelor' : 'degree-badge');
                 const card = document.createElement('div');
                 card.className = 'course-card';
                 card.innerHTML = `
                     <div class="course-header">
-                        <span class="course-title">${c.name}</span>
-                        <span class="${badgeClass}">${c.degreeLevel}</span>
+                        <span class="course-title">${escapeHtml(c.name)}${c.active ? '' : ' (inactive)'}</span>
+                        <span class="${badgeClass}">${escapeHtml(c.degreeLevel)}</span>
                     </div>
                     <div class="course-meta-grid">
-                        <div class="meta-item"><span>Duration:</span> <strong>${c.duration}</strong></div>
-                        <div class="meta-item"><span>Estimated Tuition:</span> <strong>${c.tuition}</strong></div>
-                        <div class="meta-item"><span>IELTS Requirement:</span> <strong>${c.ielts}</strong></div>
+                        <div class="meta-item"><span>Duration:</span> <strong>${escapeHtml(c.duration) || '&mdash;'}</strong></div>
+                        <div class="meta-item"><span>Estimated Tuition:</span> <strong>${escapeHtml(c.tuition) || '&mdash;'}</strong></div>
+                        <div class="meta-item"><span>English Requirement:</span> <strong>${escapeHtml(c.ielts) || '&mdash;'}</strong></div>
                     </div>
                     <div style="font-size: 11px; color: #697386; margin-top: 6px;">
-                        <span>Intakes: <strong>${c.intakes}</strong></span>
+                        <span>Intakes: <strong>${escapeHtml(c.intakes) || '&mdash;'}</strong></span>
                     </div>
                 `;
                 container.appendChild(card);
@@ -2318,15 +1946,16 @@
 
     // Add University
     function openAddModal() {
+        if (countryDirectory.filter(c => c.active).length === 0) {
+            showToast('Add an active country first — every university must belong to a country.');
+            return;
+        }
+
         document.getElementById('uniForm').reset();
         document.getElementById('editUniId').value = '';
         removeUploadedLogo();
-        currentCountryImageDataUrl = null;
-        const countryImgFileInput = document.getElementById('countryImageFileInput');
-        if (countryImgFileInput) countryImgFileInput.value = '';
-        setCountryInputMode('select');
         populateCountryDropdowns();
-        updateCountryImagePreview();
+        document.getElementById('uniActiveCheckbox').checked = true;
         document.getElementById('addEditModalTitle').innerText = 'Add New University';
         openModal('addEditModal');
     }
@@ -2340,26 +1969,15 @@
         document.getElementById('uniNameInput').value = uni.name;
         document.getElementById('uniCodeInput').value = uni.shortCode || '';
 
-        // Ensure country is registered and selected
-        if (uni.country && !availableCountries.includes(uni.country)) {
-            availableCountries.push(uni.country);
-            availableCountries.sort();
-        }
-        populateCountryDropdowns(uni.country);
-        setCountryInputMode('select');
-        document.getElementById('uniCountryInput').value = uni.country;
-
-        // Restore custom country image if present
-        currentCountryImageDataUrl = (uni.flag && !uni.flag.includes('flagcdn.com')) ? uni.flag : (customCountryImages[uni.country] || null);
-        const countryImgFileInput = document.getElementById('countryImageFileInput');
-        if (countryImgFileInput) countryImgFileInput.value = '';
-        updateCountryImagePreview();
+        populateCountryDropdowns(uni.countryId);
+        document.getElementById('uniCountryInput').value = uni.countryId;
 
         document.getElementById('uniCityInput').value = uni.city;
-        document.getElementById('uniRankingInput').value = uni.ranking;
+        document.getElementById('uniRankingInput').value = uni.rankingNum === 999 ? '' : uni.rankingNum;
         document.getElementById('uniEmailInput').value = uni.email;
         document.getElementById('uniCategoryInput').value = uni.type || '';
         document.getElementById('uniWebsiteInput').value = uni.website || '';
+        document.getElementById('uniActiveCheckbox').checked = !!uni.active;
 
         // Load existing logo
         currentLogoDataUrl = uni.logo || null;
@@ -2371,117 +1989,80 @@
         openModal('addEditModal');
     }
 
-    // Save University
-    function saveUniversity(e) {
+    // Save University (persists to the database)
+    async function saveUniversity(e) {
         e.preventDefault();
         const editId = document.getElementById('editUniId').value;
-        const name = document.getElementById('uniNameInput').value.trim();
-        const shortCode = document.getElementById('uniCodeInput').value.trim();
-        
-        let country = '';
-        if (countryInputMode === 'type') {
-            country = document.getElementById('uniCountryTextInput').value.trim();
-        } else {
-            const selectVal = document.getElementById('uniCountryInput').value.trim();
-            if (selectVal === '__TYPE_NEW__') {
-                country = document.getElementById('uniCountryTextInput').value.trim();
-            } else {
-                country = selectVal;
-            }
-        }
+        const ranking = parseInt(document.getElementById('uniRankingInput').value, 10);
 
-        if (!country) {
-            showToast('Please select or type a valid country destination.');
-            if (countryInputMode === 'type') {
-                document.getElementById('uniCountryTextInput').focus();
-            } else {
-                document.getElementById('uniCountryInput').focus();
-            }
-            return;
-        }
+        const payload = {
+            country_id: document.getElementById('uniCountryInput').value,
+            university_name: document.getElementById('uniNameInput').value.trim(),
+            university_code: document.getElementById('uniCodeInput').value.trim() || null,
+            city: document.getElementById('uniCityInput').value.trim() || null,
+            ranking: Number.isNaN(ranking) ? null : ranking,
+            contact_email: document.getElementById('uniEmailInput').value.trim() || null,
+            category: document.getElementById('uniCategoryInput').value.trim() || null,
+            website: document.getElementById('uniWebsiteInput').value.trim() || null,
+            logo_image: currentLogoDataUrl,
+            is_active: document.getElementById('uniActiveCheckbox').checked
+        };
 
-        // Add to availableCountries registry if new, and update dropdowns
-        if (!availableCountries.includes(country)) {
-            availableCountries.push(country);
-            availableCountries.sort();
-            populateCountryDropdowns(country);
-        }
+        const submitBtn = document.querySelector('#uniForm button[type="submit"]');
+        submitBtn.disabled = true;
 
-        const city = document.getElementById('uniCityInput').value.trim();
-        const ranking = document.getElementById('uniRankingInput').value.trim();
-        const email = document.getElementById('uniEmailInput').value.trim();
-        const type = document.getElementById('uniCategoryInput').value.trim();
-        const website = document.getElementById('uniWebsiteInput').value.trim();
+        try {
+            const result = await apiRequest(
+                editId ? UNIVERSITIES_URL + '/' + editId : UNIVERSITIES_URL,
+                editId ? 'PUT' : 'POST',
+                payload
+            );
+            const saved = prepareUniversity(result.university);
 
-        // Extract rank number for sorting
-        const rankMatch = ranking.match(/\d+/);
-        const rankingNum = rankMatch ? parseInt(rankMatch[0]) : 100;
-
-        const flagUrl = currentCountryImageDataUrl || customCountryImages[country] || getCountryFlag(country);
-        if (currentCountryImageDataUrl) {
-            customCountryImages[country] = currentCountryImageDataUrl;
-        }
-        const countryCode = getCountryCode(country);
-        const defaultLogo = 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=100&auto=format&fit=crop&q=80';
-
-        if (editId) {
-            // Edit existing
-            const index = universities.findIndex(u => u.id === editId);
-            if (index !== -1) {
-                universities[index] = {
-                    ...universities[index],
-                    name, shortCode, country, countryCode, city, ranking, rankingNum, email, type, website,
-                    logo: currentLogoDataUrl || universities[index].logo || defaultLogo,
-                    flag: flagUrl
-                };
+            if (editId) {
+                const index = universities.findIndex(u => u.id === editId);
+                if (index !== -1) universities[index] = saved;
                 showToast('University updated successfully!');
+            } else {
+                universities.unshift(saved);
+                showToast('New university partner registered successfully!');
             }
-        } else {
-            // Create new
-            const newId = 'UNI-' + countryCode + '-' + String(universities.length + 1).padStart(2, '0');
-            const newUni = {
-                id: newId,
-                name,
-                shortCode,
-                country,
-                countryCode,
-                city,
-                ranking,
-                rankingNum,
-                email,
-                type,
-                website,
-                flag: flagUrl,
-                logo: currentLogoDataUrl || defaultLogo,
-                courses: [
-                    { name: 'Bachelor of Science / Arts Program', degreeLevel: "Bachelor's", duration: '3-4 Years', tuition: 'Tuition on request', intakes: 'Sep 2025', ielts: '6.5' }
-                ]
-            };
-            universities.unshift(newUni);
-            showToast('New university partner registered successfully!');
-        }
 
-        closeModal('addEditModal');
-        applyFilters();
+            closeModal('addEditModal');
+            applyFilters();
+        } catch (err) {
+            showToast(err.message);
+        } finally {
+            submitBtn.disabled = false;
+        }
     }
 
-    // Delete Modal
+    // Deactivate Modal
     function openDeleteModal(id) {
         deleteTargetId = id;
         const uni = universities.find(u => u.id === id);
         if (uni) {
-            document.getElementById('deleteConfirmText').innerText = `Are you sure you want to remove "${uni.name}" from the directory? This action cannot be undone.`;
+            document.getElementById('deleteConfirmText').innerText = `Are you sure you want to deactivate "${uni.name}"? It will be marked Inactive.`;
         }
         openModal('deleteModal');
     }
 
-    function confirmDelete() {
+    async function confirmDelete() {
         if (!deleteTargetId) return;
-        universities = universities.filter(u => u.id !== deleteTargetId);
-        deleteTargetId = null;
-        closeModal('deleteModal');
-        applyFilters();
-        showToast('University removed from system.');
+        const targetId = deleteTargetId;
+
+        try {
+            const result = await apiRequest(UNIVERSITIES_URL + '/' + targetId, 'DELETE');
+            const index = universities.findIndex(u => u.id === targetId);
+            if (index !== -1) universities[index] = prepareUniversity(result.university);
+
+            deleteTargetId = null;
+            closeModal('deleteModal');
+            applyFilters();
+            showToast('University deactivated.');
+        } catch (err) {
+            showToast(err.message);
+        }
     }
 
     // Modal Helpers

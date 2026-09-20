@@ -10,7 +10,7 @@ class CountryController extends Controller
     public function index()
     {
         $countries = Country::orderBy('country_name')
-            ->paginate(20);
+            ->get();
 
         return view(
             'admin.countries',
@@ -25,32 +25,24 @@ class CountryController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'country_name' => [
-                'required',
-                'string',
-                'max:255',
-                'unique:countries,country_name'
-            ],
-            'country_code' => [
-                'required',
-                'string',
-                'max:10',
-                'unique:countries,country_code'
-            ],
-            'description' => [
-                'nullable',
-                'string'
-            ],
-            'is_active' => [
-                'boolean'
-            ],
-        ]);
+        $validated = $request->validate(
+            $this->rules()
+        );
+
+        $validated['country_code'] =
+            strtoupper($validated['country_code']);
 
         $validated['is_active'] =
-            $request->boolean('is_active');
+            $request->boolean('is_active', true);
 
-        Country::create($validated);
+        $country = Country::create($validated);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => 'Country created successfully.',
+                'country' => $country->toAdminArray(),
+            ], 201);
+        }
 
         return redirect()
             ->route('admin.countries.index')
@@ -84,36 +76,24 @@ class CountryController extends Controller
         Request $request,
         Country $country
     ) {
-        $validated = $request->validate([
-            'country_name' => [
-                'required',
-                'string',
-                'max:255',
-                'unique:countries,country_name,' .
-                $country->country_id .
-                ',country_id'
-            ],
-            'country_code' => [
-                'required',
-                'string',
-                'max:10',
-                'unique:countries,country_code,' .
-                $country->country_id .
-                ',country_id'
-            ],
-            'description' => [
-                'nullable',
-                'string'
-            ],
-            'is_active' => [
-                'boolean'
-            ],
-        ]);
+        $validated = $request->validate(
+            $this->rules($country)
+        );
+
+        $validated['country_code'] =
+            strtoupper($validated['country_code']);
 
         $validated['is_active'] =
             $request->boolean('is_active');
 
         $country->update($validated);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => 'Country updated successfully.',
+                'country' => $country->fresh()->toAdminArray(),
+            ]);
+        }
 
         return redirect()
             ->route('admin.countries.index')
@@ -123,11 +103,18 @@ class CountryController extends Controller
             );
     }
 
-    public function destroy(Country $country)
+    public function destroy(Request $request, Country $country)
     {
         $country->update([
             'is_active' => false
         ]);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => 'Country deactivated successfully.',
+                'country' => $country->fresh()->toAdminArray(),
+            ]);
+        }
 
         return redirect()
             ->route('admin.countries.index')
@@ -135,5 +122,69 @@ class CountryController extends Controller
                 'success',
                 'Country deactivated successfully.'
             );
+    }
+
+    private function rules(?Country $country = null): array
+    {
+        $ignore = $country
+            ? ',' . $country->country_id . ',country_id'
+            : '';
+
+        return [
+            'country_name' => [
+                'required',
+                'string',
+                'max:100',
+                'unique:countries,country_name' . $ignore
+            ],
+            'country_code' => [
+                'required',
+                'string',
+                'max:10',
+                'unique:countries,country_code' . $ignore
+            ],
+            'capital' => [
+                'nullable',
+                'string',
+                'max:100'
+            ],
+            'key_cities' => [
+                'nullable',
+                'string',
+                'max:255'
+            ],
+            'region' => [
+                'nullable',
+                'string',
+                'max:50'
+            ],
+            'visa_processing_time' => [
+                'nullable',
+                'string',
+                'max:100'
+            ],
+            'funds_required' => [
+                'nullable',
+                'string',
+                'max:255'
+            ],
+            'visa_guidelines' => [
+                'nullable',
+                'string'
+            ],
+            'flag_image' => [
+                'nullable',
+                'string',
+                'starts_with:data:image/',
+                'max:2000000'
+            ],
+            'description' => [
+                'nullable',
+                'string'
+            ],
+            'is_active' => [
+                'boolean'
+            ],
+        ];
     }
 }

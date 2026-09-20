@@ -549,7 +549,7 @@ class AdminController extends Controller
     public function countries()
     {
         $countries = Country::orderBy('country_name')
-            ->paginate(20);
+            ->get();
 
         return view(
             'admin.countries',
@@ -563,13 +563,16 @@ class AdminController extends Controller
      */
     public function universities()
     {
-        $universities = University::with('country')
-            ->orderBy('university_name')
-            ->paginate(20);
+        $universities = University::with(['country', 'courses'])
+            ->latest('university_id')
+            ->get();
+
+        $countries = Country::orderBy('country_name')
+            ->get();
 
         return view(
             'admin.universities',
-            compact('universities')
+            compact('universities', 'countries')
         );
     }
 
@@ -579,13 +582,17 @@ class AdminController extends Controller
      */
     public function courses()
     {
-        $courses = Course::with('university')
-            ->orderBy('course_name')
-            ->paginate(20);
+        $courses = Course::with('university.country')
+            ->latest('course_id')
+            ->get();
+
+        $universities = University::with('country')
+            ->orderBy('university_name')
+            ->get();
 
         return view(
             'admin.courses',
-            compact('courses')
+            compact('courses', 'universities')
         );
     }
 

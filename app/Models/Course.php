@@ -16,10 +16,17 @@ class Course extends Model
 
     protected $fillable = [
         'university_id',
+        'course_code',
         'course_name',
         'course_level',
         'field_of_study',
         'duration',
+        'tuition_fee',
+        'credits',
+        'intakes',
+        'min_gpa',
+        'english_requirement',
+        'prerequisites',
         'study_mode',
         'description',
         'application_deadline',
@@ -31,6 +38,33 @@ class Course extends Model
         return [
             'application_deadline' => 'date',
             'is_active' => 'boolean',
+        ];
+    }
+
+    /**
+     * Shape consumed by the admin courses page.
+     */
+    public function toAdminArray(): array
+    {
+        return [
+            'id' => $this->course_id,
+            'code' => $this->course_code ?? '',
+            'name' => $this->course_name,
+            'universityId' => $this->university_id,
+            'university' => $this->university?->university_name ?? '',
+            'country' => $this->university?->country?->country_name ?? '',
+            'level' => $this->course_level,
+            'field' => $this->field_of_study ?? '',
+            'mode' => $this->study_mode ?? 'On Campus',
+            'duration' => $this->duration ?? '',
+            'tuition' => $this->tuition_fee ?? '',
+            'credits' => $this->credits ?? '',
+            'intakes' => $this->intakes ?? '',
+            'minGpa' => $this->min_gpa ?? '',
+            'englishReq' => $this->english_requirement ?? '',
+            'prerequisites' => $this->prerequisites ?? '',
+            'description' => $this->description ?? '',
+            'active' => (bool) $this->is_active,
         ];
     }
 

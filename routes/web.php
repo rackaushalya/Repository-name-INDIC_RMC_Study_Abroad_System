@@ -630,21 +630,13 @@ Route::middleware('auth')
 
     });
 
-Route::get('/test-univ', function () {
-    return view('admin.universities');
-});
+Route::get('/test-univ', [UniversityController::class, 'index']);
 
-Route::get('/test-countries', function () {
-    return view('admin.countries');
-});
+Route::get('/test-countries', [CountryController::class, 'index']);
 
-Route::get('/test-courses', function () {
-    return view('admin.courses');
-});
+Route::get('/test-courses', [CourseController::class, 'index']);
 
-Route::get('/test-scholarships', function () {
-    return view('admin.scholarships');
-});
+Route::get('/test-scholarships', [ScholarshipController::class, 'index']);
 
 Route::get('/test-consultants', function () {
     return view('admin.consultants');

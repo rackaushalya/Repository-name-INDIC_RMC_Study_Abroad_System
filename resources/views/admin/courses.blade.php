@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>INDIC RMC | Course Management</title>
 
     <style>
@@ -1628,389 +1629,90 @@
      SCRIPTS & STATE MANAGEMENT
 ====================================================== -->
 <script>
-    // Initial Universities List with Country Mapping
-    const universityDirectory = [
-        { name: "University of Toronto", country: "Canada", flag: "https://flagcdn.com/w40/ca.png" },
-        { name: "McGill University", country: "Canada", flag: "https://flagcdn.com/w40/ca.png" },
-        { name: "University of British Columbia", country: "Canada", flag: "https://flagcdn.com/w40/ca.png" },
-        { name: "University of Oxford", country: "United Kingdom", flag: "https://flagcdn.com/w40/gb.png" },
-        { name: "University of Cambridge", country: "United Kingdom", flag: "https://flagcdn.com/w40/gb.png" },
-        { name: "Imperial College London", country: "United Kingdom", flag: "https://flagcdn.com/w40/gb.png" },
-        { name: "Harvard University", country: "United States", flag: "https://flagcdn.com/w40/us.png" },
-        { name: "MIT", country: "United States", flag: "https://flagcdn.com/w40/us.png" },
-        { name: "Stanford University", country: "United States", flag: "https://flagcdn.com/w40/us.png" },
-        { name: "National University of Singapore", country: "Singapore", flag: "https://flagcdn.com/w40/sg.png" },
-        { name: "Nanyang Technological University", country: "Singapore", flag: "https://flagcdn.com/w40/sg.png" },
-        { name: "Technical University of Munich", country: "Germany", flag: "https://flagcdn.com/w40/de.png" },
-        { name: "Heidelberg University", country: "Germany", flag: "https://flagcdn.com/w40/de.png" },
-        { name: "University of Melbourne", country: "Australia", flag: "https://flagcdn.com/w40/au.png" },
-        { name: "University of Sydney", country: "Australia", flag: "https://flagcdn.com/w40/au.png" },
-        { name: "Trinity College Dublin", country: "Ireland", flag: "https://flagcdn.com/w40/ie.png" }
-    ];
+    @php
+        $universityDirectory = $universities->map(fn ($u) => [
+            'id' => $u->university_id,
+            'name' => $u->university_name,
+            'country' => $u->country?->country_name ?? '',
+            'flag' => $u->country?->flag_image,
+        ])->values();
+    @endphp
 
-    // Initial Accredited Courses Dataset (18 Programs across 7 Countries)
-    let coursesData = [
-        {
-            id: 1,
-            code: "CS-101",
-            name: "B.Sc. in Computer Science & Artificial Intelligence",
-            university: "University of Toronto",
-            country: "Canada",
-            flag: "https://flagcdn.com/w40/ca.png",
-            level: "Bachelor",
-            field: "Computer Science & IT",
-            duration: "4 Years",
-            mode: "On Campus",
-            tuition: "$42,500 / year",
-            credits: "120 Credits",
-            intakes: "September, January",
-            minGpa: "3.5 / 4.0 (85%)",
-            englishReq: "IELTS 6.5 (min 6.0 in bands) or TOEFL 92",
-            prerequisites: "High school mathematics and computing fundamentals with Grade A/B.",
-            description: "A premier honors program delivering rigorous instruction in machine learning, distributed software systems, algorithms, and applied robotics.",
-            active: true
-        },
-        {
-            id: 2,
-            code: "DS-501",
-            name: "Master of Science in Data Science & Big Data Analytics",
-            university: "University of British Columbia",
-            country: "Canada",
-            flag: "https://flagcdn.com/w40/ca.png",
-            level: "Master",
-            field: "Data Science & Analytics",
-            duration: "2 Years",
-            mode: "Hybrid",
-            tuition: "$34,000 / year",
-            credits: "60 ECTS",
-            intakes: "September, May",
-            minGpa: "3.3 / 4.0 (82%)",
-            englishReq: "IELTS 7.0 (min 6.5) or TOEFL 96",
-            prerequisites: "Undergraduate degree in STEM field with proven linear algebra and Python fluency.",
-            description: "Designed for industry leaders handling high-throughput big data pipelines, neural network architecture, and statistical inference.",
-            active: true
-        },
-        {
-            id: 3,
-            code: "MBA-701",
-            name: "Global Executive MBA in Strategic Innovation",
-            university: "University of Oxford",
-            country: "United Kingdom",
-            flag: "https://flagcdn.com/w40/gb.png",
-            level: "MBA",
-            field: "Business & Management",
-            duration: "1 Year",
-            mode: "On Campus",
-            tuition: "£58,000 / year",
-            credits: "180 Credits",
-            intakes: "September, January",
-            minGpa: "3.4 / 4.0 or 1st Class Honors",
-            englishReq: "IELTS 7.5 (min 7.0) or TOEFL 105",
-            prerequisites: "At least 3 years of executive or management professional work experience.",
-            description: "World-class business education focusing on disruptive enterprise leadership, global economics, and venture incubation.",
-            active: true
-        },
-        {
-            id: 4,
-            code: "AI-602",
-            name: "M.Sc. in Machine Learning & Robotics Engineering",
-            university: "Imperial College London",
-            country: "United Kingdom",
-            flag: "https://flagcdn.com/w40/gb.png",
-            level: "Master",
-            field: "Artificial Intelligence",
-            duration: "1 Year",
-            mode: "On Campus",
-            tuition: "£38,500 / year",
-            credits: "90 ECTS",
-            intakes: "October",
-            minGpa: "3.6 / 4.0 (87%)",
-            englishReq: "IELTS 7.0 (min 6.5) or TOEFL 100",
-            prerequisites: "Bachelors in Computer Engineering, Electrical Engineering or Mathematics.",
-            description: "Hands-on research degree combining perception, kinematics, deep reinforcement learning, and autonomous drone systems.",
-            active: true
-        },
-        {
-            id: 5,
-            code: "ENG-104",
-            name: "Bachelor of Science in Electrical Engineering & Computing",
-            university: "MIT",
-            country: "United States",
-            flag: "https://flagcdn.com/w40/us.png",
-            level: "Bachelor",
-            field: "Engineering & Tech",
-            duration: "4 Years",
-            mode: "On Campus",
-            tuition: "$57,500 / year",
-            credits: "132 Credits",
-            intakes: "September",
-            minGpa: "3.8 / 4.0 (92%)",
-            englishReq: "TOEFL 100 or IELTS 7.5",
-            prerequisites: "SAT / ACT with advanced calculus and physics score.",
-            description: "The gold standard undergraduate engineering degree encompassing microelectronics, computer architecture, and wireless systems.",
-            active: true
-        },
-        {
-            id: 6,
-            code: "MED-801",
-            name: "Master of Public Health & Global Epidemiology",
-            university: "Harvard University",
-            country: "United States",
-            flag: "https://flagcdn.com/w40/us.png",
-            level: "Master",
-            field: "Medicine & Health",
-            duration: "2 Years",
-            mode: "Hybrid",
-            tuition: "$49,800 / year",
-            credits: "80 Credits",
-            intakes: "September",
-            minGpa: "3.5 / 4.0",
-            englishReq: "IELTS 7.5 or TOEFL 102",
-            prerequisites: "Undergraduate degree in biological sciences, medicine, or allied health professions.",
-            description: "Prepares world healthcare analysts to monitor biosecurity, disease prevention mechanisms, and cross-border clinical trials.",
-            active: true
-        },
-        {
-            id: 7,
-            code: "PHD-901",
-            name: "Ph.D. in Quantum Computing & Applied Physics",
-            university: "Stanford University",
-            country: "United States",
-            flag: "https://flagcdn.com/w40/us.png",
-            level: "PhD",
-            field: "Quantum Sciences",
-            duration: "5 Years",
-            mode: "On Campus",
-            tuition: "Fully Funded (Stipend)",
-            credits: "Doctoral Dissertation",
-            intakes: "September",
-            minGpa: "3.8 / 4.0",
-            englishReq: "TOEFL 105 or IELTS 8.0",
-            prerequisites: "Research publication track record in quantum mechanics or superconducting hardware.",
-            description: "Doctoral research program supported by federal energy laboratories and Silicon Valley quantum hardware consortiums.",
-            active: true
-        },
-        {
-            id: 8,
-            code: "FIN-302",
-            name: "B.Sc. in Quantitative Finance & FinTech",
-            university: "National University of Singapore",
-            country: "Singapore",
-            flag: "https://flagcdn.com/w40/sg.png",
-            level: "Bachelor",
-            field: "Finance & Economics",
-            duration: "4 Years",
-            mode: "On Campus",
-            tuition: "S$38,000 / year",
-            credits: "160 MCs",
-            intakes: "August",
-            minGpa: "3.6 / 4.0 (88%)",
-            englishReq: "IELTS 6.5 or TOEFL 90",
-            prerequisites: "Superior high school performance in advanced mathematics and statistics.",
-            description: "High-demand Asian banking hub curriculum in algorithmic high-frequency trading, blockchain architecture, and risk modeling.",
-            active: true
-        },
-        {
-            id: 9,
-            code: "CS-403",
-            name: "Master in Cyber Security & Network Defense",
-            university: "Nanyang Technological University",
-            country: "Singapore",
-            flag: "https://flagcdn.com/w40/sg.png",
-            level: "Master",
-            field: "Cyber Security",
-            duration: "1.5 Years",
-            mode: "Online",
-            tuition: "S$32,000 / year",
-            credits: "45 Credits",
-            intakes: "August, January",
-            minGpa: "3.2 / 4.0",
-            englishReq: "IELTS 6.5 or TOEFL 90",
-            prerequisites: "Bachelors in Computer Science, IT, or equivalent industry certifications (CISSP/CEH).",
-            description: "Deep-dive program into penetration testing, threat hunting, zero-trust cloud infrastructure, and cryptography.",
-            active: true
-        },
-        {
-            id: 10,
-            code: "ENG-502",
-            name: "M.Sc. in Automotive & Sustainable Mobility",
-            university: "Technical University of Munich",
-            country: "Germany",
-            flag: "https://flagcdn.com/w40/de.png",
-            level: "Master",
-            field: "Automotive Engineering",
-            duration: "2 Years",
-            mode: "On Campus",
-            tuition: "€1,500 / semester",
-            credits: "120 ECTS",
-            intakes: "October, April",
-            minGpa: "2.5 (German Scale ~ 80%)",
-            englishReq: "IELTS 6.5 or German B2",
-            prerequisites: "Undergraduate degree in Mechanical Engineering, Mechatronics, or Automotive systems.",
-            description: "German automotive excellence focusing on battery cell chemistry, EV powertrains, and autonomous driving telemetry.",
-            active: true
-        },
-        {
-            id: 11,
-            code: "BIO-601",
-            name: "Master of Molecular Biotechnology & Genomics",
-            university: "Heidelberg University",
-            country: "Germany",
-            flag: "https://flagcdn.com/w40/de.png",
-            level: "Master",
-            field: "Biotechnology & Life Sciences",
-            duration: "2 Years",
-            mode: "On Campus",
-            tuition: "€1,500 / semester",
-            credits: "120 ECTS",
-            intakes: "October",
-            minGpa: "2.3 (German Scale)",
-            englishReq: "IELTS 7.0 or TOEFL 95",
-            prerequisites: "Degree in Biochemistry, Molecular Biology, or Biotechnology.",
-            description: "Translational research laboratory program covering CRISPR gene editing, immuno-oncology, and synthetic biology.",
-            active: true
-        },
-        {
-            id: 12,
-            code: "MGT-201",
-            name: "Bachelor of Commerce & International Business",
-            university: "University of Melbourne",
-            country: "Australia",
-            flag: "https://flagcdn.com/w40/au.png",
-            level: "Bachelor",
-            field: "Business & Management",
-            duration: "3 Years",
-            mode: "On Campus",
-            tuition: "A$44,500 / year",
-            credits: "300 Points",
-            intakes: "February, July",
-            minGpa: "3.2 / 4.0 (80%)",
-            englishReq: "IELTS 6.5 (no band below 6.0)",
-            prerequisites: "Australian Year 12 or equivalent international senior high school certificate.",
-            description: "Comprehensive commercial leadership degree accredited by CPA Australia and AACSB international.",
-            active: true
-        },
-        {
-            id: 13,
-            code: "LAW-701",
-            name: "Master of Laws (LL.M.) in International Trade Law",
-            university: "University of Sydney",
-            country: "Australia",
-            flag: "https://flagcdn.com/w40/au.png",
-            level: "Master",
-            field: "Law & Jurisprudence",
-            duration: "1 Year",
-            mode: "Hybrid",
-            tuition: "A$48,000 / year",
-            credits: "48 Credit Points",
-            intakes: "March, August",
-            minGpa: "3.3 / 4.0",
-            englishReq: "IELTS 7.0 (no band below 6.5)",
-            prerequisites: "Bachelor of Laws (LL.B.) or Juris Doctor (J.D.) from recognized institution.",
-            description: "Specialized postgraduate law curriculum covering cross-border arbitration, maritime agreements, and WTO regulatory policy.",
-            active: true
-        },
-        {
-            id: 14,
-            code: "CS-305",
-            name: "M.Sc. in Cloud Computing & DevOps Architecture",
-            university: "Trinity College Dublin",
-            country: "Ireland",
-            flag: "https://flagcdn.com/w40/ie.png",
-            level: "Master",
-            field: "Computer Science & IT",
-            duration: "1 Year",
-            mode: "On Campus",
-            tuition: "€24,500 / year",
-            credits: "90 ECTS",
-            intakes: "September",
-            minGpa: "2.1 Honors (75%)",
-            englishReq: "IELTS 6.5 (min 6.0 in writing)",
-            prerequisites: "Bachelors in Computing or Software Development.",
-            description: "Co-designed with Dublin tech multinationals (Google, AWS, Microsoft) emphasizing Kubernetes, multi-cloud resilience, and CI/CD.",
-            active: true
-        },
-        {
-            id: 15,
-            code: "DIP-101",
-            name: "Diploma in International Hospitality & Tourism Management",
-            university: "McGill University",
-            country: "Canada",
-            flag: "https://flagcdn.com/w40/ca.png",
-            level: "Diploma",
-            field: "Hospitality & Tourism",
-            duration: "1 Year",
-            mode: "On Campus",
-            tuition: "$18,500 / year",
-            credits: "30 Credits",
-            intakes: "September, January, May",
-            minGpa: "2.8 / 4.0",
-            englishReq: "IELTS 6.0 or TOEFL 80",
-            prerequisites: "High school completion or 1 year of service sector experience.",
-            description: "Professional accelerated diploma with paid Canadian hospitality co-op placement opportunities.",
-            active: true
-        },
-        {
-            id: 16,
-            code: "ENV-202",
-            name: "B.Sc. in Environmental Sciences & Sustainability",
-            university: "University of Cambridge",
-            country: "United Kingdom",
-            flag: "https://flagcdn.com/w40/gb.png",
-            level: "Bachelor",
-            field: "Environmental Science",
-            duration: "3 Years",
-            mode: "On Campus",
-            tuition: "£36,000 / year",
-            credits: "180 Credits",
-            intakes: "October",
-            minGpa: "3.7 / 4.0",
-            englishReq: "IELTS 7.5 (min 7.0 in all bands)",
-            prerequisites: "A-Levels with Chemistry, Biology, and Geography.",
-            description: "Interdisciplinary study of climate adaptation, renewable energy transitions, biodiversity preservation, and geological surveys.",
-            active: true
-        },
-        {
-            id: 17,
-            code: "DIP-102",
-            name: "Professional Diploma in Digital Marketing & Growth Hacking",
-            university: "University of Melbourne",
-            country: "Australia",
-            flag: "https://flagcdn.com/w40/au.png",
-            level: "Diploma",
-            field: "Marketing & Media",
-            duration: "1 Year",
-            mode: "Online",
-            tuition: "A$16,800 / year",
-            credits: "50 Points",
-            intakes: "Quarterly (Jan, Apr, Jul, Oct)",
-            minGpa: "2.7 / 4.0",
-            englishReq: "IELTS 6.0",
-            prerequisites: "Secondary education completion.",
-            description: "Practical online credential covering programmatic ad spending, conversion optimization, SEO, and omnichannel analytics.",
-            active: true
-        },
-        {
-            id: 18,
-            code: "PHD-905",
-            name: "Ph.D. in Artificial Intelligence for Healthcare & Diagnostics",
-            university: "University of Toronto",
-            country: "Canada",
-            flag: "https://flagcdn.com/w40/ca.png",
-            level: "PhD",
-            field: "Health Informatics & AI",
-            duration: "4 Years",
-            mode: "On Campus",
-            tuition: "Fully Funded (Fellowship)",
-            credits: "Doctoral Thesis",
-            intakes: "September",
-            minGpa: "3.7 / 4.0",
-            englishReq: "IELTS 7.5 or TOEFL 100",
-            prerequisites: "M.Sc. in Computer Science or Biomedical Informatics.",
-            description: "Pioneering doctoral fellowship at Vector Institute combining medical image segmentation, drug discovery ML, and patient EHR predictive modeling.",
-            active: true
+    const COURSES_URL = @json(url('/admin/courses'));
+    const CSRF_TOKEN = document.querySelector('meta[name="csrf-token"]').content;
+
+    // Country name -> ISO alpha-2 (used to pick a flag image)
+    const countryIsoMap = {
+        'afghanistan': 'af', 'albania': 'al', 'algeria': 'dz', 'andorra': 'ad', 'angola': 'ao',
+        'argentina': 'ar', 'armenia': 'am', 'australia': 'au', 'austria': 'at', 'azerbaijan': 'az',
+        'bahamas': 'bs', 'bahrain': 'bh', 'bangladesh': 'bd', 'barbados': 'bb', 'belarus': 'by',
+        'belgium': 'be', 'belize': 'bz', 'benin': 'bj', 'bhutan': 'bt', 'bolivia': 'bo',
+        'bosnia and herzegovina': 'ba', 'botswana': 'bw', 'brazil': 'br', 'brunei': 'bn', 'bulgaria': 'bg',
+        'cambodia': 'kh', 'cameroon': 'cm', 'canada': 'ca', 'chile': 'cl', 'china': 'cn',
+        'colombia': 'co', 'costa rica': 'cr', 'croatia': 'hr', 'cuba': 'cu', 'cyprus': 'cy',
+        'czech republic': 'cz', 'czechia': 'cz', 'denmark': 'dk', 'ecuador': 'ec', 'egypt': 'eg',
+        'estonia': 'ee', 'ethiopia': 'et', 'fiji': 'fj', 'finland': 'fi', 'france': 'fr',
+        'georgia': 'ge', 'germany': 'de', 'ghana': 'gh', 'greece': 'gr', 'hong kong': 'hk',
+        'hungary': 'hu', 'iceland': 'is', 'india': 'in', 'indonesia': 'id', 'iran': 'ir',
+        'iraq': 'iq', 'ireland': 'ie', 'israel': 'il', 'italy': 'it', 'jamaica': 'jm',
+        'japan': 'jp', 'jordan': 'jo', 'kazakhstan': 'kz', 'kenya': 'ke', 'kuwait': 'kw',
+        'latvia': 'lv', 'lebanon': 'lb', 'lithuania': 'lt', 'luxembourg': 'lu', 'malaysia': 'my',
+        'maldives': 'mv', 'malta': 'mt', 'mauritius': 'mu', 'mexico': 'mx', 'monaco': 'mc',
+        'morocco': 'ma', 'nepal': 'np', 'netherlands': 'nl', 'new zealand': 'nz', 'nigeria': 'ng',
+        'norway': 'no', 'oman': 'om', 'pakistan': 'pk', 'philippines': 'ph', 'poland': 'pl',
+        'portugal': 'pt', 'qatar': 'qa', 'romania': 'ro', 'russia': 'ru', 'saudi arabia': 'sa',
+        'serbia': 'rs', 'singapore': 'sg', 'slovakia': 'sk', 'slovenia': 'si', 'south africa': 'za',
+        'south korea': 'kr', 'korea': 'kr', 'spain': 'es', 'sri lanka': 'lk', 'sweden': 'se',
+        'switzerland': 'ch', 'taiwan': 'tw', 'thailand': 'th', 'turkey': 'tr', 'türkiye': 'tr',
+        'ukraine': 'ua', 'united arab emirates': 'ae', 'uae': 'ae', 'united kingdom': 'gb', 'uk': 'gb',
+        'united states': 'us', 'usa': 'us', 'vietnam': 'vn', 'zimbabwe': 'zw'
+    };
+
+    function getCountryFlag(name) {
+        const iso = countryIsoMap[(name || '').toLowerCase().trim()];
+        return 'https://flagcdn.com/w40/' + (iso || 'un') + '.png';
+    }
+
+    // Universities loaded from the database (a course must belong to one of these)
+    const universityDirectory = @json($universityDirectory).map(u => ({
+        ...u,
+        flag: u.flag || getCountryFlag(u.country)
+    }));
+
+    function withFlag(course) {
+        const uni = universityDirectory.find(u => u.id === course.universityId);
+        return { ...course, flag: uni ? uni.flag : getCountryFlag(course.country) };
+    }
+
+    // Courses loaded from the database
+    let coursesData = @json($courses->map->toAdminArray()->values()).map(withFlag);
+
+    // JSON request helper for the course resource endpoints
+    async function apiRequest(url, method, body) {
+        const response = await fetch(url, {
+            method,
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': CSRF_TOKEN,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            credentials: 'same-origin',
+            body: body ? JSON.stringify(body) : undefined
+        });
+
+        let data = null;
+        try { data = await response.json(); } catch (err) { /* non-JSON response */ }
+
+        if (!response.ok) {
+            let message = (data && data.message) || ('Request failed (' + response.status + ').');
+            if (data && data.errors) {
+                message = Object.values(data.errors)[0][0];
+            }
+            throw new Error(message);
         }
-    ];
+        return data;
+    }
 
     // State Variables
     let currentView = 'table';
@@ -2043,15 +1745,15 @@
             uniFilter.appendChild(opt1);
 
             const opt2 = document.createElement('option');
-            opt2.value = u.name;
+            opt2.value = u.id;
             opt2.textContent = u.name + ' (' + u.country + ')';
             uniSelect.appendChild(opt2);
         });
     }
 
     // Auto-sync Country when University is chosen in modal
-    function syncCountryFromUniversity(uniName) {
-        const found = universityDirectory.find(u => u.name === uniName);
+    function syncCountryFromUniversity(uniId) {
+        const found = universityDirectory.find(u => String(u.id) === String(uniId));
         const countryInput = document.getElementById('courseCountryInput');
         if (found) {
             countryInput.value = found.country;
@@ -2235,7 +1937,7 @@
                 <td>
                     <div class="uni-identity">
                         <div class="course-icon-thumb">
-                            ${c.code.split('-')[0] || 'CR'}
+                            ${escapeHtml(c.code.split('-')[0]) || 'CR'}
                         </div>
                         <div>
                             <div class="uni-name-text">${escapeHtml(c.name)}</div>
@@ -2245,7 +1947,7 @@
                 </td>
                 <td>
                     <div class="country-pill">
-                        <img src="${c.flag}" alt="${c.country}" class="country-flag-icon" onerror="this.style.display='none'">
+                        <img src="${escapeHtml(c.flag)}" alt="${escapeHtml(c.country)}" class="country-flag-icon" onerror="this.style.display='none'">
                         <span>${escapeHtml(c.university)}</span>
                     </div>
                     <div style="font-size: 10px; color: #8c96a8; margin-top: 2px;">${escapeHtml(c.country)}</div>
@@ -2328,7 +2030,7 @@
                 </div>
 
                 <div class="country-pill">
-                    <img src="${c.flag}" alt="${c.country}" class="country-flag-icon" onerror="this.style.display='none'">
+                    <img src="${escapeHtml(c.flag)}" alt="${escapeHtml(c.country)}" class="country-flag-icon" onerror="this.style.display='none'">
                     <div>
                         <div style="font-weight: 600; color: #172033; font-size: 12px;">${escapeHtml(c.university)}</div>
                         <div style="font-size: 10px; color: #8a93a3;">${escapeHtml(c.country)}</div>
@@ -2488,6 +2190,10 @@
 
     // Open Add Course Modal
     function openAddCourseModal() {
+        if (universityDirectory.length === 0) {
+            showToast('Add a university first \u2014 every course must belong to a university.');
+            return;
+        }
         document.getElementById('addEditModalTitle').textContent = 'Add New Degree Program';
         document.getElementById('courseIdField').value = '';
         document.getElementById('courseForm').reset();
@@ -2505,7 +2211,7 @@
         document.getElementById('courseIdField').value = c.id;
         document.getElementById('courseCodeInput').value = c.code || '';
         document.getElementById('courseNameInput').value = c.name || '';
-        document.getElementById('courseUniversitySelect').value = c.university || '';
+        document.getElementById('courseUniversitySelect').value = c.universityId || '';
         document.getElementById('courseCountryInput').value = c.country || '';
         document.getElementById('courseLevelSelect').value = c.level || 'Bachelor';
         document.getElementById('courseFieldInput').value = c.field || '';
@@ -2523,86 +2229,56 @@
         openModal('addEditCourseModal');
     }
 
-    // Handle Save (Add or Update)
-    function handleSaveCourse(e) {
+    // Handle Save (Add or Update) - persists to the database
+    async function handleSaveCourse(e) {
         e.preventDefault();
 
         const idVal = document.getElementById('courseIdField').value;
-        const code = document.getElementById('courseCodeInput').value.trim();
-        const name = document.getElementById('courseNameInput').value.trim();
-        const uni = document.getElementById('courseUniversitySelect').value;
-        const country = document.getElementById('courseCountryInput').value;
-        const level = document.getElementById('courseLevelSelect').value;
-        const field = document.getElementById('courseFieldInput').value.trim();
-        const mode = document.getElementById('courseModeSelect').value;
-        const duration = document.getElementById('courseDurationInput').value.trim();
-        const tuition = document.getElementById('courseTuitionInput').value.trim();
-        const credits = document.getElementById('courseCreditsInput').value.trim();
-        const intakes = document.getElementById('courseIntakesInput').value.trim();
-        const minGpa = document.getElementById('courseMinGpaInput').value.trim();
-        const englishReq = document.getElementById('courseEnglishReqInput').value.trim();
-        const prerequisites = document.getElementById('coursePrereqInput').value.trim();
-        const description = document.getElementById('courseDescInput').value.trim();
-        const active = document.getElementById('courseActiveCheckbox').checked;
+        const payload = {
+            university_id: document.getElementById('courseUniversitySelect').value,
+            course_code: document.getElementById('courseCodeInput').value.trim(),
+            course_name: document.getElementById('courseNameInput').value.trim(),
+            course_level: document.getElementById('courseLevelSelect').value,
+            field_of_study: document.getElementById('courseFieldInput').value.trim() || null,
+            study_mode: document.getElementById('courseModeSelect').value,
+            duration: document.getElementById('courseDurationInput').value.trim() || null,
+            tuition_fee: document.getElementById('courseTuitionInput').value.trim() || null,
+            credits: document.getElementById('courseCreditsInput').value.trim() || null,
+            intakes: document.getElementById('courseIntakesInput').value.trim() || null,
+            min_gpa: document.getElementById('courseMinGpaInput').value.trim() || null,
+            english_requirement: document.getElementById('courseEnglishReqInput').value.trim() || null,
+            prerequisites: document.getElementById('coursePrereqInput').value.trim() || null,
+            description: document.getElementById('courseDescInput').value.trim() || null,
+            is_active: document.getElementById('courseActiveCheckbox').checked
+        };
 
-        const uniObj = universityDirectory.find(u => u.name === uni);
-        const flag = uniObj ? uniObj.flag : 'https://flagcdn.com/w40/un.png';
+        const submitBtn = document.querySelector('#courseForm button[type="submit"]');
+        submitBtn.disabled = true;
 
-        if (idVal) {
-            // Edit existing
-            const idx = coursesData.findIndex(c => c.id === parseInt(idVal, 10));
-            if (idx !== -1) {
-                coursesData[idx] = {
-                    ...coursesData[idx],
-                    code,
-                    name,
-                    university: uni,
-                    country,
-                    flag,
-                    level,
-                    field,
-                    mode,
-                    duration,
-                    tuition,
-                    credits,
-                    intakes,
-                    minGpa,
-                    englishReq,
-                    prerequisites,
-                    description,
-                    active
-                };
+        try {
+            const result = await apiRequest(
+                idVal ? COURSES_URL + '/' + idVal : COURSES_URL,
+                idVal ? 'PUT' : 'POST',
+                payload
+            );
+            const saved = withFlag(result.course);
+
+            if (idVal) {
+                const idx = coursesData.findIndex(c => c.id === parseInt(idVal, 10));
+                if (idx !== -1) coursesData[idx] = saved;
                 showToast('Degree program updated successfully!');
+            } else {
+                coursesData.unshift(saved);
+                showToast('New degree program created successfully!');
             }
-        } else {
-            // Create new
-            const newId = coursesData.length > 0 ? Math.max(...coursesData.map(c => c.id)) + 1 : 1;
-            const newCourse = {
-                id: newId,
-                code,
-                name,
-                university: uni,
-                country,
-                flag,
-                level,
-                field,
-                mode,
-                duration,
-                tuition,
-                credits,
-                intakes,
-                minGpa,
-                englishReq,
-                prerequisites,
-                description,
-                active
-            };
-            coursesData.unshift(newCourse);
-            showToast('New degree program created successfully!');
-        }
 
-        closeModal('addEditCourseModal');
-        renderCourses();
+            closeModal('addEditCourseModal');
+            renderCourses();
+        } catch (err) {
+            showToast(err.message);
+        } finally {
+            submitBtn.disabled = false;
+        }
     }
 
     // View Requirements & Details Modal
@@ -2706,12 +2382,17 @@
         deletingCourseId = id;
         document.getElementById('deleteCourseName').textContent = c.name + ' (' + c.code + ')';
 
-        document.getElementById('confirmDeleteBtn').onclick = function() {
-            coursesData = coursesData.filter(item => item.id !== deletingCourseId);
-            selectedCourseIds.delete(deletingCourseId);
-            closeModal('deleteCourseModal');
-            showToast('Course program deactivated and removed from active listings.');
-            renderCourses();
+        document.getElementById('confirmDeleteBtn').onclick = async function() {
+            try {
+                const result = await apiRequest(COURSES_URL + '/' + deletingCourseId, 'DELETE');
+                const idx = coursesData.findIndex(item => item.id === deletingCourseId);
+                if (idx !== -1) coursesData[idx] = withFlag(result.course);
+                closeModal('deleteCourseModal');
+                showToast('Course program deactivated and removed from active listings.');
+                renderCourses();
+            } catch (err) {
+                showToast(err.message);
+            }
         };
 
         openModal('deleteCourseModal');

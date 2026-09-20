@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>INDIC RMC | Country Management</title>
 
     <style>
@@ -1171,7 +1172,7 @@
                     <select id="statusFilterSelect" class="filter-select">
                         <option value="ALL">Filter by Status</option>
                         <option value="Active">Active</option>
-                        <option value="Under Review">Under Review</option>
+                        <option value="Inactive">Inactive</option>
                     </select>
                 </div>
 
@@ -1194,7 +1195,7 @@
 
                     <button class="btn-orange" onclick="openAddModal()">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                        + Add New Country
+                         Add New Country
                     </button>
                 </div>
             </div>
@@ -1339,7 +1340,7 @@
                         <label class="form-label">Operational Status *</label>
                         <select id="statusInput" class="form-select-modal" required>
                             <option value="Active">Active</option>
-                            <option value="Under Review">Under Review</option>
+                            <option value="Inactive">Inactive</option>
                         </select>
                     </div>
                 </div>
@@ -1405,12 +1406,12 @@
     <div class="modal-window" style="max-width: 420px; text-align: center;">
         <div class="modal-body" style="padding-top: 28px;">
             <div style="width: 48px; height: 48px; border-radius: 50%; background: #fef2f2; color: #dc2626; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; font-size: 22px;">⚠</div>
-            <h3 class="modal-title" style="margin-bottom: 8px;">Delete Country</h3>
-            <p style="font-size: 12px; color: #697386; line-height: 1.5;" id="deleteConfirmText">Are you sure you want to remove this country from the directory? This action cannot be undone.</p>
+            <h3 class="modal-title" style="margin-bottom: 8px;">Deactivate Country</h3>
+            <p style="font-size: 12px; color: #697386; line-height: 1.5;" id="deleteConfirmText">Are you sure you want to deactivate this country?</p>
         </div>
         <div class="modal-footer" style="justify-content: center;">
             <button type="button" class="btn-secondary" onclick="closeModal('deleteModal')">Cancel</button>
-            <button type="button" class="btn-danger" id="confirmDeleteBtn" onclick="confirmDelete()">Delete</button>
+            <button type="button" class="btn-danger" id="confirmDeleteBtn" onclick="confirmDelete()">Deactivate</button>
         </div>
     </div>
 </div>
@@ -1460,170 +1461,56 @@
         'uae': 'ARE', 'united arab emirates': 'ARE', 'india': 'IND'
     };
 
-    // Initial Countries Dataset (12 international destinations)
-    const initialCountries = [
-        {
-            id: "CTR-CAN-01",
-            code: "CAN",
-            name: "Canada",
-            capital: "Ottawa",
-            cities: "Toronto, Vancouver, Montreal",
-            region: "North America",
-            flag: "https://flagcdn.com/w80/ca.png",
-            visaGuidelines: "SDS stream for fast-track processing (20 days). Requires min IELTS 6.0 (CLB 7), upfront medical exam, and GIC financial proof of CAD $20,635. Post-Graduation Work Permit (PGWP) allows up to 3 years of work rights.",
-            processingTime: "4 - 8 Weeks",
-            fundsRequired: "CAD $20,635 + 1st yr tuition",
-            status: "Active"
-        },
-        {
-            id: "CTR-GBR-02",
-            code: "GBR",
-            name: "United Kingdom",
-            capital: "London",
-            cities: "London, Manchester, Edinburgh",
-            region: "United Kingdom",
-            flag: "https://flagcdn.com/w80/gb.png",
-            visaGuidelines: "Student Visa (Points-Based System: 70 points needed). CAS letter from licensed sponsor mandatory. Financial proof: £1,334/mo (London) or £1,023/mo (outside London) held for 28 consecutive days. Graduate Route offers 2-year post-study work visa.",
-            processingTime: "3 - 5 Weeks",
-            fundsRequired: "£9,207 - £12,006 living + tuition",
-            status: "Active"
-        },
-        {
-            id: "CTR-USA-03",
-            code: "USA",
-            name: "United States",
-            capital: "Washington, D.C.",
-            cities: "Boston, New York, San Francisco",
-            region: "North America",
-            flag: "https://flagcdn.com/w80/us.png",
-            visaGuidelines: "F-1 Academic Student Visa requires Form I-20 and SEVIS fee payment ($350). In-person embassy consular interview mandatory. STEM degree graduates eligible for up to 36 months of Optional Practical Training (OPT).",
-            processingTime: "4 - 6 Weeks",
-            fundsRequired: "1 full year estimated cost on I-20",
-            status: "Active"
-        },
-        {
-            id: "CTR-AUS-04",
-            code: "AUS",
-            name: "Australia",
-            capital: "Canberra",
-            cities: "Melbourne, Sydney, Brisbane",
-            region: "Oceania",
-            flag: "https://flagcdn.com/w80/au.png",
-            visaGuidelines: "Subclass 500 Student Visa. Genuine Student (GS) criterion applies. Financial requirement is AUD $29,710 for annual living costs. Overseas Student Health Cover (OSHC) mandatory. Temporary Graduate (Subclass 485) visa available.",
-            processingTime: "4 - 10 Weeks",
-            fundsRequired: "AUD $29,710 living + tuition",
-            status: "Active"
-        },
-        {
-            id: "CTR-DEU-05",
-            code: "DEU",
-            name: "Germany",
-            capital: "Berlin",
-            cities: "Munich, Berlin, Aachen",
-            region: "Europe",
-            flag: "https://flagcdn.com/w80/de.png",
-            visaGuidelines: "National Visa for Study (D-Visa). Blocked account (Sperrkonto) with €11,904/year required as living expense proof. Most public universities tuition-free. 18-month job seeker permit granted after graduation.",
-            processingTime: "6 - 12 Weeks",
-            fundsRequired: "€11,904 blocked account",
-            status: "Under Review"
-        },
-        {
-            id: "CTR-IRL-06",
-            code: "IRL",
-            name: "Ireland",
-            capital: "Dublin",
-            cities: "Dublin, Cork, Galway",
-            region: "Europe",
-            flag: "https://flagcdn.com/w80/ie.png",
-            visaGuidelines: "Stamp 2 Study Visa. Non-EEA students must demonstrate €10,000 immediately accessible funds plus evidence of €10,000 for each subsequent study year. Third Level Graduate Scheme allows 2-year post-study work for Master's graduates.",
-            processingTime: "5 - 8 Weeks",
-            fundsRequired: "€10,000 immediate access + tuition",
-            status: "Active"
-        },
-        {
-            id: "CTR-NZL-07",
-            code: "NZL",
-            name: "New Zealand",
-            capital: "Wellington",
-            cities: "Auckland, Christchurch",
-            region: "Oceania",
-            flag: "https://flagcdn.com/w80/nz.png",
-            visaGuidelines: "Fee Paying Student Visa. Requires NZD $20,000 per year living expenses plus prepaid tuition fee receipt. Post Study Work Visa available for degree level 7 and above for up to 3 years.",
-            processingTime: "4 - 8 Weeks",
-            fundsRequired: "NZD $20,000 living + tuition",
-            status: "Active"
-        },
-        {
-            id: "CTR-SGP-08",
-            code: "SGP",
-            name: "Singapore",
-            capital: "Singapore",
-            cities: "Singapore City",
-            region: "Asia-Pacific",
-            flag: "https://flagcdn.com/w80/sg.png",
-            visaGuidelines: "Student's Pass (STP) administered by ICA. Requires an In-Principle Approval (IPA) letter from accredited Institute of Higher Learning. Financial proof SGD $30,000 in bank deposit.",
-            processingTime: "2 - 4 Weeks",
-            fundsRequired: "SGD $30,000 bank proof",
-            status: "Active"
-        },
-        {
-            id: "CTR-FRA-09",
-            code: "FRA",
-            name: "France",
-            capital: "Paris",
-            cities: "Paris, Lyon, Toulouse",
-            region: "Europe",
-            flag: "https://flagcdn.com/w80/fr.png",
-            visaGuidelines: "Long-stay student visa (VLS-TS). Campus France procedure mandatory for EEF member countries. Proof of minimum €615/month living expenses. Post-study APS visa allows 1-year job search.",
-            processingTime: "3 - 6 Weeks",
-            fundsRequired: "€7,380 per academic year",
-            status: "Active"
-        },
-        {
-            id: "CTR-NLD-10",
-            code: "NLD",
-            name: "Netherlands",
-            capital: "Amsterdam",
-            cities: "Amsterdam, Rotterdam, Utrecht",
-            region: "Europe",
-            flag: "https://flagcdn.com/w80/nl.png",
-            visaGuidelines: "Entry visa (MVV) and Residence Permit (VVR) applied on student's behalf by Dutch university. IND requirement of approx €1,000/month living cost. 'Orientation Year' permits graduates 1 year work rights.",
-            processingTime: "4 - 6 Weeks",
-            fundsRequired: "€12,500 IND living proof",
-            status: "Active"
-        },
-        {
-            id: "CTR-SWE-11",
-            code: "SWE",
-            name: "Sweden",
-            capital: "Stockholm",
-            cities: "Stockholm, Gothenburg, Lund",
-            region: "Europe",
-            flag: "https://flagcdn.com/w80/se.png",
-            visaGuidelines: "Residence permit for higher education through Swedish Migration Agency. Financial maintenance minimum SEK 9,450/month. First tuition installment must be paid before permit issuance.",
-            processingTime: "6 - 10 Weeks",
-            fundsRequired: "SEK 94,500 for 10-month academic year",
-            status: "Active"
-        },
-        {
-            id: "CTR-JPN-12",
-            code: "JPN",
-            name: "Japan",
-            capital: "Tokyo",
-            cities: "Tokyo, Kyoto, Osaka",
-            region: "East Asia",
-            flag: "https://flagcdn.com/w80/jp.png",
-            visaGuidelines: "College Student Visa requires Certificate of Eligibility (COE) issued by Japanese Immigration. Financial proof of 2.0 - 2.5 million JPY. Permission to work part-time up to 28 hours/week.",
-            processingTime: "8 - 12 Weeks",
-            fundsRequired: "2.0 - 2.5 Million JPY bank statement",
-            status: "Active"
-        }
-    ];
+    // Countries loaded from the database
+    const initialCountries = @json($countries->map->toAdminArray()->values());
+    const COUNTRIES_URL = @json(url('/admin/countries'));
+    const CSRF_TOKEN = document.querySelector('meta[name="csrf-token"]').content;
 
-    let countries = [...initialCountries];
+    let countries = initialCountries.map(c => ({
+        ...c,
+        flag: c.flag || getCountryFlag(c.name, c.code)
+    }));
     let activeSort = { column: 'name', ascending: true };
     let deleteTargetId = null;
     let currentCountryImageDataUrl = null;
+
+    // XSS sanitization helper (values now come from the database)
+    function escapeHtml(str) {
+        if (str === null || str === undefined) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    // JSON request helper for the country resource endpoints
+    async function apiRequest(url, method, body) {
+        const response = await fetch(url, {
+            method,
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': CSRF_TOKEN,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            credentials: 'same-origin',
+            body: body ? JSON.stringify(body) : undefined
+        });
+
+        let data = null;
+        try { data = await response.json(); } catch (err) { /* non-JSON response */ }
+
+        if (!response.ok) {
+            let message = (data && data.message) || ('Request failed (' + response.status + ').');
+            if (data && data.errors) {
+                message = Object.values(data.errors)[0][0];
+            }
+            throw new Error(message);
+        }
+        return data;
+    }
 
     // Resolve flag by country name or code
     function getCountryFlag(name = '', code = '') {
@@ -1784,6 +1671,7 @@
 
         if (data.length === 0) {
             tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: #8a93a3;">No countries match your search or filter criteria.</td></tr>';
+            updateStats(0);
             return;
         }
 
@@ -1792,22 +1680,22 @@
             const statusClass = c.status === 'Active' ? 'badge-status badge-active' : 'badge-status badge-review';
             tr.innerHTML = `
                 <td>
-                    <img src="${c.flag}" alt="${c.name}" class="country-flag-lg">
+                    <img src="${escapeHtml(c.flag)}" alt="${escapeHtml(c.name)}" class="country-flag-lg">
                 </td>
                 <td>
-                    <div class="country-name-text">${c.name}</div>
-                    <div class="country-subtext">${c.capital ? 'Capital: ' + c.capital : c.cities || ''}</div>
+                    <div class="country-name-text">${escapeHtml(c.name)}</div>
+                    <div class="country-subtext">${escapeHtml(c.capital ? 'Capital: ' + c.capital : c.cities || '')}</div>
                 </td>
                 <td>
-                    <span class="iso-badge">${c.code}</span>
+                    <span class="iso-badge">${escapeHtml(c.code)}</span>
                 </td>
-                <td>${c.region}</td>
+                <td>${escapeHtml(c.region) || '&mdash;'}</td>
                 <td>
-                    <span class="${statusClass}">${c.status}</span>
+                    <span class="${statusClass}">${escapeHtml(c.status)}</span>
                 </td>
                 <td>
                     <div class="guidelines-summary" onclick="viewGuidelines('${c.id}')" title="Click to view full embassy guidelines">
-                        ${c.visaGuidelines}
+                        ${escapeHtml(c.visaGuidelines)}
                     </div>
                 </td>
                 <td>
@@ -1818,7 +1706,7 @@
                         <button class="btn-icon-action" onclick="openEditModal('${c.id}')" title="Edit country">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                         </button>
-                        <button class="btn-icon-action delete" onclick="openDeleteModal('${c.id}')" title="Delete country">
+                        <button class="btn-icon-action delete" onclick="openDeleteModal('${c.id}')" title="Deactivate country">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                         </button>
                     </div>
@@ -1841,25 +1729,25 @@
             const statusClass = c.status === 'Active' ? 'badge-status badge-active' : 'badge-status badge-review';
             card.innerHTML = `
                 <div class="card-top">
-                    <img src="${c.flag}" class="country-flag-lg" alt="${c.name}">
+                    <img src="${escapeHtml(c.flag)}" class="country-flag-lg" alt="${escapeHtml(c.name)}">
                     <div style="flex: 1;">
-                        <div class="country-name-text">${c.name}</div>
-                        <span class="iso-badge" style="margin-top: 3px;">${c.code}</span>
+                        <div class="country-name-text">${escapeHtml(c.name)}</div>
+                        <span class="iso-badge" style="margin-top: 3px;">${escapeHtml(c.code)}</span>
                     </div>
-                    <span class="${statusClass}">${c.status}</span>
+                    <span class="${statusClass}">${escapeHtml(c.status)}</span>
                 </div>
                 <div style="font-size: 11px; color: #4b5565;">
-                    <div><strong>Region:</strong> ${c.region}</div>
-                    <div style="margin-top: 3px;"><strong>Processing:</strong> ${c.processingTime || 'N/A'}</div>
-                    <div style="margin-top: 3px;"><strong>Funds:</strong> ${c.fundsRequired || 'N/A'}</div>
+                    <div><strong>Region:</strong> ${escapeHtml(c.region) || 'N/A'}</div>
+                    <div style="margin-top: 3px;"><strong>Processing:</strong> ${escapeHtml(c.processingTime) || 'N/A'}</div>
+                    <div style="margin-top: 3px;"><strong>Funds:</strong> ${escapeHtml(c.fundsRequired) || 'N/A'}</div>
                 </div>
                 <div class="guidelines-summary" onclick="viewGuidelines('${c.id}')" style="margin-top: 4px;" title="Click to view full embassy guidelines">
-                    ${c.visaGuidelines}
+                    ${escapeHtml(c.visaGuidelines)}
                 </div>
                 <div class="card-actions">
                     <button class="btn-icon-action" onclick="viewGuidelines('${c.id}')" title="View Visa Guidelines"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
                     <button class="btn-icon-action" onclick="openEditModal('${c.id}')" title="Edit country"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
-                    <button class="btn-icon-action delete" onclick="openDeleteModal('${c.id}')" title="Delete country"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+                    <button class="btn-icon-action delete" onclick="openDeleteModal('${c.id}')" title="Deactivate country"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
                 </div>
             `;
             container.appendChild(card);
@@ -2006,8 +1894,8 @@
         openModal('addEditModal');
     }
 
-    // Save Country
-    function saveCountry(e) {
+    // Save Country (persists to the database)
+    async function saveCountry(e) {
         e.preventDefault();
         const editId = document.getElementById('editCountryId').value;
         const name = document.getElementById('countryNameInput').value.trim();
@@ -2020,38 +1908,46 @@
         const fundsRequired = document.getElementById('fundsInput').value.trim();
         const visaGuidelines = document.getElementById('guidelinesInput').value.trim();
 
-        // Determine flag image: custom desktop uploaded image or auto flag
-        const flag = currentCountryImageDataUrl || getCountryFlag(name, code);
+        const submitBtn = document.querySelector('#countryForm button[type="submit"]');
+        submitBtn.disabled = true;
 
-        if (editId) {
-            const index = countries.findIndex(item => item.id === editId);
-            if (index !== -1) {
-                countries[index] = {
-                    ...countries[index],
-                    name, code, capital, cities, region, status, processingTime, fundsRequired, visaGuidelines, flag
-                };
+        try {
+            const result = await apiRequest(
+                editId ? COUNTRIES_URL + '/' + editId : COUNTRIES_URL,
+                editId ? 'PUT' : 'POST',
+                {
+                    country_name: name,
+                    country_code: code,
+                    capital: capital || null,
+                    key_cities: cities || null,
+                    region: region || null,
+                    visa_processing_time: processingTime || null,
+                    funds_required: fundsRequired || null,
+                    visa_guidelines: visaGuidelines || null,
+                    flag_image: currentCountryImageDataUrl,
+                    is_active: status === 'Active'
+                }
+            );
+
+            const saved = result.country;
+            saved.flag = saved.flag || getCountryFlag(saved.name, saved.code);
+
+            if (editId) {
+                const index = countries.findIndex(item => item.id === editId);
+                if (index !== -1) countries[index] = saved;
                 showToast('Country details updated successfully!');
+            } else {
+                countries.unshift(saved);
+                showToast('New destination added successfully!');
             }
-        } else {
-            const newId = 'CTR-' + code + '-' + String(countries.length + 1).padStart(2, '0');
-            countries.unshift({
-                id: newId,
-                code,
-                name,
-                capital,
-                cities,
-                region,
-                status,
-                processingTime,
-                fundsRequired,
-                visaGuidelines,
-                flag
-            });
-            showToast('New destination added successfully!');
-        }
 
-        closeModal('addEditModal');
-        applyFilters();
+            closeModal('addEditModal');
+            applyFilters();
+        } catch (err) {
+            showToast(err.message);
+        } finally {
+            submitBtn.disabled = false;
+        }
     }
 
     // Delete Modal
@@ -2059,18 +1955,30 @@
         deleteTargetId = id;
         const c = countries.find(item => item.id === id);
         if (c) {
-            document.getElementById('deleteConfirmText').innerText = `Are you sure you want to remove "${c.name}" (${c.code}) from the directory? This action cannot be undone.`;
+            document.getElementById('deleteConfirmText').innerText = `Are you sure you want to deactivate "${c.name}" (${c.code})? It will be marked Inactive.`;
         }
         openModal('deleteModal');
     }
 
-    function confirmDelete() {
+    async function confirmDelete() {
         if (!deleteTargetId) return;
-        countries = countries.filter(item => item.id !== deleteTargetId);
-        deleteTargetId = null;
-        closeModal('deleteModal');
-        applyFilters();
-        showToast('Country removed from directory.');
+        const targetId = deleteTargetId;
+
+        try {
+            const result = await apiRequest(COUNTRIES_URL + '/' + targetId, 'DELETE');
+            const updated = result.country;
+            updated.flag = updated.flag || getCountryFlag(updated.name, updated.code);
+
+            const index = countries.findIndex(item => item.id === targetId);
+            if (index !== -1) countries[index] = updated;
+
+            deleteTargetId = null;
+            closeModal('deleteModal');
+            applyFilters();
+            showToast('Country deactivated.');
+        } catch (err) {
+            showToast(err.message);
+        }
     }
 
     // Modal Helpers
