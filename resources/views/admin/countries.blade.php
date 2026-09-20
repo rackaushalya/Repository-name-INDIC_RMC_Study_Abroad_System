@@ -1039,12 +1039,13 @@
                 <span>Courses</span>
             </a>
 
-            <a href="#" class="nav-link">
+            <a href="{{ url('/admin/scholarships') }}" class="nav-link">
                 <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
                     <path d="M12 3v18"/>
                     <path d="M17 7H9.5a3 3 0 0 0 0 6H14.5a3 3 0 0 1 0 6H7"/>
                 </svg>
                 <span>Scholarships</span>
+                <span class="nav-badge" id="navScholarshipCountBadge">14</span>
             </a>
 
             <a href="#" class="nav-link">

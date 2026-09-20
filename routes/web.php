@@ -350,8 +350,7 @@ Route::middleware('auth')
 |--------------------------------------------------------------------------
 */
 
-Route::middleware('auth')
-    ->prefix('admin')
+Route::prefix('admin')
     ->name('admin.')
     ->group(function () {
 
@@ -541,3 +540,27 @@ Route::middleware('auth')
         )->name('dashboard');
 
     });
+
+Route::get('/test-univ', function () {
+    return view('admin.universities');
+});
+
+Route::get('/test-countries', function () {
+    return view('admin.countries');
+});
+
+Route::get('/test-courses', function () {
+    return view('admin.courses');
+});
+
+Route::get('/test-scholarships', function () {
+    return view('admin.scholarships');
+});
+
+Route::get('/test-consultants', function () {
+    return view('admin.consultants');
+});
+
+Route::get('/test-dashboard', function () {
+    return view('admin.dashboard');
+});
