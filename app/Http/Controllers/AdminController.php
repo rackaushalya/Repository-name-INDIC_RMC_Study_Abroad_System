@@ -532,13 +532,54 @@ class AdminController extends Controller
      */
     public function consultants()
     {
-        $consultants = Consultant::with('user')
+        $consultants = Consultant::with([
+            'user',
+            'availability',
+            'activeAssignments.application.student.user',
+            'activeAssignments.application.preferredCourse.university',
+            'activeAssignments.application.preferredCountry',
+        ])
             ->latest('consultant_id')
-            ->paginate(20);
+            ->get();
+
+        // Open applications that no consultant is handling yet
+        $unassignedApplications = Application::with([
+            'student.user',
+            'preferredCourse.university',
+            'preferredCountry',
+        ])
+            ->whereNotIn('application_status', [
+                'Completed',
+                'Rejected',
+                'Cancelled',
+            ])
+            ->whereDoesntHave(
+                'consultantAssignments',
+                fn ($query) => $query->where('assignment_status', 'Active')
+            )
+            ->latest('application_id')
+            ->get()
+            ->map(function (Application $application) {
+                $course = $application->preferredCourse;
+                $user = $application->student?->user;
+
+                return [
+                    'id' => $application->application_id,
+                    'reference' => $application->application_reference,
+                    'student' => trim(
+                        ($user?->first_name ?? '') . ' ' . ($user?->last_name ?? '')
+                    ) ?: 'Unknown student',
+                    'target' => $course
+                        ? trim($course->course_name . ' - ' . ($course->university?->university_name ?? ''), ' -')
+                        : ($application->preferredCountry?->country_name ?? $application->application_type),
+                    'status' => $application->application_status,
+                ];
+            })
+            ->values();
 
         return view(
             'admin.consultants',
-            compact('consultants')
+            compact('consultants', 'unassignedApplications')
         );
     }
 

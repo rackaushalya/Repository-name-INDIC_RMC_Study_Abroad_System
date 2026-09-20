@@ -134,6 +134,22 @@ class Application extends Model
 
     /*
     |--------------------------------------------------------------------------
+    | Consultant Assignments
+    |--------------------------------------------------------------------------
+    */
+
+    public function consultantAssignments()
+    {
+        return $this->hasMany(
+            ConsultantAssignment::class,
+            'application_id',
+            'application_id'
+        );
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Status History
     |--------------------------------------------------------------------------
     */

@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>INDIC RMC | Consultant Management</title>
 
     <style>
@@ -1128,6 +1129,10 @@
             color: #10b981;
         }
 
+        .toast.error .toast-icon {
+            color: #f87171;
+        }
+
         /* =====================================================
            RESPONSIVE
         ===================================================== */
@@ -1216,7 +1221,7 @@
                     <path d="M5.5 21a6.5 6.5 0 0 1 13 0"/>
                 </svg>
                 <span>Consultants</span>
-                <span class="nav-badge" id="navConsultantCountBadge">8</span>
+                <span class="nav-badge" id="navConsultantCountBadge">{{ $consultants->count() }}</span>
             </a>
 
             <a href="{{ url('/admin/applications') }}" class="nav-link">
@@ -1400,8 +1405,8 @@
                             </svg>
                         </div>
                     </div>
-                    <div class="kpi-value" id="kpiTotalConsultants">8</div>
-                    <div class="kpi-footer"><span class="stat-highlight">100%</span> onboarded & certified</div>
+                    <div class="kpi-value" id="kpiTotalConsultants">0</div>
+                    <div class="kpi-footer" id="kpiTotalFooter">Registered advisors</div>
                 </div>
 
                 <div class="kpi-card">
@@ -1414,8 +1419,8 @@
                             </svg>
                         </div>
                     </div>
-                    <div class="kpi-value" id="kpiActiveConsultants">6</div>
-                    <div class="kpi-footer">2 on planned leave or training</div>
+                    <div class="kpi-value" id="kpiActiveConsultants">0</div>
+                    <div class="kpi-footer" id="kpiActiveFooter">On leave or inactive: 0</div>
                 </div>
 
                 <div class="kpi-card">
@@ -1430,21 +1435,22 @@
                             </svg>
                         </div>
                     </div>
-                    <div class="kpi-value" id="kpiTotalAssigned">64</div>
-                    <div class="kpi-footer">Avg <span class="stat-highlight">8.0</span> students / advisor</div>
+                    <div class="kpi-value" id="kpiTotalAssigned">0</div>
+                    <div class="kpi-footer" id="kpiAssignedFooter">Avg <span class="stat-highlight">0</span> students / active advisor</div>
                 </div>
 
                 <div class="kpi-card">
                     <div class="kpi-header">
-                        <span class="kpi-title">Avg Success Rating</span>
+                        <span class="kpi-title">Caseload Utilization</span>
                         <div class="kpi-icon purple">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                                <path d="M21.21 15.89A10 10 0 1 1 8 2.83"/>
+                                <path d="M22 12A10 10 0 0 0 12 2v10z"/>
                             </svg>
                         </div>
                     </div>
-                    <div class="kpi-value" id="kpiAvgRating">4.9 / 5.0</div>
-                    <div class="kpi-footer">Based on 312 student reviews</div>
+                    <div class="kpi-value" id="kpiUtilization">0%</div>
+                    <div class="kpi-footer" id="kpiUtilizationFooter">Of active advisors' case capacity</div>
                 </div>
             </div>
 
@@ -1468,11 +1474,6 @@
 
                     <select class="filter-select" id="filterSpecialization">
                         <option value="all">All Destinations / Specializations</option>
-                        <option value="UK & Europe">UK & Europe</option>
-                        <option value="USA & Canada">USA & Canada</option>
-                        <option value="Australia & New Zealand">Australia & New Zealand</option>
-                        <option value="Medicine & STEM">Medicine & STEM</option>
-                        <option value="Visa & Compliance">Visa & Compliance</option>
                     </select>
                 </div>
 
@@ -1550,39 +1551,43 @@
 
                 <div class="form-grid">
                     <div class="form-group">
-                        <label class="form-label">Full Name *</label>
-                        <input type="text" class="form-input" id="cFullName" required placeholder="e.g. Dr. Eleanor Vance">
+                        <label class="form-label">First Name *</label>
+                        <input type="text" class="form-input" id="cFirstName" required maxlength="100" placeholder="e.g. Eleanor">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Last Name</label>
+                        <input type="text" class="form-input" id="cLastName" maxlength="100" placeholder="e.g. Vance">
                     </div>
 
                     <div class="form-group">
                         <label class="form-label">Employee Code *</label>
-                        <input type="text" class="form-input" id="cEmpCode" required placeholder="e.g. RMC-CON-001">
+                        <input type="text" class="form-input" id="cEmpCode" required maxlength="50" placeholder="e.g. RMC-CON-001">
                     </div>
 
                     <div class="form-group">
                         <label class="form-label">Email Address *</label>
-                        <input type="email" class="form-input" id="cEmail" required placeholder="e.g. eleanor.vance@indicrmc.com">
+                        <input type="email" class="form-input" id="cEmail" required maxlength="150" placeholder="e.g. eleanor.vance@indicrmc.com">
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Phone Number *</label>
-                        <input type="text" class="form-input" id="cPhone" required placeholder="e.g. +91 98450 12345">
+                        <label class="form-label">Phone Number</label>
+                        <input type="text" class="form-input" id="cPhone" maxlength="30" placeholder="e.g. +91 98450 12345">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" id="cPasswordLabel">Login Password *</label>
+                        <input type="password" class="form-input" id="cPassword" minlength="8" autocomplete="new-password" placeholder="At least 8 characters">
                     </div>
 
                     <div class="form-group">
                         <label class="form-label">Primary Destination / Specialization *</label>
-                        <select class="form-select-modal" id="cSpecialization" required>
-                            <option value="UK & Europe">UK & Europe</option>
-                            <option value="USA & Canada">USA & Canada</option>
-                            <option value="Australia & New Zealand">Australia & New Zealand</option>
-                            <option value="Medicine & STEM">Medicine & STEM</option>
-                            <option value="Visa & Compliance">Visa & Compliance</option>
-                        </select>
+                        <select class="form-select-modal" id="cSpecialization" required></select>
                     </div>
 
                     <div class="form-group">
                         <label class="form-label">Years of Experience *</label>
-                        <input type="number" class="form-input" id="cExperience" min="1" max="40" required value="5">
+                        <input type="number" class="form-input" id="cExperience" min="0" max="60" required value="5">
                     </div>
 
                     <div class="form-group">
@@ -1595,8 +1600,8 @@
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">Maximum Caseload Capacity</label>
-                        <input type="number" class="form-input" id="cMaxCapacity" min="5" max="30" value="15">
+                        <label class="form-label">Maximum Caseload Capacity *</label>
+                        <input type="number" class="form-input" id="cMaxCapacity" min="1" max="100" required value="15">
                     </div>
 
                     <div class="form-group full">
@@ -1633,21 +1638,13 @@
             <div class="modal-body">
                 <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; margin-bottom: 16px;">
                     <div style="font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 600;">Assigning to Advisor</div>
-                    <div style="font-size: 14px; font-weight: 700; color: #111827; margin-top: 2px;" id="assignConsultantName">Dr. Eleanor Vance</div>
-                    <div style="font-size: 12px; color: #f58220; font-weight: 500;" id="assignConsultantSpec">UK & Europe Specialist</div>
+                    <div style="font-size: 14px; font-weight: 700; color: #111827; margin-top: 2px;" id="assignConsultantName"></div>
+                    <div style="font-size: 12px; color: #f58220; font-weight: 500;" id="assignConsultantSpec"></div>
                 </div>
 
                 <div class="form-group">
                     <label class="form-label">Select Student / Application Case *</label>
-                    <select class="form-select-modal" id="assignStudentSelect" required>
-                        <option value="">-- Choose unassigned student application --</option>
-                        <option value="APP-1024 - Rohan Sharma (MSc Advanced Computer Science - University of Oxford)">Rohan Sharma (Oxford - MSc Comp Sci) - Pending Advisor</option>
-                        <option value="APP-1028 - Aanya Patel (BSc Biomedical Sciences - University of Melbourne)">Aanya Patel (Melbourne - Biomedical) - Newly Submitted</option>
-                        <option value="APP-1031 - Devendra Verma (MBA Global Leadership - Harvard Business School)">Devendra Verma (Harvard - MBA) - Needs Strategic Guidance</option>
-                        <option value="APP-1035 - Sneha Kulkarni (BEng Mechanical - University of Toronto)">Sneha Kulkarni (Toronto - Mechanical) - Priority Review</option>
-                        <option value="APP-1040 - Kabir Mehta (LLM International Commercial Law - LSE)">Kabir Mehta (LSE - LLM) - Visa & Offer Stage</option>
-                        <option value="APP-1044 - Meera Iyer (Master of Data Science - TU Munich)">Meera Iyer (TU Munich - Data Science) - Documentation Review</option>
-                    </select>
+                    <select class="form-select-modal" id="assignStudentSelect" required></select>
                 </div>
 
                 <div class="form-group">
@@ -1690,11 +1687,11 @@
 
         <div class="modal-body">
             <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 20px;">
-                <div class="card-avatar" style="width: 56px; height: 56px; font-size: 18px;" id="detAvatar">EV</div>
+                <div class="card-avatar" style="width: 56px; height: 56px; font-size: 18px;" id="detAvatar"></div>
                 <div>
-                    <h2 style="font-size: 18px; font-weight: 700; color: #111827;" id="detName">Dr. Eleanor Vance</h2>
+                    <h2 style="font-size: 18px; font-weight: 700; color: #111827;" id="detName"></h2>
                     <div style="font-size: 12px; color: #64748b; margin-top: 2px;">
-                        <span id="detCode" class="code-tag">RMC-CON-001</span> &bull; <span id="detEmail">eleanor.vance@indicrmc.com</span> &bull; <span id="detPhone">+91 98450 12345</span>
+                        <span id="detCode" class="code-tag"></span> &bull; <span id="detEmail"></span> &bull; <span id="detPhone"></span>
                     </div>
                 </div>
             </div>
@@ -1705,39 +1702,18 @@
             </div>
 
             <div style="margin-bottom: 18px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                <div style="margin-bottom: 6px;">
                     <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #64748b;">Weekly Consultation Hours & Availability</div>
-                    <span style="font-size: 11px; color: #16a34a; font-weight: 600;">Timezone: IST (UTC +5:30)</span>
                 </div>
                 <table class="schedule-table">
                     <thead>
                         <tr>
                             <th>Day</th>
                             <th>Working Hours</th>
-                            <th>Mode</th>
                             <th>Status</th>
                         </tr>
                     </thead>
-                    <tbody id="detScheduleBody">
-                        <tr>
-                            <td><strong>Monday – Friday</strong></td>
-                            <td>10:00 AM – 06:00 PM</td>
-                            <td>Online Video & Physical Clinic</td>
-                            <td><span class="status-badge active"><span class="status-dot"></span> Available</span></td>
-                        </tr>
-                        <tr>
-                            <td><strong>Saturday</strong></td>
-                            <td>10:00 AM – 02:00 PM</td>
-                            <td>Online Follow-ups only</td>
-                            <td><span class="status-badge active"><span class="status-dot"></span> Available</span></td>
-                        </tr>
-                        <tr>
-                            <td><strong>Sunday</strong></td>
-                            <td>—</td>
-                            <td>Off-duty</td>
-                            <td><span class="status-badge inactive"><span class="status-dot"></span> Rest Day</span></td>
-                        </tr>
-                    </tbody>
+                    <tbody id="detScheduleBody"></tbody>
                 </table>
             </div>
 
@@ -1796,651 +1772,676 @@
 </div>
 
 <script>
-// Mock initial data matching Indic RMC study abroad schema
-let consultants = [
-    {
-        id: 1,
-        code: "RMC-CON-001",
-        name: "Dr. Eleanor Vance",
-        email: "eleanor.vance@indicrmc.com",
-        phone: "+91 98450 12345",
-        specialization: "UK & Europe",
-        experience: 11,
-        status: "active",
-        assignedStudents: [
-            { name: "Aarav Sharma", app: "MSc AI - University of Edinburgh", stage: "Conditional Offer" },
-            { name: "Priya Nair", app: "BSc Business Analytics - King's College London", stage: "CAS Issued" },
-            { name: "Vikram Sen", app: "MA International Relations - LSE", stage: "Application Submitted" },
-            { name: "Ananya Roy", app: "MSc Finance - Warwick University", stage: "Visa In-Progress" }
-        ],
-        maxCapacity: 15,
-        rating: 4.95,
-        bio: "Senior UK and European higher education counselor with 11+ years of advisory experience. British Council Certified Specialist with proven track record in Oxbridge, Russell Group, and TU9 European university admissions."
-    },
-    {
-        id: 2,
-        code: "RMC-CON-002",
-        name: "Marcus Aurelius Thorne",
-        email: "marcus.thorne@indicrmc.com",
-        phone: "+91 98230 45678",
-        specialization: "USA & Canada",
-        experience: 9,
-        assignedStudents: [
-            { name: "Devendra Verma", app: "MBA - Harvard Business School", stage: "Interview Prep" },
-            { name: "Sneha Kulkarni", app: "BEng Mechanical - Univ of Toronto", stage: "Offer Accepted" },
-            { name: "Rishabh Goel", app: "MS Computer Science - Columbia University", stage: "I-20 Form Issued" }
-        ],
-        maxCapacity: 12,
-        status: "active",
-        rating: 4.9,
-        bio: "North American admissions strategist specializing in Ivy League and Tier-1 Canadian U15 institutions. Expert in GRE/GMAT score contextualization, statement of purpose refinement, and F-1/Study Permit visa guidance."
-    },
-    {
-        id: 3,
-        code: "RMC-CON-003",
-        name: "Aisha Al-Mansoor",
-        email: "aisha.mansoor@indicrmc.com",
-        phone: "+91 98111 87654",
-        specialization: "Australia & New Zealand",
-        experience: 7,
-        assignedStudents: [
-            { name: "Aanya Patel", app: "BSc Biomedical - Univ of Melbourne", stage: "GTE Approved" },
-            { name: "Kavya Menon", app: "Master of Cyber Security - Univ of Sydney", stage: "Offer Received" }
-        ],
-        maxCapacity: 12,
-        status: "active",
-        rating: 4.88,
-        bio: "QEAC Certified Australian Education Agent with deep specialization in Group of Eight (Go8) universities. Expert in genuine student (GS) visa requirement criteria and PR pathway course advisory."
-    },
-    {
-        id: 4,
-        code: "RMC-CON-004",
-        name: "Rajeshwar Sengupta",
-        email: "rajeshwar.s@indicrmc.com",
-        phone: "+91 97345 67890",
-        specialization: "Medicine & STEM",
-        experience: 14,
-        assignedStudents: [
-            { name: "Dr. Tarun Saxena", app: "MD Internal Medicine - Heidelberg University", stage: "Document Verification" },
-            { name: "Zoya Siddiqui", app: "Master of Robotics - ETH Zurich", stage: "Offer Confirmed" },
-            { name: "Nikhil Joshi", app: "MSc Biotechnology - Karolinska Institute", stage: "Review Phase" },
-            { name: "Simran Kaur", app: "MBBS Overseas - Charles University Prague", stage: "Interview Scheduled" }
-        ],
-        maxCapacity: 15,
-        status: "active",
-        rating: 4.98,
-        bio: "Lead specialist for international healthcare, clinical residency, and advanced STEM pathways. Extensive direct relations with clinical faculties and research labs across Germany, Sweden, and Switzerland."
-    },
-    {
-        id: 5,
-        code: "RMC-CON-005",
-        name: "Claire Dupont",
-        email: "claire.dupont@indicrmc.com",
-        phone: "+91 98765 43210",
-        specialization: "UK & Europe",
-        experience: 6,
-        assignedStudents: [
-            { name: "Meera Iyer", app: "Master of Data Science - TU Munich", stage: "Preliminary Evaluation" },
-            { name: "Aditya Hegde", app: "MIM - HEC Paris", stage: "SOP Review" }
-        ],
-        maxCapacity: 10,
-        status: "on_leave",
-        rating: 4.82,
-        bio: "French & Benelux higher education expert. Specializes in French Grandes Écoles, business schools (INSEAD/HEC), and low-tuition public university programs across Central Europe."
-    },
-    {
-        id: 6,
-        code: "RMC-CON-006",
-        name: "Vikram Malhotra",
-        email: "vikram.m@indicrmc.com",
-        phone: "+91 99887 11223",
-        specialization: "Visa & Compliance",
-        experience: 12,
-        assignedStudents: [
-            { name: "Kabir Mehta", app: "LLM Law - LSE", stage: "Visa File Submission" },
-            { name: "Ishaan Reddy", app: "MS Electrical - Purdue University", stage: "Mock Visa Interview" },
-            { name: "Tanvi Deshmukh", app: "BBA - University of British Columbia", stage: "Financial Proof Audit" }
-        ],
-        maxCapacity: 18,
-        status: "active",
-        rating: 4.96,
-        bio: "Senior Immigration & Visa Compliance Counsel. Former consular liaison with 10,000+ approved student visas across UK (Tier 4/Student), USA (F-1/J-1), Canada (SDS), and Australia (Subclass 500)."
-    },
-    {
-        id: 7,
-        code: "RMC-CON-007",
-        name: "Samantha Brooks",
-        email: "samantha.brooks@indicrmc.com",
-        phone: "+91 98440 33445",
-        specialization: "USA & Canada",
-        experience: 8,
-        assignedStudents: [
-            { name: "Varun Bajaj", app: "Master of Public Policy - UC Berkeley", stage: "Waitlist Advisory" }
-        ],
-        maxCapacity: 12,
-        status: "active",
-        rating: 4.85,
-        bio: "US State Department EducationUSA alumnus counselor. Specializes in liberal arts colleges, research fellowship scholarships, and financial aid grants for Indian undergraduate applicants."
-    },
-    {
-        id: 8,
-        code: "RMC-CON-008",
-        name: "Hassan Farooq",
-        email: "hassan.farooq@indicrmc.com",
-        phone: "+91 97123 99887",
-        specialization: "Australia & New Zealand",
-        experience: 5,
-        assignedStudents: [],
-        maxCapacity: 10,
-        status: "inactive",
-        rating: 4.75,
-        bio: "Specialist counselor for New Zealand universities and regional Australian institutions with scholarship access programs."
-    }
-];
+    const CONSULTANTS_URL = @json(url('/admin/consultants'));
+    const CSRF_TOKEN = document.querySelector('meta[name="csrf-token"]').content;
+    const DEFAULT_SPECIALIZATIONS = [
+        'UK & Europe',
+        'USA & Canada',
+        'Australia & New Zealand',
+        'Medicine & STEM',
+        'Visa & Compliance'
+    ];
 
-let currentDeleteId = null;
-let currentAssignId = null;
+    // Consultants and open applications loaded from the database
+    let consultants = @json($consultants->map->toAdminArray()->values());
+    let unassignedApplications = @json($unassignedApplications);
 
-// DOM Elements
-const consultantsTableBody = document.getElementById('consultantsTableBody');
-const consultantsCardsGrid = document.getElementById('consultantsCardsGrid');
-const searchInput = document.getElementById('consultantSearchInput');
-const topbarSearch = document.getElementById('topbarSearchInput');
-const filterStatus = document.getElementById('filterStatus');
-const filterSpecialization = document.getElementById('filterSpecialization');
-const btnTableView = document.getElementById('btnTableView');
-const btnCardView = document.getElementById('btnCardView');
-const tableWrap = document.getElementById('consultantsTableWrap');
+    let currentDeleteId = null;
+    let currentAssignId = null;
 
-// KPI elements
-const kpiTotal = document.getElementById('kpiTotalConsultants');
-const kpiActive = document.getElementById('kpiActiveConsultants');
-const kpiAssigned = document.getElementById('kpiTotalAssigned');
-const navBadge = document.getElementById('navConsultantCountBadge');
+    // DOM Elements
+    const consultantsTableBody = document.getElementById('consultantsTableBody');
+    const consultantsCardsGrid = document.getElementById('consultantsCardsGrid');
+    const searchInput = document.getElementById('consultantSearchInput');
+    const topbarSearch = document.getElementById('topbarSearchInput');
+    const filterStatus = document.getElementById('filterStatus');
+    const filterSpecialization = document.getElementById('filterSpecialization');
+    const btnTableView = document.getElementById('btnTableView');
+    const btnCardView = document.getElementById('btnCardView');
+    const tableWrap = document.getElementById('consultantsTableWrap');
+    const navBadge = document.getElementById('navConsultantCountBadge');
 
-// Toast helper
-function showToast(msg) {
-    const toast = document.getElementById('toast');
-    document.getElementById('toastMessage').innerText = msg;
-    toast.classList.add('show');
-    setTimeout(() => toast.classList.remove('show'), 3500);
-}
-
-// Update KPI Stats
-function updateKPIs() {
-    const total = consultants.length;
-    const active = consultants.filter(c => c.status === 'active').length;
-    const totalStudents = consultants.reduce((sum, c) => sum + (c.assignedStudents ? c.assignedStudents.length : 0), 0);
-
-    kpiTotal.innerText = total;
-    kpiActive.innerText = active;
-    kpiAssigned.innerText = totalStudents;
-    if (navBadge) navBadge.innerText = total;
-}
-
-// Get initials
-function getInitials(name) {
-    const parts = name.replace(/^Dr.s+/i, '').split(' ');
-    if (parts.length >= 2) {
-        return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-    }
-    return name.slice(0, 2).toUpperCase();
-}
-
-// Render Table Row
-function renderTableRow(c) {
-    const initials = getInitials(c.name);
-    const studentCount = c.assignedStudents ? c.assignedStudents.length : 0;
-    const maxCap = c.maxCapacity || 15;
-    const percent = Math.min(100, Math.round((studentCount / maxCap) * 100));
-    
-    let loadClass = '';
-    if (percent > 85) loadClass = 'danger';
-    else if (percent > 65) loadClass = 'warning';
-
-    let specClass = '';
-    if (c.specialization.includes('USA')) specClass = 'usa';
-    else if (c.specialization.includes('Australia')) specClass = 'australia';
-    else if (c.specialization.includes('Canada')) specClass = 'canada';
-
-    const statusMap = {
-        active: { label: 'Active', cls: 'active' },
-        on_leave: { label: 'On Leave', cls: 'on_leave' },
-        inactive: { label: 'Inactive', cls: 'inactive' }
-    };
-    const s = statusMap[c.status] || { label: c.status, cls: 'inactive' };
-
-    return `
-    <tr data-id="${c.id}">
-        <td>
-            <div class="consultant-identity">
-                <div class="consultant-avatar">${initials}</div>
-                <div>
-                    <div class="consultant-name">${c.name}</div>
-                    <div class="consultant-code">
-                        <span class="code-tag">${c.code}</span>
-                        <span>${c.email}</span>
-                    </div>
-                </div>
-            </div>
-        </td>
-        <td>
-            <span class="specialization-pill ${specClass}">${c.specialization}</span>
-        </td>
-        <td>
-            <strong style="color: #172033;">${c.experience} yrs</strong>
-            <div style="font-size: 11px; color: #8a93a3;">Advisory Track</div>
-        </td>
-        <td>
-            <div class="load-indicator">
-                <div class="load-bar-wrap" title="${studentCount} of ${maxCap} max cases (${percent}%)">
-                    <div class="load-bar ${loadClass}" style="width: ${percent}%;"></div>
-                </div>
-                <span class="load-count">${studentCount} / ${maxCap}</span>
-            </div>
-        </td>
-        <td>
-            <span class="status-badge ${s.cls}">
-                <span class="status-dot"></span>
-                ${s.label}
-            </span>
-        </td>
-        <td>
-            <div class="actions-cell">
-                <button class="action-icon-btn btn-assign" onclick="openAssignModal(${c.id})" title="Assign Student Case">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                        <circle cx="9" cy="7" r="4"/>
-                        <line x1="19" y1="8" x2="19" y2="14"/>
-                        <line x1="22" y1="11" x2="16" y2="11"/>
-                    </svg>
-                </button>
-                <button class="action-icon-btn" onclick="openDetailsModal(${c.id})" title="View Profile & Schedule">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="10"/>
-                        <line x1="12" y1="16" x2="12" y2="12"/>
-                        <line x1="12" y1="8" x2="12.01" y2="8"/>
-                    </svg>
-                </button>
-                <button class="action-icon-btn" onclick="openEditModal(${c.id})" title="Edit Consultant">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                    </svg>
-                </button>
-                <button class="action-icon-btn btn-delete" onclick="openDeleteModal(${c.id})" title="Deactivate">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="3 6 5 6 21 6"/>
-                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                    </svg>
-                </button>
-            </div>
-        </td>
-    </tr>
-    `;
-}
-
-// Render Card View
-function renderCard(c) {
-    const initials = getInitials(c.name);
-    const studentCount = c.assignedStudents ? c.assignedStudents.length : 0;
-    const maxCap = c.maxCapacity || 15;
-
-    const statusMap = {
-        active: { label: 'Active', cls: 'active' },
-        on_leave: { label: 'On Leave', cls: 'on_leave' },
-        inactive: { label: 'Inactive', cls: 'inactive' }
-    };
-    const s = statusMap[c.status] || { label: c.status, cls: 'inactive' };
-
-    return `
-    <div class="consultant-card" data-id="${c.id}">
-        <div class="card-top">
-            <div class="card-profile">
-                <div class="card-avatar">${initials}</div>
-                <div>
-                    <div style="font-weight: 700; font-size: 14px; color: #111827;">${c.name}</div>
-                    <div style="font-size: 11px; color: #64748b; margin-top: 1px;">
-                        <span class="code-tag">${c.code}</span>
-                    </div>
-                </div>
-            </div>
-            <span class="status-badge ${s.cls}">
-                <span class="status-dot"></span>
-                ${s.label}
-            </span>
-        </div>
-
-        <div style="margin: 8px 0;">
-            <span class="specialization-pill">${c.specialization}</span>
-        </div>
-
-        <div class="card-stats-row">
-            <div class="stat-box">
-                <div class="stat-box-val">${c.experience} yrs</div>
-                <div class="stat-box-lbl">Experience</div>
-            </div>
-            <div class="stat-box">
-                <div class="stat-box-val">${studentCount} / ${maxCap}</div>
-                <div class="stat-box-lbl">Active Cases</div>
-            </div>
-        </div>
-
-        <div class="card-meta-list">
-            <div class="card-meta-item">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-                    <polyline points="22,6 12,13 2,6"/>
-                </svg>
-                <span>${c.email}</span>
-            </div>
-            <div class="card-meta-item">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
-                </svg>
-                <span>${c.phone}</span>
-            </div>
-        </div>
-
-        <div class="card-footer-actions">
-            <button class="btn-card-action btn-card-primary" onclick="openAssignModal(${c.id})">
-                Assign Case
-            </button>
-            <button class="btn-card-action" onclick="openDetailsModal(${c.id})">
-                Details
-            </button>
-            <button class="btn-card-action" onclick="openEditModal(${c.id})">
-                Edit
-            </button>
-        </div>
-    </div>
-    `;
-}
-
-// Render Master
-function renderConsultants() {
-    const q = (searchInput.value || '').trim().toLowerCase();
-    const st = filterStatus.value;
-    const sp = filterSpecialization.value;
-
-    const filtered = consultants.filter(c => {
-        const matchesQuery = !q || 
-            c.name.toLowerCase().includes(q) ||
-            c.code.toLowerCase().includes(q) ||
-            c.email.toLowerCase().includes(q) ||
-            c.specialization.toLowerCase().includes(q);
-
-        const matchesStatus = st === 'all' || c.status === st;
-        const matchesSpec = sp === 'all' || c.specialization === sp;
-
-        return matchesQuery && matchesStatus && matchesSpec;
-    });
-
-    if (filtered.length === 0) {
-        consultantsTableBody.innerHTML = `
-            <tr>
-                <td colspan="6" style="text-align: center; padding: 40px; color: #8c96a8;">
-                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin: 0 auto 10px; display: block; color: #cbd5e1;">
-                        <circle cx="12" cy="7" r="4"/>
-                        <path d="M5.5 21a6.5 6.5 0 0 1 13 0"/>
-                    </svg>
-                    No consultants matched your search filters.
-                </td>
-            </tr>
-        `;
-        consultantsCardsGrid.innerHTML = `
-            <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #8c96a8; background: #ffffff; border-radius: 10px; border: 1px dashed #cbd5e1;">
-                No consultants found.
-            </div>
-        `;
-        return;
+    // XSS sanitization helper (values come from the database)
+    function escapeHtml(str) {
+        if (str === null || str === undefined) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
     }
 
-    consultantsTableBody.innerHTML = filtered.map(renderTableRow).join('');
-    consultantsCardsGrid.innerHTML = filtered.map(renderCard).join('');
-    updateKPIs();
-}
-
-// View Switching
-btnTableView.addEventListener('click', () => {
-    btnTableView.classList.add('active');
-    btnCardView.classList.remove('active');
-    tableWrap.style.display = 'block';
-    consultantsCardsGrid.style.display = 'none';
-});
-
-btnCardView.addEventListener('click', () => {
-    btnCardView.classList.add('active');
-    btnTableView.classList.remove('active');
-    tableWrap.style.display = 'none';
-    consultantsCardsGrid.style.display = 'grid';
-});
-
-// Event Listeners for Filters
-searchInput.addEventListener('input', renderConsultants);
-if (topbarSearch) {
-    topbarSearch.addEventListener('input', (e) => {
-        searchInput.value = e.target.value;
-        renderConsultants();
-    });
-}
-filterStatus.addEventListener('change', renderConsultants);
-filterSpecialization.addEventListener('change', renderConsultants);
-
-// Modal Controls - Add / Edit
-const modalConsultantBackdrop = document.getElementById('modalConsultantBackdrop');
-const formConsultant = document.getElementById('formConsultant');
-
-document.getElementById('btnOpenAddConsultant').addEventListener('click', () => {
-    document.getElementById('modalConsultantTitle').innerText = 'Add New Consultant';
-    document.getElementById('editConsultantId').value = '';
-    formConsultant.reset();
-    document.getElementById('cEmpCode').value = 'RMC-CON-00' + (consultants.length + 1);
-    modalConsultantBackdrop.style.display = 'flex';
-});
-
-document.getElementById('btnCloseConsultantModal').addEventListener('click', () => {
-    modalConsultantBackdrop.style.display = 'none';
-});
-document.getElementById('btnCancelConsultantModal').addEventListener('click', () => {
-    modalConsultantBackdrop.style.display = 'none';
-});
-
-window.openEditModal = function(id) {
-    const c = consultants.find(item => item.id === id);
-    if (!c) return;
-
-    document.getElementById('modalConsultantTitle').innerText = 'Edit Consultant Profile';
-    document.getElementById('editConsultantId').value = c.id;
-    document.getElementById('cFullName').value = c.name;
-    document.getElementById('cEmpCode').value = c.code;
-    document.getElementById('cEmail').value = c.email;
-    document.getElementById('cPhone').value = c.phone;
-    document.getElementById('cSpecialization').value = c.specialization;
-    document.getElementById('cExperience').value = c.experience;
-    document.getElementById('cStatus').value = c.status;
-    document.getElementById('cMaxCapacity').value = c.maxCapacity || 15;
-    document.getElementById('cBio').value = c.bio || '';
-
-    modalConsultantBackdrop.style.display = 'flex';
-};
-
-formConsultant.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const editId = document.getElementById('editConsultantId').value;
-    
-    const payload = {
-        name: document.getElementById('cFullName').value.trim(),
-        code: document.getElementById('cEmpCode').value.trim(),
-        email: document.getElementById('cEmail').value.trim(),
-        phone: document.getElementById('cPhone').value.trim(),
-        specialization: document.getElementById('cSpecialization').value,
-        experience: parseInt(document.getElementById('cExperience').value, 10),
-        status: document.getElementById('cStatus').value,
-        maxCapacity: parseInt(document.getElementById('cMaxCapacity').value, 10) || 15,
-        bio: document.getElementById('cBio').value.trim()
-    };
-
-    if (editId) {
-        const idx = consultants.findIndex(c => c.id === parseInt(editId, 10));
-        if (idx !== -1) {
-            consultants[idx] = { ...consultants[idx], ...payload };
-            showToast(`Consultant "${payload.name}" updated successfully.`);
-        }
-    } else {
-        const newId = consultants.length ? Math.max(...consultants.map(c => c.id)) + 1 : 1;
-        consultants.unshift({
-            id: newId,
-            ...payload,
-            assignedStudents: [],
-            rating: 5.0
+    // JSON request helper for the consultant endpoints
+    async function apiRequest(url, method, body) {
+        const response = await fetch(url, {
+            method,
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': CSRF_TOKEN,
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            credentials: 'same-origin',
+            body: body ? JSON.stringify(body) : undefined
         });
-        showToast(`Consultant "${payload.name}" added successfully.`);
+
+        let data = null;
+        try { data = await response.json(); } catch (err) { /* non-JSON response */ }
+
+        if (!response.ok) {
+            let message = (data && data.message) || ('Request failed (' + response.status + ').');
+            if (data && data.errors) {
+                message = Object.values(data.errors)[0][0];
+            }
+            throw new Error(message);
+        }
+        return data;
     }
 
-    modalConsultantBackdrop.style.display = 'none';
-    renderConsultants();
-});
+    // Toast helper
+    function showToast(msg, isError = false) {
+        const toast = document.getElementById('toast');
+        document.getElementById('toastMessage').innerText = msg;
+        toast.classList.toggle('error', isError);
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3500);
+    }
 
-// Modal Controls - Assign Student
-const modalAssignBackdrop = document.getElementById('modalAssignBackdrop');
-const formAssign = document.getElementById('formAssign');
+    // Insert or replace a consultant returned by the server
+    function upsertConsultant(saved) {
+        const index = consultants.findIndex(c => c.id === saved.id);
+        if (index !== -1) {
+            consultants[index] = saved;
+        } else {
+            consultants.unshift(saved);
+        }
+    }
 
-window.openAssignModal = function(id) {
-    const c = consultants.find(item => item.id === id);
-    if (!c) return;
-    currentAssignId = id;
+    // Specializations: the standard list plus anything already stored in the database
+    function specializationChoices(extra = null) {
+        const set = new Set(DEFAULT_SPECIALIZATIONS);
+        consultants.forEach(c => { if (c.specialization) set.add(c.specialization); });
+        if (extra) set.add(extra);
+        return Array.from(set);
+    }
 
-    document.getElementById('assignConsultantName').innerText = c.name;
-    document.getElementById('assignConsultantSpec').innerText = `${c.specialization} Specialist • Current: ${c.assignedStudents.length} Cases`;
-    formAssign.reset();
-    modalAssignBackdrop.style.display = 'flex';
-};
+    function populateSpecializations(selected = null) {
+        const modalSelect = document.getElementById('cSpecialization');
+        modalSelect.innerHTML = specializationChoices(selected)
+            .map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`)
+            .join('');
+        if (selected) modalSelect.value = selected;
 
-document.getElementById('btnCloseAssignModal').addEventListener('click', () => {
-    modalAssignBackdrop.style.display = 'none';
-});
-document.getElementById('btnCancelAssignModal').addEventListener('click', () => {
-    modalAssignBackdrop.style.display = 'none';
-});
+        const current = filterSpecialization.value || 'all';
+        const choices = specializationChoices();
+        filterSpecialization.innerHTML = '<option value="all">All Destinations / Specializations</option>' +
+            choices.map(s => `<option value="${escapeHtml(s)}">${escapeHtml(s)}</option>`).join('');
+        filterSpecialization.value = choices.includes(current) ? current : 'all';
+    }
 
-formAssign.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const select = document.getElementById('assignStudentSelect');
-    const studentInfo = select.value;
-    if (!studentInfo) return;
+    // Next free employee code, e.g. RMC-CON-009
+    function nextEmployeeCode() {
+        const highest = consultants.reduce((max, c) => {
+            const n = parseInt((c.code || '').replace(/\D/g, ''), 10);
+            return Number.isNaN(n) ? max : Math.max(max, n);
+        }, 0);
+        return 'RMC-CON-' + String(highest + 1).padStart(3, '0');
+    }
 
-    const c = consultants.find(item => item.id === currentAssignId);
-    if (!c) return;
+    // Update KPI Stats
+    function updateKPIs() {
+        const total = consultants.length;
+        const activeList = consultants.filter(c => c.status === 'active');
+        const active = activeList.length;
+        const totalCases = consultants.reduce((sum, c) => sum + c.assignedStudents.length, 0);
+        const activeCases = activeList.reduce((sum, c) => sum + c.assignedStudents.length, 0);
+        const activeCapacity = activeList.reduce((sum, c) => sum + (c.maxCapacity || 15), 0);
+        const utilization = activeCapacity ? Math.round((activeCases / activeCapacity) * 100) : 0;
+        const avg = active ? (totalCases / active).toFixed(1) : '0.0';
 
-    // Parse mock student
-    const parts = studentInfo.split(' - ');
-    const sName = parts[1] ? parts[1].split(' (')[0] : 'Student';
-    const sApp = parts[1] ? parts[1].replace(/.*\((.*)\).*/, '$1') : 'Target Course';
+        document.getElementById('kpiTotalConsultants').innerText = total;
+        document.getElementById('kpiActiveConsultants').innerText = active;
+        document.getElementById('kpiActiveFooter').innerText = (total - active) + ' on leave or inactive';
+        document.getElementById('kpiTotalAssigned').innerText = totalCases;
+        document.getElementById('kpiAssignedFooter').innerHTML = 'Avg <span class="stat-highlight">' + avg + '</span> students / active advisor';
+        document.getElementById('kpiUtilization').innerText = utilization + '%';
+        document.getElementById('kpiUtilizationFooter').innerText = activeCases + ' of ' + activeCapacity + ' case slots in use';
+        if (navBadge) navBadge.innerText = total;
+    }
 
-    c.assignedStudents.unshift({
-        name: sName,
-        app: sApp,
-        stage: 'Advisor Assigned'
-    });
+    // Get initials
+    function getInitials(name) {
+        const parts = (name || '').replace(/^Dr\.?\s+/i, '').trim().split(/\s+/).filter(Boolean);
+        if (parts.length >= 2) {
+            return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+        }
+        return (parts[0] || '?').slice(0, 2).toUpperCase();
+    }
 
-    modalAssignBackdrop.style.display = 'none';
-    showToast(`Assigned case to ${c.name} successfully!`);
-    renderConsultants();
-});
+    const statusMap = {
+        active: { label: 'Active', cls: 'active' },
+        on_leave: { label: 'On Leave', cls: 'on_leave' },
+        inactive: { label: 'Inactive', cls: 'inactive' }
+    };
 
-// Modal Controls - Details & Schedule
-const modalDetailsBackdrop = document.getElementById('modalDetailsBackdrop');
+    // Render Table Row
+    function renderTableRow(c) {
+        const initials = getInitials(c.name);
+        const studentCount = c.assignedStudents.length;
+        const maxCap = c.maxCapacity || 15;
+        const percent = Math.min(100, Math.round((studentCount / maxCap) * 100));
 
-window.openDetailsModal = function(id) {
-    const c = consultants.find(item => item.id === id);
-    if (!c) return;
+        let loadClass = '';
+        if (percent > 85) loadClass = 'danger';
+        else if (percent > 65) loadClass = 'warning';
 
-    document.getElementById('detAvatar').innerText = getInitials(c.name);
-    document.getElementById('detName').innerText = c.name;
-    document.getElementById('detCode').innerText = c.code;
-    document.getElementById('detEmail').innerText = c.email;
-    document.getElementById('detPhone').innerText = c.phone;
-    document.getElementById('detBio').innerText = c.bio || 'Experienced international education counselor.';
-    document.getElementById('detStudentCount').innerText = c.assignedStudents.length;
+        let specClass = '';
+        if (c.specialization.includes('USA')) specClass = 'usa';
+        else if (c.specialization.includes('Australia')) specClass = 'australia';
+        else if (c.specialization.includes('Canada')) specClass = 'canada';
 
-    const studentListEl = document.getElementById('detStudentList');
-    if (!c.assignedStudents || c.assignedStudents.length === 0) {
-        studentListEl.innerHTML = '<div style="font-size: 12px; color: #8a93a3; padding: 10px; background: #f8fafc; border-radius: 6px;">No active students assigned currently.</div>';
-    } else {
-        studentListEl.innerHTML = c.assignedStudents.map((s, idx) => `
-            <div style="background: #fafbfc; border: 1px solid #e7e9ed; border-radius: 6px; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center;">
-                <div>
-                    <strong style="font-size: 12px; color: #172033;">${idx + 1}. ${s.name}</strong>
-                    <div style="font-size: 11px; color: #64748b; margin-top: 2px;">${s.app}</div>
+        const s = statusMap[c.status] || { label: c.status, cls: 'inactive' };
+
+        return `
+        <tr data-id="${c.id}">
+            <td>
+                <div class="consultant-identity">
+                    <div class="consultant-avatar">${escapeHtml(initials)}</div>
+                    <div>
+                        <div class="consultant-name">${escapeHtml(c.name)}</div>
+                        <div class="consultant-code">
+                            <span class="code-tag">${escapeHtml(c.code)}</span>
+                            <span>${escapeHtml(c.email)}</span>
+                        </div>
+                    </div>
                 </div>
-                <span style="font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 4px; background: #e0f2fe; color: #0284c7;">${s.stage}</span>
+            </td>
+            <td>
+                <span class="specialization-pill ${specClass}">${escapeHtml(c.specialization)}</span>
+            </td>
+            <td>
+                <strong style="color: #172033;">${c.experience} yrs</strong>
+                <div style="font-size: 11px; color: #8a93a3;">Advisory Track</div>
+            </td>
+            <td>
+                <div class="load-indicator">
+                    <div class="load-bar-wrap" title="${studentCount} of ${maxCap} max cases (${percent}%)">
+                        <div class="load-bar ${loadClass}" style="width: ${percent}%;"></div>
+                    </div>
+                    <span class="load-count">${studentCount} / ${maxCap}</span>
+                </div>
+            </td>
+            <td>
+                <span class="status-badge ${s.cls}">
+                    <span class="status-dot"></span>
+                    ${s.label}
+                </span>
+            </td>
+            <td>
+                <div class="actions-cell">
+                    <button class="action-icon-btn btn-assign" onclick="openAssignModal(${c.id})" title="Assign Student Case">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                            <circle cx="9" cy="7" r="4"/>
+                            <line x1="19" y1="8" x2="19" y2="14"/>
+                            <line x1="22" y1="11" x2="16" y2="11"/>
+                        </svg>
+                    </button>
+                    <button class="action-icon-btn" onclick="openDetailsModal(${c.id})" title="View Profile & Schedule">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <line x1="12" y1="16" x2="12" y2="12"/>
+                            <line x1="12" y1="8" x2="12.01" y2="8"/>
+                        </svg>
+                    </button>
+                    <button class="action-icon-btn" onclick="openEditModal(${c.id})" title="Edit Consultant">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                        </svg>
+                    </button>
+                    <button class="action-icon-btn btn-delete" onclick="openDeleteModal(${c.id})" title="Deactivate">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="3 6 5 6 21 6"/>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                        </svg>
+                    </button>
+                </div>
+            </td>
+        </tr>
+        `;
+    }
+
+    // Render Card View
+    function renderCard(c) {
+        const initials = getInitials(c.name);
+        const studentCount = c.assignedStudents.length;
+        const maxCap = c.maxCapacity || 15;
+        const s = statusMap[c.status] || { label: c.status, cls: 'inactive' };
+
+        return `
+        <div class="consultant-card" data-id="${c.id}">
+            <div class="card-top">
+                <div class="card-profile">
+                    <div class="card-avatar">${escapeHtml(initials)}</div>
+                    <div>
+                        <div style="font-weight: 700; font-size: 14px; color: #111827;">${escapeHtml(c.name)}</div>
+                        <div style="font-size: 11px; color: #64748b; margin-top: 1px;">
+                            <span class="code-tag">${escapeHtml(c.code)}</span>
+                        </div>
+                    </div>
+                </div>
+                <span class="status-badge ${s.cls}">
+                    <span class="status-dot"></span>
+                    ${s.label}
+                </span>
             </div>
-        `).join('');
+
+            <div style="margin: 8px 0;">
+                <span class="specialization-pill">${escapeHtml(c.specialization)}</span>
+            </div>
+
+            <div class="card-stats-row">
+                <div class="stat-box">
+                    <div class="stat-box-val">${c.experience} yrs</div>
+                    <div class="stat-box-lbl">Experience</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-box-val">${studentCount} / ${maxCap}</div>
+                    <div class="stat-box-lbl">Active Cases</div>
+                </div>
+            </div>
+
+            <div class="card-meta-list">
+                <div class="card-meta-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                        <polyline points="22,6 12,13 2,6"/>
+                    </svg>
+                    <span>${escapeHtml(c.email)}</span>
+                </div>
+                <div class="card-meta-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                    </svg>
+                    <span>${escapeHtml(c.phone || '—')}</span>
+                </div>
+            </div>
+
+            <div class="card-footer-actions">
+                <button class="btn-card-action btn-card-primary" onclick="openAssignModal(${c.id})">
+                    Assign Case
+                </button>
+                <button class="btn-card-action" onclick="openDetailsModal(${c.id})">
+                    Details
+                </button>
+                <button class="btn-card-action" onclick="openEditModal(${c.id})">
+                    Edit
+                </button>
+            </div>
+        </div>
+        `;
     }
 
-    modalDetailsBackdrop.style.display = 'flex';
-};
+    // Render Master
+    function renderConsultants() {
+        updateKPIs();
 
-document.getElementById('btnCloseDetailsModal').addEventListener('click', () => {
-    modalDetailsBackdrop.style.display = 'none';
-});
-document.getElementById('btnCloseDetailsModalBtn').addEventListener('click', () => {
-    modalDetailsBackdrop.style.display = 'none';
-});
+        const q = (searchInput.value || '').trim().toLowerCase();
+        const st = filterStatus.value;
+        const sp = filterSpecialization.value;
 
-// Modal Controls - Deactivate
-const modalDeleteBackdrop = document.getElementById('modalDeleteBackdrop');
+        const filtered = consultants.filter(c => {
+            const matchesQuery = !q ||
+                c.name.toLowerCase().includes(q) ||
+                c.code.toLowerCase().includes(q) ||
+                c.email.toLowerCase().includes(q) ||
+                c.specialization.toLowerCase().includes(q);
 
-window.openDeleteModal = function(id) {
-    const c = consultants.find(item => item.id === id);
-    if (!c) return;
-    currentDeleteId = id;
+            const matchesStatus = st === 'all' || c.status === st;
+            const matchesSpec = sp === 'all' || c.specialization === sp;
 
-    document.getElementById('deleteConsultantName').innerText = c.name;
-    document.getElementById('deleteStudentCount').innerText = c.assignedStudents.length;
-    modalDeleteBackdrop.style.display = 'flex';
-};
+            return matchesQuery && matchesStatus && matchesSpec;
+        });
 
-document.getElementById('btnCloseDeleteModal').addEventListener('click', () => {
-    modalDeleteBackdrop.style.display = 'none';
-});
-document.getElementById('btnCancelDeleteModal').addEventListener('click', () => {
-    modalDeleteBackdrop.style.display = 'none';
-});
+        if (filtered.length === 0) {
+            const message = consultants.length === 0
+                ? 'No consultants yet. Use "Add Consultant" to create the first one.'
+                : 'No consultants matched your search filters.';
 
-document.getElementById('btnConfirmDelete').addEventListener('click', () => {
-    if (!currentDeleteId) return;
-    const idx = consultants.findIndex(c => c.id === currentDeleteId);
-    if (idx !== -1) {
-        consultants[idx].status = 'inactive';
-        showToast(`Consultant "${consultants[idx].name}" marked as inactive.`);
+            consultantsTableBody.innerHTML = `
+                <tr>
+                    <td colspan="6" style="text-align: center; padding: 40px; color: #8c96a8;">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin: 0 auto 10px; display: block; color: #cbd5e1;">
+                            <circle cx="12" cy="7" r="4"/>
+                            <path d="M5.5 21a6.5 6.5 0 0 1 13 0"/>
+                        </svg>
+                        ${message}
+                    </td>
+                </tr>
+            `;
+            consultantsCardsGrid.innerHTML = `
+                <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #8c96a8; background: #ffffff; border-radius: 10px; border: 1px dashed #cbd5e1;">
+                    ${message}
+                </div>
+            `;
+            return;
+        }
+
+        consultantsTableBody.innerHTML = filtered.map(renderTableRow).join('');
+        consultantsCardsGrid.innerHTML = filtered.map(renderCard).join('');
     }
-    modalDeleteBackdrop.style.display = 'none';
-    renderConsultants();
-});
 
-// CSV Export
-document.getElementById('btnExportConsultants').addEventListener('click', () => {
-    let csv = "Employee Code,Full Name,Email,Phone,Specialization,Years Experience,Active Cases,Status\n";
-    consultants.forEach(c => {
-        const studentCount = c.assignedStudents ? c.assignedStudents.length : 0;
-        csv += `"${c.code}","${c.name}","${c.email}","${c.phone}","${c.specialization}",${c.experience},${studentCount},"${c.status}"\n`;
+    // View Switching
+    btnTableView.addEventListener('click', () => {
+        btnTableView.classList.add('active');
+        btnCardView.classList.remove('active');
+        tableWrap.style.display = 'block';
+        consultantsCardsGrid.style.display = 'none';
     });
 
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.setAttribute("href", url);
-    link.setAttribute("download", "indic_rmc_consultants_" + new Date().toISOString().slice(0,10) + ".csv");
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    showToast("Exported consultant records successfully!");
-});
+    btnCardView.addEventListener('click', () => {
+        btnCardView.classList.add('active');
+        btnTableView.classList.remove('active');
+        tableWrap.style.display = 'none';
+        consultantsCardsGrid.style.display = 'grid';
+    });
 
-// Initial Render
-renderConsultants();
+    // Event Listeners for Filters
+    searchInput.addEventListener('input', renderConsultants);
+    if (topbarSearch) {
+        topbarSearch.addEventListener('input', (e) => {
+            searchInput.value = e.target.value;
+            renderConsultants();
+        });
+    }
+    filterStatus.addEventListener('change', renderConsultants);
+    filterSpecialization.addEventListener('change', renderConsultants);
+
+    // Modal Controls - Add / Edit
+    const modalConsultantBackdrop = document.getElementById('modalConsultantBackdrop');
+    const formConsultant = document.getElementById('formConsultant');
+    const btnSaveConsultant = document.getElementById('btnSaveConsultant');
+
+    function setPasswordMode(isEdit) {
+        const password = document.getElementById('cPassword');
+        password.required = !isEdit;
+        password.value = '';
+        document.getElementById('cPasswordLabel').innerText = isEdit
+            ? 'New Password (leave blank to keep current)'
+            : 'Login Password *';
+    }
+
+    document.getElementById('btnOpenAddConsultant').addEventListener('click', () => {
+        document.getElementById('modalConsultantTitle').innerText = 'Add New Consultant';
+        document.getElementById('editConsultantId').value = '';
+        formConsultant.reset();
+        populateSpecializations();
+        setPasswordMode(false);
+        document.getElementById('cEmpCode').value = nextEmployeeCode();
+        modalConsultantBackdrop.style.display = 'flex';
+    });
+
+    document.getElementById('btnCloseConsultantModal').addEventListener('click', () => {
+        modalConsultantBackdrop.style.display = 'none';
+    });
+    document.getElementById('btnCancelConsultantModal').addEventListener('click', () => {
+        modalConsultantBackdrop.style.display = 'none';
+    });
+
+    window.openEditModal = function(id) {
+        const c = consultants.find(item => item.id === id);
+        if (!c) return;
+
+        formConsultant.reset();
+        populateSpecializations(c.specialization);
+        setPasswordMode(true);
+
+        document.getElementById('modalConsultantTitle').innerText = 'Edit Consultant Profile';
+        document.getElementById('editConsultantId').value = c.id;
+        document.getElementById('cFirstName').value = c.firstName;
+        document.getElementById('cLastName').value = c.lastName;
+        document.getElementById('cEmpCode').value = c.code;
+        document.getElementById('cEmail').value = c.email;
+        document.getElementById('cPhone').value = c.phone;
+        document.getElementById('cSpecialization').value = c.specialization;
+        document.getElementById('cExperience').value = c.experience;
+        document.getElementById('cStatus').value = c.status;
+        document.getElementById('cMaxCapacity').value = c.maxCapacity || 15;
+        document.getElementById('cBio').value = c.bio || '';
+
+        modalConsultantBackdrop.style.display = 'flex';
+    };
+
+    formConsultant.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const editId = document.getElementById('editConsultantId').value;
+
+        const payload = {
+            first_name: document.getElementById('cFirstName').value.trim(),
+            last_name: document.getElementById('cLastName').value.trim(),
+            employee_code: document.getElementById('cEmpCode').value.trim(),
+            email: document.getElementById('cEmail').value.trim(),
+            phone: document.getElementById('cPhone').value.trim(),
+            password: document.getElementById('cPassword').value,
+            specialization: document.getElementById('cSpecialization').value,
+            years_of_experience: parseInt(document.getElementById('cExperience').value, 10),
+            consultant_status: document.getElementById('cStatus').value,
+            max_caseload: parseInt(document.getElementById('cMaxCapacity').value, 10),
+            bio: document.getElementById('cBio').value.trim()
+        };
+
+        btnSaveConsultant.disabled = true;
+        try {
+            const result = await apiRequest(
+                editId ? CONSULTANTS_URL + '/' + editId : CONSULTANTS_URL,
+                editId ? 'PUT' : 'POST',
+                payload
+            );
+
+            upsertConsultant(result.consultant);
+            modalConsultantBackdrop.style.display = 'none';
+            showToast(`Consultant "${result.consultant.name}" ${editId ? 'updated' : 'added'} successfully.`);
+            populateSpecializations();
+            renderConsultants();
+        } catch (err) {
+            showToast(err.message, true);
+        } finally {
+            btnSaveConsultant.disabled = false;
+        }
+    });
+
+    // Modal Controls - Assign Student
+    const modalAssignBackdrop = document.getElementById('modalAssignBackdrop');
+    const formAssign = document.getElementById('formAssign');
+    const btnConfirmAssign = document.getElementById('btnConfirmAssign');
+
+    function populateAssignSelect() {
+        const select = document.getElementById('assignStudentSelect');
+        const placeholder = unassignedApplications.length
+            ? '-- Choose unassigned student application --'
+            : 'No unassigned applications available';
+
+        select.innerHTML = `<option value="">${placeholder}</option>` +
+            unassignedApplications.map(a => `
+                <option value="${a.id}">${escapeHtml(a.reference)} - ${escapeHtml(a.student)} (${escapeHtml(a.target)}) - ${escapeHtml(a.status)}</option>
+            `).join('');
+    }
+
+    window.openAssignModal = function(id) {
+        const c = consultants.find(item => item.id === id);
+        if (!c) return;
+        currentAssignId = id;
+
+        document.getElementById('assignConsultantName').innerText = c.name;
+        document.getElementById('assignConsultantSpec').innerText = `${c.specialization} Specialist • Current: ${c.assignedStudents.length} / ${c.maxCapacity} Cases`;
+        formAssign.reset();
+        populateAssignSelect();
+        modalAssignBackdrop.style.display = 'flex';
+    };
+
+    document.getElementById('btnCloseAssignModal').addEventListener('click', () => {
+        modalAssignBackdrop.style.display = 'none';
+    });
+    document.getElementById('btnCancelAssignModal').addEventListener('click', () => {
+        modalAssignBackdrop.style.display = 'none';
+    });
+
+    formAssign.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const applicationId = parseInt(document.getElementById('assignStudentSelect').value, 10);
+        if (!applicationId || !currentAssignId) return;
+
+        btnConfirmAssign.disabled = true;
+        try {
+            const result = await apiRequest(
+                CONSULTANTS_URL + '/' + currentAssignId + '/assignments',
+                'POST',
+                {
+                    application_id: applicationId,
+                    priority: document.getElementById('assignPriority').value,
+                    notes: document.getElementById('assignNotes').value.trim()
+                }
+            );
+
+            upsertConsultant(result.consultant);
+            unassignedApplications = unassignedApplications.filter(a => a.id !== applicationId);
+            modalAssignBackdrop.style.display = 'none';
+            showToast(`Assigned case to ${result.consultant.name} successfully!`);
+            renderConsultants();
+        } catch (err) {
+            showToast(err.message, true);
+        } finally {
+            btnConfirmAssign.disabled = false;
+        }
+    });
+
+    // Modal Controls - Details & Schedule
+    const modalDetailsBackdrop = document.getElementById('modalDetailsBackdrop');
+
+    window.openDetailsModal = function(id) {
+        const c = consultants.find(item => item.id === id);
+        if (!c) return;
+
+        document.getElementById('detAvatar').innerText = getInitials(c.name);
+        document.getElementById('detName').innerText = c.name;
+        document.getElementById('detCode').innerText = c.code;
+        document.getElementById('detEmail').innerText = c.email;
+        document.getElementById('detPhone').innerText = c.phone || '—';
+        document.getElementById('detBio').innerText = c.bio || 'Experienced international education counselor.';
+        document.getElementById('detStudentCount').innerText = c.assignedStudents.length;
+
+        const scheduleEl = document.getElementById('detScheduleBody');
+        if (!c.schedule || c.schedule.length === 0) {
+            scheduleEl.innerHTML = '<tr><td colspan="3" style="color: #8a93a3;">No weekly availability has been set for this consultant.</td></tr>';
+        } else {
+            scheduleEl.innerHTML = c.schedule.map(s => `
+                <tr>
+                    <td><strong>${escapeHtml(s.day)}</strong></td>
+                    <td>${escapeHtml(s.hours)}</td>
+                    <td><span class="status-badge ${s.available ? 'active' : 'inactive'}"><span class="status-dot"></span> ${s.available ? 'Available' : 'Unavailable'}</span></td>
+                </tr>
+            `).join('');
+        }
+
+        const studentListEl = document.getElementById('detStudentList');
+        if (c.assignedStudents.length === 0) {
+            studentListEl.innerHTML = '<div style="font-size: 12px; color: #8a93a3; padding: 10px; background: #f8fafc; border-radius: 6px;">No active students assigned currently.</div>';
+        } else {
+            studentListEl.innerHTML = c.assignedStudents.map((s, idx) => `
+                <div style="background: #fafbfc; border: 1px solid #e7e9ed; border-radius: 6px; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <strong style="font-size: 12px; color: #172033;">${idx + 1}. ${escapeHtml(s.name)}</strong>
+                        <div style="font-size: 11px; color: #64748b; margin-top: 2px;">${escapeHtml(s.app)}</div>
+                    </div>
+                    <span style="font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 4px; background: #e0f2fe; color: #0284c7;">${escapeHtml(s.stage)}</span>
+                </div>
+            `).join('');
+        }
+
+        modalDetailsBackdrop.style.display = 'flex';
+    };
+
+    document.getElementById('btnCloseDetailsModal').addEventListener('click', () => {
+        modalDetailsBackdrop.style.display = 'none';
+    });
+    document.getElementById('btnCloseDetailsModalBtn').addEventListener('click', () => {
+        modalDetailsBackdrop.style.display = 'none';
+    });
+
+    // Modal Controls - Deactivate
+    const modalDeleteBackdrop = document.getElementById('modalDeleteBackdrop');
+    const btnConfirmDelete = document.getElementById('btnConfirmDelete');
+
+    window.openDeleteModal = function(id) {
+        const c = consultants.find(item => item.id === id);
+        if (!c) return;
+        currentDeleteId = id;
+
+        document.getElementById('deleteConsultantName').innerText = c.name;
+        document.getElementById('deleteStudentCount').innerText = c.assignedStudents.length;
+        modalDeleteBackdrop.style.display = 'flex';
+    };
+
+    document.getElementById('btnCloseDeleteModal').addEventListener('click', () => {
+        modalDeleteBackdrop.style.display = 'none';
+    });
+    document.getElementById('btnCancelDeleteModal').addEventListener('click', () => {
+        modalDeleteBackdrop.style.display = 'none';
+    });
+
+    btnConfirmDelete.addEventListener('click', async () => {
+        if (!currentDeleteId) return;
+
+        btnConfirmDelete.disabled = true;
+        try {
+            const result = await apiRequest(CONSULTANTS_URL + '/' + currentDeleteId, 'DELETE');
+            upsertConsultant(result.consultant);
+            showToast(`Consultant "${result.consultant.name}" marked as inactive.`);
+            modalDeleteBackdrop.style.display = 'none';
+            renderConsultants();
+        } catch (err) {
+            showToast(err.message, true);
+        } finally {
+            btnConfirmDelete.disabled = false;
+        }
+    });
+
+    // CSV Export
+    function csvCell(value) {
+        return '"' + String(value === null || value === undefined ? '' : value).replace(/"/g, '""') + '"';
+    }
+
+    document.getElementById('btnExportConsultants').addEventListener('click', () => {
+        let csv = "Employee Code,Full Name,Email,Phone,Specialization,Years Experience,Active Cases,Status\n";
+        consultants.forEach(c => {
+            csv += [
+                csvCell(c.code),
+                csvCell(c.name),
+                csvCell(c.email),
+                csvCell(c.phone),
+                csvCell(c.specialization),
+                c.experience,
+                c.assignedStudents.length,
+                csvCell(c.status)
+            ].join(',') + "\n";
+        });
+
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.setAttribute("href", url);
+        link.setAttribute("download", "indic_rmc_consultants_" + new Date().toISOString().slice(0,10) + ".csv");
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        showToast("Exported consultant records successfully!");
+    });
+
+    // Initial Render
+    populateSpecializations();
+    renderConsultants();
 </script>
 
 </body>

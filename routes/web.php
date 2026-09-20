@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\GoogleController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\AdminConsultantController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\StudentDocumentController;
@@ -430,6 +431,26 @@ Route::prefix('admin')
             [AdminController::class, 'consultants']
         )->name('consultants');
 
+        Route::post(
+            '/consultants',
+            [AdminConsultantController::class, 'store']
+        )->name('consultants.store');
+
+        Route::put(
+            '/consultants/{consultant}',
+            [AdminConsultantController::class, 'update']
+        )->name('consultants.update');
+
+        Route::delete(
+            '/consultants/{consultant}',
+            [AdminConsultantController::class, 'destroy']
+        )->name('consultants.destroy');
+
+        Route::post(
+            '/consultants/{consultant}/assignments',
+            [AdminConsultantController::class, 'assign']
+        )->name('consultants.assign');
+
         Route::get(
             '/countries-list',
             [AdminController::class, 'countries']
@@ -646,9 +667,7 @@ Route::get('/test-scholarships', function () {
     return view('admin.scholarships');
 });
 
-Route::get('/test-consultants', function () {
-    return view('admin.consultants');
-});
+Route::get('/test-consultants', [AdminController::class, 'consultants']);
 
 Route::get('/test-dashboard', function () {
     return view('admin.dashboard');
