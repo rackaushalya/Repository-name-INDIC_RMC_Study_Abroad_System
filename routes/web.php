@@ -426,6 +426,16 @@ Route::prefix('admin')
         )->name('students');
 
         Route::get(
+            '/students/{student}',
+            [AdminController::class, 'showStudent']
+        )->name('students.show');
+
+        Route::patch(
+            '/students/{student}/status',
+            [AdminController::class, 'updateStudentStatus']
+        )->name('students.status');
+
+        Route::get(
             '/consultants',
             [AdminController::class, 'consultants']
         )->name('consultants');

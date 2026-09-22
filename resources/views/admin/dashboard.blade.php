@@ -10,6 +10,7 @@
 
     <title>Admin Dashboard | INDIC RMC</title>
 
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
     <style>
 
@@ -22,8 +23,8 @@
 
         body {
             font-family: Arial, Helvetica, sans-serif;
-            background: #f4f6fa;
-            color: #17233c;
+            background: #f5f7fb;
+            color: #172033;
         }
 
 
@@ -44,12 +45,14 @@
             left: 0;
             top: 0;
 
-            width: 240px;
+            width: 245px;
             height: 100vh;
 
-            background: #111827;
+            background: #101a2b;
 
             color: white;
+
+            padding: 25px 15px;
 
             overflow-y: auto;
         }
@@ -57,71 +60,57 @@
 
         .logo {
 
-            height: 105px;
+            padding: 0 12px;
 
-            display: flex;
-
-            align-items: center;
-
-            padding: 20px;
-
-            border-bottom: 1px solid #263044;
+            margin-bottom: 35px;
         }
 
 
-        .logo-icon {
+        .logo-main {
 
-            width: 40px;
-            height: 40px;
+            font-size: 25px;
 
-            background: #ff7a18;
+            font-weight: 700;
 
-            border-radius: 9px;
-
-            display: flex;
-
-            align-items: center;
-            justify-content: center;
-
-            font-weight: bold;
-
-            margin-right: 12px;
+            color: #f97316;
         }
 
 
-        .logo-text h2 {
+        .logo-main span {
 
-            font-size: 17px;
-
-            margin-bottom: 3px;
+            color: white;
         }
 
 
-        .logo-text span {
+        .logo-subtitle {
 
-            font-size: 11px;
+            font-size: 8px;
 
-            color: #9ca3af;
+            letter-spacing: 0.8px;
+
+            color: #aeb7c7;
+
+            margin-top: 4px;
         }
 
 
         .menu-section {
 
-            padding: 18px 12px 5px;
+            margin-bottom: 25px;
         }
 
 
         .menu-title {
 
+            color: #7e8ba1;
+
             font-size: 10px;
 
-            color: #7f8ba3;
-
-            font-weight: bold;
+            text-transform: uppercase;
 
             letter-spacing: 1px;
 
-            padding: 0 10px 8px;
+            margin: 0 12px 10px;
         }
 
 
@@ -133,15 +122,15 @@
 
             gap: 12px;
 
-            padding: 12px 13px;
+            padding: 11px 12px;
 
             margin-bottom: 4px;
 
             border-radius: 7px;
 
-            color: #d1d5db;
+            color: #cbd3df;
 
-            font-size: 14px;
+            font-size: 13px;
 
             transition: 0.2s;
         }
@@ -149,7 +138,7 @@
 
         .menu-item:hover {
 
-            background: #1f2937;
+            background: #1d2a40;
 
             color: white;
         }
@@ -157,7 +146,7 @@
 
         .menu-item.active {
 
-            background: #ff7a18;
+            background: #f97316;
 
             color: white;
         }
@@ -165,9 +154,17 @@
 
         .menu-icon {
 
-            width: 20px;
+            width: 19px;
+            height: 19px;
 
-            text-align: center;
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            font-size: 16px;
+
+            flex-shrink: 0;
         }
 
 
@@ -177,7 +174,7 @@
 
         .main {
 
-            margin-left: 240px;
+            margin-left: 245px;
 
             min-height: 100vh;
         }
@@ -229,7 +226,7 @@
 
         .search-box input:focus {
 
-            border-color: #ff7a18;
+            border-color: #f97316;
         }
 
 
@@ -262,7 +259,7 @@
 
             border-radius: 50%;
 
-            background: #ff7a18;
+            background: #f97316;
 
             color: white;
 
@@ -404,16 +401,36 @@
 
             border-radius: 8px;
 
-            background: #fff2e8;
-
-            color: #ff7a18;
-
             display: flex;
 
             align-items: center;
             justify-content: center;
 
-            font-weight: bold;
+            font-size: 17px;
+        }
+
+
+        .stat-icon.orange {
+            background: #fff1e8;
+            color: #f97316;
+        }
+
+
+        .stat-icon.blue {
+            background: #eaf3ff;
+            color: #2878df;
+        }
+
+
+        .stat-icon.green {
+            background: #eafaf0;
+            color: #22a35a;
+        }
+
+
+        .stat-icon.purple {
+            background: #f2ecff;
+            color: #7c3aed;
         }
 
 
@@ -423,7 +440,7 @@
 
             font-weight: bold;
 
-            color: #17233c;
+            color: #172033;
         }
 
 
@@ -487,7 +504,7 @@
 
         .card-header a {
 
-            color: #ff7a18;
+            color: #f97316;
 
             font-size: 12px;
 
@@ -681,9 +698,9 @@
 
         .quick-action:hover {
 
-            border-color: #ff7a18;
+            border-color: #f97316;
 
-            background: #fffaf5;
+            background: #fff7f1;
         }
 
 
@@ -738,7 +755,8 @@
             }
 
 
-            .logo-text,
+            .logo-subtitle,
+            .logo-main span,
             .menu-title,
             .menu-item span:not(.menu-icon) {
 
@@ -748,15 +766,15 @@
 
             .logo {
 
-                justify-content: center;
+                text-align: center;
 
-                padding: 10px;
+                padding: 0;
             }
 
 
-            .logo-icon {
+            .logo-main {
 
-                margin-right: 0;
+                font-size: 17px;
             }
 
 
@@ -821,21 +839,12 @@
 
     <div class="logo">
 
-        <div class="logo-icon">
-            IR
+        <div class="logo-main">
+            INDIC <span>RMC</span>
         </div>
 
-
-        <div class="logo-text">
-
-            <h2>
-                INDIC RMC
-            </h2>
-
-            <span>
-                Administration Portal
-            </span>
-
+        <div class="logo-subtitle">
+            ADMINISTRATION PORTAL
         </div>
 
     </div>
@@ -853,9 +862,7 @@
         <a href="{{ route('admin.dashboard') }}"
            class="menu-item active">
 
-            <span class="menu-icon">
-                ▦
-            </span>
+            <span class="menu-icon"><i class="bi bi-grid-1x2-fill"></i></span>
 
             <span>
                 Dashboard
@@ -880,9 +887,7 @@
         <a href="{{ route('admin.users') }}"
            class="menu-item">
 
-            <span class="menu-icon">
-                ♙
-            </span>
+            <span class="menu-icon"><i class="bi bi-people-fill"></i></span>
 
             <span>
                 Users
@@ -896,9 +901,7 @@
         <a href="{{ route('admin.students') }}"
            class="menu-item">
 
-            <span class="menu-icon">
-                ♙
-            </span>
+            <span class="menu-icon"><i class="bi bi-person-fill"></i></span>
 
             <span>
                 Students
@@ -912,9 +915,7 @@
         <a href="{{ route('admin.consultants') }}"
            class="menu-item">
 
-            <span class="menu-icon">
-                ♙
-            </span>
+            <span class="menu-icon"><i class="bi bi-person-badge-fill"></i></span>
 
             <span>
                 Consultants
@@ -928,9 +929,7 @@
         <a href="{{ route('admin.applications-list') }}"
            class="menu-item">
 
-            <span class="menu-icon">
-                ▤
-            </span>
+            <span class="menu-icon"><i class="bi bi-file-earmark-text-fill"></i></span>
 
             <span>
                 Applications
@@ -944,9 +943,7 @@
         <a href="{{ route('admin.appointments-list') }}"
            class="menu-item">
 
-            <span class="menu-icon">
-                ▣
-            </span>
+            <span class="menu-icon"><i class="bi bi-calendar2-check-fill"></i></span>
 
             <span>
                 Appointments
@@ -971,9 +968,7 @@
         <a href="{{ route('admin.countries-list') }}"
            class="menu-item">
 
-            <span class="menu-icon">
-                ◎
-            </span>
+            <span class="menu-icon"><i class="bi bi-globe-americas"></i></span>
 
             <span>
                 Countries
@@ -987,9 +982,7 @@
         <a href="{{ route('admin.universities-list') }}"
            class="menu-item">
 
-            <span class="menu-icon">
-                ⌂
-            </span>
+            <span class="menu-icon"><i class="bi bi-bank"></i></span>
 
             <span>
                 Universities
@@ -1003,9 +996,7 @@
         <a href="{{ route('admin.courses-list') }}"
            class="menu-item">
 
-            <span class="menu-icon">
-                ▤
-            </span>
+            <span class="menu-icon"><i class="bi bi-mortarboard-fill"></i></span>
 
             <span>
                 Courses
@@ -1030,9 +1021,7 @@
         <a href="{{ route('admin.users') }}"
            class="menu-item">
 
-            <span class="menu-icon">
-                ⚙
-            </span>
+            <span class="menu-icon"><i class="bi bi-gear-fill"></i></span>
 
             <span>
                 User Management
@@ -1065,9 +1054,7 @@
 
         <div class="search-box">
 
-            <span class="search-icon">
-                ⌕
-            </span>
+            <span class="search-icon"><i class="bi bi-search"></i></span>
 
 
             <input
@@ -1176,8 +1163,8 @@
                     </span>
 
 
-                    <div class="stat-icon">
-                        U
+                    <div class="stat-icon orange">
+                        <i class="bi bi-people-fill"></i>
                     </div>
 
                 </div>
@@ -1211,8 +1198,8 @@
                     </span>
 
 
-                    <div class="stat-icon">
-                        S
+                    <div class="stat-icon blue">
+                        <i class="bi bi-person-fill"></i>
                     </div>
 
                 </div>
@@ -1246,8 +1233,8 @@
                     </span>
 
 
-                    <div class="stat-icon">
-                        C
+                    <div class="stat-icon green">
+                        <i class="bi bi-person-badge-fill"></i>
                     </div>
 
                 </div>
@@ -1281,8 +1268,8 @@
                     </span>
 
 
-                    <div class="stat-icon">
-                        A
+                    <div class="stat-icon purple">
+                        <i class="bi bi-file-earmark-text-fill"></i>
                     </div>
 
                 </div>
@@ -1326,8 +1313,8 @@
                     </span>
 
 
-                    <div class="stat-icon">
-                        C
+                    <div class="stat-icon orange">
+                        <i class="bi bi-globe-americas"></i>
                     </div>
 
                 </div>
@@ -1361,8 +1348,8 @@
                     </span>
 
 
-                    <div class="stat-icon">
-                        U
+                    <div class="stat-icon blue">
+                        <i class="bi bi-bank"></i>
                     </div>
 
                 </div>
@@ -1396,8 +1383,8 @@
                     </span>
 
 
-                    <div class="stat-icon">
-                        C
+                    <div class="stat-icon green">
+                        <i class="bi bi-mortarboard-fill"></i>
                     </div>
 
                 </div>
@@ -1431,8 +1418,8 @@
                     </span>
 
 
-                    <div class="stat-icon">
-                        A
+                    <div class="stat-icon purple">
+                        <i class="bi bi-calendar2-check-fill"></i>
                     </div>
 
                 </div>

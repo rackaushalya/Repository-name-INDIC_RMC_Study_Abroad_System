@@ -7,14 +7,15 @@
 
     <title>INDIC RMC | Inquiries</title>
 
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
     <style>
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI",
-                         Roboto, Arial, sans-serif;
-            background: #f7f8fa;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f5f7fb;
             color: #172033;
         }
 
@@ -23,69 +24,158 @@
         .app { display: flex; min-height: 100vh; }
 
         .sidebar {
-            width: 250px;
-            background: #111827;
-            color: #ffffff;
             position: fixed;
-            top: 0; left: 0; bottom: 0;
+            left: 0;
+            top: 0;
+            width: 245px;
+            height: 100vh;
+            background: #101a2b;
+            color: white;
+            padding: 25px 15px;
             overflow-y: auto;
-            z-index: 100;
         }
 
-        .brand {
-            height: 76px;
+        .logo {
+            padding: 0 12px;
+            margin-bottom: 35px;
+        }
+
+        .logo-main {
+            font-size: 25px;
+            font-weight: 700;
+            color: #f97316;
+        }
+
+        .logo-main span {
+            color: white;
+        }
+
+        .logo-subtitle {
+            font-size: 8px;
+            letter-spacing: 0.8px;
+            color: #aeb7c7;
+            margin-top: 4px;
+        }
+
+        .menu-section {
+            margin-bottom: 25px;
+        }
+
+        .menu-title {
+            color: #7e8ba1;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 0 12px 10px;
+        }
+
+        .menu-item {
             display: flex;
             align-items: center;
-            padding: 0 24px;
-            border-bottom: 1px solid #252d3b;
+            gap: 12px;
+            padding: 11px 12px;
+            margin-bottom: 4px;
+            border-radius: 7px;
+            color: #cbd3df;
+            font-size: 13px;
+            transition: 0.2s;
         }
 
-        .brand-mark {
-            width: 38px; height: 38px;
-            border-radius: 8px;
-            background: #f58220;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 13px; font-weight: 700;
-            margin-right: 11px;
+        .menu-item:hover {
+            background: #1d2a40;
+            color: white;
         }
 
-        .brand-name { font-size: 17px; font-weight: 700; letter-spacing: -.3px; }
-        .brand-subtitle { font-size: 10px; color: #8c96a8; margin-top: 2px; }
-
-        .nav { padding: 20px 12px; }
-
-        .nav-section {
-            font-size: 10px; text-transform: uppercase;
-            color: #697386; font-weight: 700; letter-spacing: .8px;
-            padding: 0 12px; margin: 18px 0 8px;
+        .menu-item.active {
+            background: #f97316;
+            color: white;
         }
 
-        .nav-section:first-child { margin-top: 0; }
-
-        .nav-link {
-            height: 42px; display: flex; align-items: center; gap: 12px;
-            padding: 0 12px; border-radius: 7px;
-            color: #b9c0cc; font-size: 13px; margin-bottom: 3px;
-            transition: all .2s ease;
+        .menu-icon {
+            width: 19px;
+            height: 19px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            flex-shrink: 0;
         }
 
-        .nav-link:hover { background: #1c2534; color: #ffffff; }
-        .nav-link.active { background: #f58220; color: #ffffff; }
-        .nav-icon { width: 18px; height: 18px; flex-shrink: 0; }
-
-        .main { margin-left: 250px; width: calc(100% - 250px); min-height: 100vh; }
+        .main {
+            margin-left: 245px;
+            min-height: 100vh;
+        }
 
         .topbar {
-            height: 76px; background: #ffffff;
-            border-bottom: 1px solid #e7e9ee;
-            display: flex; align-items: center; justify-content: space-between;
-            padding: 0 30px;
+            height: 72px;
+            background: white;
+            border-bottom: 1px solid #e6e9ef;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 28px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
         }
 
-        .profile { display: flex; align-items: center; gap: 10px; padding-left: 18px; border-left: 1px solid #e5e7eb; }
-        .profile-avatar { width: 36px; height: 36px; border-radius: 50%; background: #f58220; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 13px; }
-        .profile-name { font-size: 12px; font-weight: 600; }
-        .profile-role { font-size: 10px; color: #8a93a3; margin-top: 2px; }
+        .search-box {
+            width: 330px;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 11px 15px 11px 40px;
+            border: 1px solid #dce1e8;
+            border-radius: 7px;
+            outline: none;
+            font-size: 13px;
+            background: #f8fafc;
+        }
+
+        .search-box input:focus {
+            border-color: #f97316;
+            background: white;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 14px;
+            top: 11px;
+            color: #8a94a6;
+        }
+
+        .admin-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .profile-circle {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: #f97316;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 13px;
+        }
+
+        .profile-info strong {
+            display: block;
+            font-size: 13px;
+        }
+
+        .profile-info span {
+            display: block;
+            font-size: 11px;
+            color: #8a94a6;
+            margin-top: 3px;
+        }
 
         .content { padding: 28px 30px 40px; }
 
@@ -98,12 +188,12 @@
         .page-header p { margin-top: 5px; font-size: 12px; color: #737d8e; }
 
         .btn-primary {
-            background: #f58220; color: #fff; border: none;
+            background: #f97316; color: #fff; border: none;
             padding: 11px 18px; border-radius: 7px;
             font-size: 12px; font-weight: 600; cursor: pointer;
         }
 
-        .btn-primary:hover { background: #de7213; }
+        .btn-primary:hover { background: #e07116; }
 
         .alert-success {
             background: #edf8f2; color: #32815a;
@@ -144,12 +234,50 @@
         .badge-gray { background: #f0f1f3; color: #697386; }
 
         .row-actions { display: flex; gap: 8px; }
-        .row-actions a { font-size: 10px; font-weight: 600; color: #f58220; }
+        .row-actions a { font-size: 10px; font-weight: 600; color: #f97316; }
         .row-actions button { background: none; border: none; color: #c0392b; font-size: 10px; font-weight: 600; cursor: pointer; padding: 0; }
 
         .empty-state { text-align: center; padding: 40px 0; color: #8a93a3; font-size: 12px; }
 
         .pagination-wrap { margin-top: 18px; }
+
+        @media (max-width: 750px) {
+            .sidebar {
+                width: 70px;
+            }
+
+            .logo-subtitle,
+            .logo-main span,
+            .menu-title,
+            .menu-item span:not(.menu-icon) {
+                display: none;
+            }
+
+            .logo {
+                text-align: center;
+                padding: 0;
+            }
+
+            .logo-main {
+                font-size: 17px;
+            }
+
+            .menu-item {
+                justify-content: center;
+            }
+
+            .main {
+                margin-left: 70px;
+            }
+
+            .topbar {
+                padding: 0 15px;
+            }
+
+            .search-box {
+                width: 200px;
+            }
+        }
 
     </style>
 
@@ -160,56 +288,98 @@
 
     <aside class="sidebar">
 
-        <div class="brand">
-            <div class="brand-mark">IR</div>
-            <div>
-                <div class="brand-name">INDIC RMC</div>
-                <div class="brand-subtitle">Administration Portal</div>
-            </div>
+        <div class="logo">
+            <div class="logo-main">INDIC <span>RMC</span></div>
+            <div class="logo-subtitle">ADMINISTRATION PORTAL</div>
         </div>
 
-        <nav class="nav">
+        <div class="menu-section">
+            <div class="menu-title">OVERVIEW</div>
 
-            <div class="nav-section">Overview</div>
-            <a href="{{ route('admin.dashboard') }}" class="nav-link">
-                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                    <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
-                    <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
-                </svg>
+            <a href="{{ route('admin.dashboard') }}" class="menu-item">
+                <span class="menu-icon"><i class="bi bi-grid-1x2-fill"></i></span>
                 <span>Dashboard</span>
             </a>
+        </div>
 
-            <div class="nav-section">CRM &amp; Intelligence</div>
+        <div class="menu-section">
+            <div class="menu-title">MANAGEMENT</div>
 
-            <a href="{{ route('admin.leads.index') }}" class="nav-link">
-                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                    <path d="M3 12h18"/>
-                </svg>
-                <span>Leads</span>
+            <a href="{{ route('admin.users') }}" class="menu-item">
+                <span class="menu-icon"><i class="bi bi-people-fill"></i></span>
+                <span>Users</span>
             </a>
 
-            <a href="{{ route('admin.inquiries.index') }}" class="nav-link active">
-                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                    <path d="M4 19V5"/>
-                </svg>
-                <span>Inquiries</span>
+            <a href="{{ route('admin.students') }}" class="menu-item">
+                <span class="menu-icon"><i class="bi bi-person-fill"></i></span>
+                <span>Students</span>
             </a>
 
-        </nav>
+            <a href="{{ route('admin.consultants') }}" class="menu-item">
+                <span class="menu-icon"><i class="bi bi-person-badge-fill"></i></span>
+                <span>Consultants</span>
+            </a>
+
+            <a href="{{ route('admin.applications-list') }}" class="menu-item">
+                <span class="menu-icon"><i class="bi bi-file-earmark-text-fill"></i></span>
+                <span>Applications</span>
+            </a>
+
+            <a href="{{ route('admin.appointments-list') }}" class="menu-item">
+                <span class="menu-icon"><i class="bi bi-calendar2-check-fill"></i></span>
+                <span>Appointments</span>
+            </a>
+        </div>
+
+        <div class="menu-section">
+            <div class="menu-title">STUDY ABROAD</div>
+
+            <a href="{{ route('admin.countries-list') }}" class="menu-item">
+                <span class="menu-icon"><i class="bi bi-globe-americas"></i></span>
+                <span>Countries</span>
+            </a>
+
+            <a href="{{ route('admin.universities-list') }}" class="menu-item">
+                <span class="menu-icon"><i class="bi bi-bank"></i></span>
+                <span>Universities</span>
+            </a>
+
+            <a href="{{ route('admin.courses-list') }}" class="menu-item">
+                <span class="menu-icon"><i class="bi bi-mortarboard-fill"></i></span>
+                <span>Courses</span>
+            </a>
+        </div>
+
+        <div class="menu-section">
+            <div class="menu-title">SYSTEM</div>
+
+            <a href="{{ route('admin.users') }}" class="menu-item">
+                <span class="menu-icon"><i class="bi bi-gear-fill"></i></span>
+                <span>User Management</span>
+            </a>
+        </div>
 
     </aside>
 
     <main class="main">
 
         <header class="topbar">
-            <div></div>
-            <div class="profile">
-                <div class="profile-avatar">A</div>
-                <div>
-                    <div class="profile-name">Admin User</div>
-                    <div class="profile-role">Administrator</div>
+
+            <div class="search-box">
+                <span class="search-icon"><i class="bi bi-search"></i></span>
+                <input type="text" placeholder="Search students, applications...">
+            </div>
+
+            <div class="admin-profile">
+                <div class="profile-circle">
+                    {{ strtoupper(substr(auth()->user()->first_name ?? 'A', 0, 1)) }}
+                </div>
+                <div class="profile-info">
+                    <strong>{{ auth()->user()->first_name ?? 'Admin' }} {{ auth()->user()->last_name ?? 'User' }}</strong>
+                    <span>Administrator</span>
                 </div>
             </div>
+
         </header>
 
         <section class="content">
