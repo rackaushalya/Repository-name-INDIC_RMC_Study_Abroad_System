@@ -577,7 +577,10 @@
 
                         <div class="form-group">
                             <label for="phone">Phone</label>
-                            <input type="text" id="phone" name="phone" class="form-control" value="{{ old('phone') }}">
+                            <input type="tel" id="phone" name="phone" class="form-control"
+                                inputmode="numeric" pattern="[0-9]{10}" maxlength="10"
+                                oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10)"
+                                value="{{ old('phone') }}">
                         </div>
 
                         <div class="form-group">
@@ -609,7 +612,7 @@
 
                         <div class="form-group">
                             <label for="date_of_birth">Date of Birth</label>
-                            <input type="date" id="date_of_birth" name="date_of_birth" class="form-control" value="{{ old('date_of_birth') }}">
+                            <input type="date" id="date_of_birth" name="date_of_birth" class="form-control" max="{{ now()->format('Y-m-d') }}" value="{{ old('date_of_birth') }}">
                         </div>
 
                         <div class="form-group">
@@ -651,7 +654,7 @@
 
                         <div class="form-group full">
                             <label for="current_address">Address</label>
-                            <textarea id="current_address" name="current_address" class="form-control">{{ old('current_address') }}</textarea>
+                            <textarea id="current_address" name="current_address" class="form-control" maxlength="500">{{ old('current_address') }}</textarea>
                         </div>
 
                     </div>

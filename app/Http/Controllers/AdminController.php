@@ -15,6 +15,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 
 class AdminController extends Controller
 {
@@ -686,16 +687,19 @@ class AdminController extends Controller
             'first_name' => ['required', 'string', 'max:100'],
             'last_name' => ['nullable', 'string', 'max:100'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
-            'phone' => ['nullable', 'string', 'max:30'],
+            'phone' => ['nullable', 'digits:10'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'account_status' => ['required', 'in:active,inactive'],
-            'date_of_birth' => ['nullable', 'date'],
+            'date_of_birth' => ['nullable', 'date', 'before_or_equal:today'],
             'gender' => ['nullable', 'in:Male,Female,Other'],
             'nationality' => ['nullable', 'string', 'max:100'],
             'passport_number' => ['nullable', 'string', 'max:100'],
-            'current_address' => ['nullable', 'string'],
+            'current_address' => ['nullable', 'string', 'max:500'],
             'city' => ['nullable', 'string', 'max:100'],
-            'country' => ['nullable', 'string', 'max:100'],
+            'country' => [
+                'nullable',
+                Rule::in(Country::pluck('country_name'))
+            ],
         ]);
 
         $studentRole = Role::where('role_name', 'Student')->first();
@@ -771,16 +775,19 @@ class AdminController extends Controller
                 'max:255',
                 'unique:users,email,' . $student->user->user_id . ',user_id'
             ],
-            'phone' => ['nullable', 'string', 'max:30'],
+            'phone' => ['nullable', 'digits:10'],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
             'account_status' => ['required', 'in:active,inactive'],
-            'date_of_birth' => ['nullable', 'date'],
+            'date_of_birth' => ['nullable', 'date', 'before_or_equal:today'],
             'gender' => ['nullable', 'in:Male,Female,Other'],
             'nationality' => ['nullable', 'string', 'max:100'],
             'passport_number' => ['nullable', 'string', 'max:100'],
-            'current_address' => ['nullable', 'string'],
+            'current_address' => ['nullable', 'string', 'max:500'],
             'city' => ['nullable', 'string', 'max:100'],
-            'country' => ['nullable', 'string', 'max:100'],
+            'country' => [
+                'nullable',
+                Rule::in(Country::pluck('country_name'))
+            ],
         ]);
 
         $student->user->first_name = $validated['first_name'];

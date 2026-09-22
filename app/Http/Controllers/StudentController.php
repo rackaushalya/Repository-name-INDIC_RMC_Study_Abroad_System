@@ -129,12 +129,12 @@ class StudentController extends Controller
         $validated = $request->validate([
             'first_name' => ['required', 'string', 'max:100'],
             'last_name' => ['nullable', 'string', 'max:100'],
-            'phone' => ['nullable', 'string', 'max:30'],
-            'date_of_birth' => ['nullable', 'date'],
+            'phone' => ['nullable', 'digits:10'],
+            'date_of_birth' => ['nullable', 'date', 'before_or_equal:today'],
             'gender' => ['nullable', 'in:Male,Female,Other'],
             'nationality' => ['nullable', 'string', 'max:100'],
             'passport_number' => ['nullable', 'string', 'max:100'],
-            'current_address' => ['nullable', 'string'],
+            'current_address' => ['nullable', 'string', 'max:500'],
             'city' => ['nullable', 'string', 'max:100'],
             'country' => ['nullable', 'string', 'max:100'],
         ]);

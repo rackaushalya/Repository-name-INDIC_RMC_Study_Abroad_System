@@ -50,15 +50,15 @@ class QualificationController extends Controller
         $student = $this->getStudent();
 
         $validated = $request->validate([
-            'qualification_type' => ['required', 'string'],
+            'qualification_type' => ['required', 'in:O_Level,A_Level,Certificate,Diploma,HND,Bachelor,Master,PhD,Other'],
             'institution_name' => ['required', 'string', 'max:255'],
             'qualification_name' => ['required', 'string', 'max:255'],
             'field_of_study' => ['nullable', 'string', 'max:255'],
-            'start_date' => ['nullable', 'date'],
-            'completion_date' => ['nullable', 'date'],
+            'start_date' => ['nullable', 'date', 'before_or_equal:today'],
+            'completion_date' => ['nullable', 'date', 'before_or_equal:today'],
             'grade' => ['nullable', 'string', 'max:50'],
             'gpa' => ['nullable', 'numeric', 'between:0,100'],
-            'description' => ['nullable', 'string'],
+            'description' => ['nullable', 'string', 'max:2000'],
         ]);
 
         $student->academicQualifications()->create($validated);
@@ -80,15 +80,15 @@ class QualificationController extends Controller
         }
 
         $validated = $request->validate([
-            'qualification_type' => ['required', 'string'],
+            'qualification_type' => ['required', 'in:O_Level,A_Level,Certificate,Diploma,HND,Bachelor,Master,PhD,Other'],
             'institution_name' => ['required', 'string', 'max:255'],
             'qualification_name' => ['required', 'string', 'max:255'],
             'field_of_study' => ['nullable', 'string', 'max:255'],
-            'start_date' => ['nullable', 'date'],
-            'completion_date' => ['nullable', 'date'],
+            'start_date' => ['nullable', 'date', 'before_or_equal:today'],
+            'completion_date' => ['nullable', 'date', 'before_or_equal:today'],
             'grade' => ['nullable', 'string', 'max:50'],
             'gpa' => ['nullable', 'numeric', 'between:0,100'],
-            'description' => ['nullable', 'string'],
+            'description' => ['nullable', 'string', 'max:2000'],
         ]);
 
         $qualification->update($validated);
@@ -121,13 +121,13 @@ class QualificationController extends Controller
         $student = $this->getStudent();
 
         $validated = $request->validate([
-            'test_type' => ['required', 'string'],
-            'overall_score' => ['nullable', 'numeric'],
-            'listening_score' => ['nullable', 'numeric'],
-            'reading_score' => ['nullable', 'numeric'],
-            'writing_score' => ['nullable', 'numeric'],
-            'speaking_score' => ['nullable', 'numeric'],
-            'test_date' => ['nullable', 'date'],
+            'test_type' => ['required', 'in:IELTS,PTE,TOEFL,Duolingo,Cambridge,Other'],
+            'overall_score' => ['nullable', 'numeric', 'min:0', 'max:200'],
+            'listening_score' => ['nullable', 'numeric', 'min:0', 'max:200'],
+            'reading_score' => ['nullable', 'numeric', 'min:0', 'max:200'],
+            'writing_score' => ['nullable', 'numeric', 'min:0', 'max:200'],
+            'speaking_score' => ['nullable', 'numeric', 'min:0', 'max:200'],
+            'test_date' => ['nullable', 'date', 'before_or_equal:today'],
             'expiry_date' => ['nullable', 'date'],
             'certificate_number' => ['nullable', 'string', 'max:100'],
         ]);
@@ -151,13 +151,13 @@ class QualificationController extends Controller
         }
 
         $validated = $request->validate([
-            'test_type' => ['required', 'string'],
-            'overall_score' => ['nullable', 'numeric'],
-            'listening_score' => ['nullable', 'numeric'],
-            'reading_score' => ['nullable', 'numeric'],
-            'writing_score' => ['nullable', 'numeric'],
-            'speaking_score' => ['nullable', 'numeric'],
-            'test_date' => ['nullable', 'date'],
+            'test_type' => ['required', 'in:IELTS,PTE,TOEFL,Duolingo,Cambridge,Other'],
+            'overall_score' => ['nullable', 'numeric', 'min:0', 'max:200'],
+            'listening_score' => ['nullable', 'numeric', 'min:0', 'max:200'],
+            'reading_score' => ['nullable', 'numeric', 'min:0', 'max:200'],
+            'writing_score' => ['nullable', 'numeric', 'min:0', 'max:200'],
+            'speaking_score' => ['nullable', 'numeric', 'min:0', 'max:200'],
+            'test_date' => ['nullable', 'date', 'before_or_equal:today'],
             'expiry_date' => ['nullable', 'date'],
             'certificate_number' => ['nullable', 'string', 'max:100'],
         ]);
@@ -194,11 +194,11 @@ class QualificationController extends Controller
         $validated = $request->validate([
             'company_name' => ['required', 'string', 'max:255'],
             'job_title' => ['required', 'string', 'max:255'],
-            'employment_type' => ['required', 'string'],
-            'start_date' => ['required', 'date'],
+            'employment_type' => ['required', 'in:Full Time,Part Time,Internship,Contract,Other'],
+            'start_date' => ['required', 'date', 'before_or_equal:today'],
             'end_date' => ['nullable', 'date'],
             'is_current' => ['boolean'],
-            'description' => ['nullable', 'string'],
+            'description' => ['nullable', 'string', 'max:2000'],
         ]);
 
         $student->workExperiences()->create($validated);
@@ -222,11 +222,11 @@ class QualificationController extends Controller
         $validated = $request->validate([
             'company_name' => ['required', 'string', 'max:255'],
             'job_title' => ['required', 'string', 'max:255'],
-            'employment_type' => ['required', 'string'],
-            'start_date' => ['required', 'date'],
+            'employment_type' => ['required', 'in:Full Time,Part Time,Internship,Contract,Other'],
+            'start_date' => ['required', 'date', 'before_or_equal:today'],
             'end_date' => ['nullable', 'date'],
             'is_current' => ['boolean'],
-            'description' => ['nullable', 'string'],
+            'description' => ['nullable', 'string', 'max:2000'],
         ]);
 
         $workExperience->update($validated);
