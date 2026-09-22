@@ -15,6 +15,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 
 class AdminController extends Controller
 {
@@ -218,7 +219,7 @@ class AdminController extends Controller
 
             'account_status' => [
                 'required',
-                'in:Active,Inactive'
+                'in:active,inactive'
             ],
         ]);
 
@@ -329,7 +330,7 @@ class AdminController extends Controller
 
             'account_status' => [
                 'required',
-                'in:Active,Inactive'
+                'in:active,inactive'
             ],
         ]);
 
@@ -420,7 +421,7 @@ class AdminController extends Controller
         $validated = $request->validate([
             'account_status' => [
                 'required',
-                'in:Active,Inactive'
+                'in:active,inactive'
             ],
         ]);
 
@@ -436,7 +437,7 @@ class AdminController extends Controller
         if (
             $currentUser &&
             $currentUser->user_id === $user->user_id &&
-            $validated['account_status'] === 'Inactive'
+            $validated['account_status'] === 'inactive'
         ) {
             return redirect()
                 ->route('admin.users')
@@ -512,9 +513,10 @@ class AdminController extends Controller
 
 
     /**
-     * View Students
+     * Build the filtered students query shared by the index listing
+     * and the CSV export, so both stay in sync.
      */
-    public function students(Request $request)
+    private function filteredStudentsQuery(Request $request)
     {
         $query = Student::with('user')
             ->withCount('applications');
@@ -547,7 +549,16 @@ class AdminController extends Controller
             $query->where('country', $request->input('country'));
         }
 
-        $students = $query
+        return $query;
+    }
+
+
+    /**
+     * View Students
+     */
+    public function students(Request $request)
+    {
+        $students = $this->filteredStudentsQuery($request)
             ->latest('student_id')
             ->paginate(20)
             ->withQueryString();
@@ -558,13 +569,17 @@ class AdminController extends Controller
             ->orderBy('country')
             ->pluck('country');
 
+        $countryOptions = Country::where('is_active', true)
+            ->orderBy('country_name')
+            ->get();
+
         $stats = [
             'total' => Student::count(),
             'active' => Student::whereHas('user', function ($uq) {
-                $uq->where('account_status', 'Active');
+                $uq->where('account_status', 'active');
             })->count(),
             'inactive' => Student::whereHas('user', function ($uq) {
-                $uq->where('account_status', 'Inactive');
+                $uq->where('account_status', 'inactive');
             })->count(),
             'new_this_month' => Student::whereMonth('created_at', now()->month)
                 ->whereYear('created_at', now()->year)
@@ -577,6 +592,7 @@ class AdminController extends Controller
             compact(
                 'students',
                 'countries',
+                'countryOptions',
                 'stats'
             )
         );
@@ -622,7 +638,7 @@ class AdminController extends Controller
         $validated = $request->validate([
             'account_status' => [
                 'required',
-                'in:Active,Inactive'
+                'in:active,inactive'
             ],
         ]);
 
@@ -643,6 +659,252 @@ class AdminController extends Controller
                 'success',
                 'Student account status updated successfully.'
             );
+    }
+
+
+    /**
+     * Show the form to create a new student.
+     */
+    public function createStudent()
+    {
+        $countries = Country::where('is_active', true)
+            ->orderBy('country_name')
+            ->get();
+
+        return view(
+            'admin.students.create',
+            compact('countries')
+        );
+    }
+
+
+    /**
+     * Store a newly created student (creates the User + Student records).
+     */
+    public function storeStudent(Request $request)
+    {
+        $validated = $request->validate([
+            'first_name' => ['required', 'string', 'max:100'],
+            'last_name' => ['nullable', 'string', 'max:100'],
+            'email' => ['required', 'email', 'max:255', 'unique:users,email'],
+            'phone' => ['nullable', 'digits:10'],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'account_status' => ['required', 'in:active,inactive'],
+            'date_of_birth' => ['nullable', 'date', 'before_or_equal:today'],
+            'gender' => ['nullable', 'in:Male,Female,Other'],
+            'nationality' => ['nullable', 'string', 'max:100'],
+            'passport_number' => ['nullable', 'string', 'max:100'],
+            'current_address' => ['nullable', 'string', 'max:500'],
+            'city' => ['nullable', 'string', 'max:100'],
+            'country' => [
+                'nullable',
+                Rule::in(Country::pluck('country_name'))
+            ],
+        ]);
+
+        $studentRole = Role::where('role_name', 'Student')->first();
+
+        if (!$studentRole) {
+            return back()
+                ->withErrors(['email' => 'Student role is not configured.'])
+                ->withInput();
+        }
+
+        $user = User::create([
+            'role_id' => $studentRole->role_id,
+            'first_name' => $validated['first_name'],
+            'last_name' => $validated['last_name'] ?? null,
+            'email' => $validated['email'],
+            'phone' => $validated['phone'] ?? null,
+            'password_hash' => Hash::make($validated['password']),
+            'account_status' => $validated['account_status'],
+        ]);
+
+        $student = Student::create([
+            'user_id' => $user->user_id,
+            'date_of_birth' => $validated['date_of_birth'] ?? null,
+            'gender' => $validated['gender'] ?? null,
+            'nationality' => $validated['nationality'] ?? null,
+            'passport_number' => $validated['passport_number'] ?? null,
+            'current_address' => $validated['current_address'] ?? null,
+            'city' => $validated['city'] ?? null,
+            'country' => $validated['country'] ?? null,
+        ]);
+
+        return redirect()
+            ->route('admin.students.show', $student)
+            ->with('success', 'Student created successfully.');
+    }
+
+
+    /**
+     * Show the form to edit an existing student.
+     */
+    public function editStudent(Student $student)
+    {
+        $student->load('user');
+
+        $countries = Country::where('is_active', true)
+            ->orderBy('country_name')
+            ->get();
+
+        return view(
+            'admin.students.edit',
+            compact('student', 'countries')
+        );
+    }
+
+
+    /**
+     * Update an existing student's account + profile details.
+     */
+    public function updateStudent(Request $request, Student $student)
+    {
+        $student->loadMissing('user');
+
+        if (!$student->user) {
+            abort(404);
+        }
+
+        $validated = $request->validate([
+            'first_name' => ['required', 'string', 'max:100'],
+            'last_name' => ['nullable', 'string', 'max:100'],
+            'email' => [
+                'required',
+                'email',
+                'max:255',
+                'unique:users,email,' . $student->user->user_id . ',user_id'
+            ],
+            'phone' => ['nullable', 'digits:10'],
+            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
+            'account_status' => ['required', 'in:active,inactive'],
+            'date_of_birth' => ['nullable', 'date', 'before_or_equal:today'],
+            'gender' => ['nullable', 'in:Male,Female,Other'],
+            'nationality' => ['nullable', 'string', 'max:100'],
+            'passport_number' => ['nullable', 'string', 'max:100'],
+            'current_address' => ['nullable', 'string', 'max:500'],
+            'city' => ['nullable', 'string', 'max:100'],
+            'country' => [
+                'nullable',
+                Rule::in(Country::pluck('country_name'))
+            ],
+        ]);
+
+        $student->user->first_name = $validated['first_name'];
+        $student->user->last_name = $validated['last_name'] ?? null;
+        $student->user->email = $validated['email'];
+        $student->user->phone = $validated['phone'] ?? null;
+        $student->user->account_status = $validated['account_status'];
+
+        if (!empty($validated['password'])) {
+            $student->user->password_hash = Hash::make($validated['password']);
+        }
+
+        $student->user->save();
+
+        $student->update([
+            'date_of_birth' => $validated['date_of_birth'] ?? null,
+            'gender' => $validated['gender'] ?? null,
+            'nationality' => $validated['nationality'] ?? null,
+            'passport_number' => $validated['passport_number'] ?? null,
+            'current_address' => $validated['current_address'] ?? null,
+            'city' => $validated['city'] ?? null,
+            'country' => $validated['country'] ?? null,
+        ]);
+
+        return redirect()
+            ->route('admin.students.show', $student)
+            ->with('success', 'Student updated successfully.');
+    }
+
+
+    /**
+     * Delete a student (and their underlying user account).
+     */
+    public function destroyStudent(Student $student)
+    {
+        $student->loadMissing('user');
+
+        $applicationsCount = $student->applications()->count();
+
+        if ($applicationsCount > 0) {
+            return redirect()
+                ->route('admin.students')
+                ->with(
+                    'error',
+                    "Cannot delete this student: they have {$applicationsCount} "
+                        . ($applicationsCount === 1 ? 'application' : 'applications')
+                        . ' on file. Remove those applications first.'
+                );
+        }
+
+        if ($student->user) {
+            // Deleting the user cascades to the student row (and their
+            // documents, qualifications, preferences, appointments, etc.).
+            $student->user->delete();
+        } else {
+            $student->delete();
+        }
+
+        return redirect()
+            ->route('admin.students')
+            ->with('success', 'Student deleted successfully.');
+    }
+
+
+    /**
+     * Export the (filtered) student list as a CSV download.
+     */
+    public function exportStudents(Request $request)
+    {
+        $students = $this->filteredStudentsQuery($request)
+            ->latest('student_id')
+            ->get();
+
+        $filename = 'students-' . now()->format('Y-m-d-His') . '.csv';
+
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+        ];
+
+        $columns = [
+            'Student ID',
+            'First Name',
+            'Last Name',
+            'Email',
+            'Phone',
+            'Nationality',
+            'Country',
+            'Applications',
+            'Status',
+            'Joined',
+        ];
+
+        $callback = function () use ($students, $columns) {
+            $handle = fopen('php://output', 'w');
+
+            fputcsv($handle, $columns);
+
+            foreach ($students as $student) {
+                fputcsv($handle, [
+                    'STU-' . str_pad($student->student_id, 4, '0', STR_PAD_LEFT),
+                    $student->user->first_name ?? '',
+                    $student->user->last_name ?? '',
+                    $student->user->email ?? '',
+                    $student->user->phone ?? '',
+                    $student->nationality ?? '',
+                    $student->country ?? '',
+                    $student->applications_count,
+                    ucfirst($student->user->account_status ?? ''),
+                    optional($student->created_at)->format('Y-m-d'),
+                ]);
+            }
+
+            fclose($handle);
+        };
+
+        return response()->stream($callback, 200, $headers);
     }
 
 

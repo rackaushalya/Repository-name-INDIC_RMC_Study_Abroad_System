@@ -292,7 +292,9 @@
 
                         <div class="field">
                             <label for="phone">Phone number</label>
-                            <input type="text" id="phone" name="phone"
+                            <input type="tel" id="phone" name="phone"
+                                inputmode="numeric" pattern="[0-9]{10}" maxlength="10"
+                                oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10)"
                                 value="{{ old('phone', $student->user->phone ?? '') }}" placeholder="07XXXXXXXX">
                             @error('phone')<div class="field-error">{{ $message }}</div>@enderror
                         </div>
@@ -316,6 +318,7 @@
                         <div class="field">
                             <label for="date_of_birth">Date of birth</label>
                             <input type="date" id="date_of_birth" name="date_of_birth"
+                                max="{{ now()->format('Y-m-d') }}"
                                 value="{{ old('date_of_birth', optional($student->date_of_birth)->format('Y-m-d')) }}">
                             @error('date_of_birth')<div class="field-error">{{ $message }}</div>@enderror
                         </div>
@@ -362,7 +365,7 @@
 
                     <div class="field">
                         <label for="current_address">Current address</label>
-                        <textarea id="current_address" name="current_address">{{ old('current_address', $student->current_address) }}</textarea>
+                        <textarea id="current_address" name="current_address" maxlength="500">{{ old('current_address', $student->current_address) }}</textarea>
                         @error('current_address')<div class="field-error">{{ $message }}</div>@enderror
                     </div>
 

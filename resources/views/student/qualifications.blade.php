@@ -274,11 +274,11 @@
                                     </div>
                                     <div class="field">
                                         <label>Start date</label>
-                                        <input type="date" name="start_date" value="{{ optional($qualification->start_date)->format('Y-m-d') }}">
+                                        <input type="date" name="start_date" max="{{ now()->format('Y-m-d') }}" value="{{ optional($qualification->start_date)->format('Y-m-d') }}">
                                     </div>
                                     <div class="field">
                                         <label>Completion date</label>
-                                        <input type="date" name="completion_date" value="{{ optional($qualification->completion_date)->format('Y-m-d') }}">
+                                        <input type="date" name="completion_date" max="{{ now()->format('Y-m-d') }}" value="{{ optional($qualification->completion_date)->format('Y-m-d') }}">
                                     </div>
                                     <div class="field">
                                         <label>Grade</label>
@@ -291,7 +291,7 @@
                                 </div>
                                 <div class="field">
                                     <label>Description</label>
-                                    <textarea name="description">{{ $qualification->description }}</textarea>
+                                    <textarea name="description" maxlength="2000">{{ $qualification->description }}</textarea>
                                 </div>
                                 <button type="submit" class="btn-primary">Save Changes</button>
                                 <button type="button" class="btn-sm" data-toggle="academic-edit-{{ $qualification->qualification_id }}">Cancel</button>
@@ -329,11 +329,11 @@
                             </div>
                             <div class="field">
                                 <label>Start date</label>
-                                <input type="date" name="start_date">
+                                <input type="date" name="start_date" max="{{ now()->format('Y-m-d') }}">
                             </div>
                             <div class="field">
                                 <label>Completion date</label>
-                                <input type="date" name="completion_date">
+                                <input type="date" name="completion_date" max="{{ now()->format('Y-m-d') }}">
                             </div>
                             <div class="field">
                                 <label>Grade</label>
@@ -346,7 +346,7 @@
                         </div>
                         <div class="field">
                             <label>Description</label>
-                            <textarea name="description"></textarea>
+                            <textarea name="description" maxlength="2000"></textarea>
                         </div>
                         <button type="submit" class="btn-primary">Add Qualification</button>
                     </form>
@@ -416,29 +416,29 @@
                                 <div class="grid-4">
                                     <div class="field">
                                         <label>Overall</label>
-                                        <input type="number" step="0.01" name="overall_score" value="{{ $english->overall_score }}">
+                                        <input type="number" step="0.01" min="0" max="200" name="overall_score" value="{{ $english->overall_score }}">
                                     </div>
                                     <div class="field">
                                         <label>Listening</label>
-                                        <input type="number" step="0.01" name="listening_score" value="{{ $english->listening_score }}">
+                                        <input type="number" step="0.01" min="0" max="200" name="listening_score" value="{{ $english->listening_score }}">
                                     </div>
                                     <div class="field">
                                         <label>Reading</label>
-                                        <input type="number" step="0.01" name="reading_score" value="{{ $english->reading_score }}">
+                                        <input type="number" step="0.01" min="0" max="200" name="reading_score" value="{{ $english->reading_score }}">
                                     </div>
                                     <div class="field">
                                         <label>Writing</label>
-                                        <input type="number" step="0.01" name="writing_score" value="{{ $english->writing_score }}">
+                                        <input type="number" step="0.01" min="0" max="200" name="writing_score" value="{{ $english->writing_score }}">
                                     </div>
                                 </div>
                                 <div class="grid-2">
                                     <div class="field">
                                         <label>Speaking</label>
-                                        <input type="number" step="0.01" name="speaking_score" value="{{ $english->speaking_score }}">
+                                        <input type="number" step="0.01" min="0" max="200" name="speaking_score" value="{{ $english->speaking_score }}">
                                     </div>
                                     <div class="field">
                                         <label>Test date</label>
-                                        <input type="date" name="test_date" value="{{ optional($english->test_date)->format('Y-m-d') }}">
+                                        <input type="date" name="test_date" max="{{ now()->format('Y-m-d') }}" value="{{ optional($english->test_date)->format('Y-m-d') }}">
                                     </div>
                                 </div>
                                 <div class="field">
@@ -475,29 +475,29 @@
                         <div class="grid-4">
                             <div class="field">
                                 <label>Overall</label>
-                                <input type="number" step="0.01" name="overall_score">
+                                <input type="number" step="0.01" min="0" max="200" name="overall_score">
                             </div>
                             <div class="field">
                                 <label>Listening</label>
-                                <input type="number" step="0.01" name="listening_score">
+                                <input type="number" step="0.01" min="0" max="200" name="listening_score">
                             </div>
                             <div class="field">
                                 <label>Reading</label>
-                                <input type="number" step="0.01" name="reading_score">
+                                <input type="number" step="0.01" min="0" max="200" name="reading_score">
                             </div>
                             <div class="field">
                                 <label>Writing</label>
-                                <input type="number" step="0.01" name="writing_score">
+                                <input type="number" step="0.01" min="0" max="200" name="writing_score">
                             </div>
                         </div>
                         <div class="grid-2">
                             <div class="field">
                                 <label>Speaking</label>
-                                <input type="number" step="0.01" name="speaking_score">
+                                <input type="number" step="0.01" min="0" max="200" name="speaking_score">
                             </div>
                             <div class="field">
                                 <label>Test date</label>
-                                <input type="date" name="test_date">
+                                <input type="date" name="test_date" max="{{ now()->format('Y-m-d') }}">
                             </div>
                         </div>
                         <div class="field">
@@ -572,7 +572,7 @@
                                     </div>
                                     <div class="field">
                                         <label>Start date</label>
-                                        <input type="date" name="start_date" value="{{ optional($work->start_date)->format('Y-m-d') }}" required>
+                                        <input type="date" name="start_date" max="{{ now()->format('Y-m-d') }}" value="{{ optional($work->start_date)->format('Y-m-d') }}" required>
                                     </div>
                                     <div class="field">
                                         <label>End date</label>
@@ -585,7 +585,7 @@
                                 </div>
                                 <div class="field">
                                     <label>Description</label>
-                                    <textarea name="description">{{ $work->description }}</textarea>
+                                    <textarea name="description" maxlength="2000">{{ $work->description }}</textarea>
                                 </div>
                                 <button type="submit" class="btn-primary">Save Changes</button>
                                 <button type="button" class="btn-sm" data-toggle="work-edit-{{ $work->work_experience_id }}">Cancel</button>
@@ -619,7 +619,7 @@
                             </div>
                             <div class="field">
                                 <label>Start date</label>
-                                <input type="date" name="start_date" required>
+                                <input type="date" name="start_date" max="{{ now()->format('Y-m-d') }}" required>
                             </div>
                             <div class="field">
                                 <label>End date</label>
@@ -632,7 +632,7 @@
                         </div>
                         <div class="field">
                             <label>Description</label>
-                            <textarea name="description"></textarea>
+                            <textarea name="description" maxlength="2000"></textarea>
                         </div>
                         <button type="submit" class="btn-primary">Add Work Experience</button>
                     </form>

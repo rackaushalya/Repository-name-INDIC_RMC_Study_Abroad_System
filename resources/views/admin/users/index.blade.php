@@ -875,15 +875,15 @@
                         </option>
 
                         <option
-                            value="Active"
-                            {{ request('account_status') == 'Active' ? 'selected' : '' }}
+                            value="active"
+                            {{ request('account_status') == 'active' ? 'selected' : '' }}
                         >
                             Active
                         </option>
 
                         <option
-                            value="Inactive"
-                            {{ request('account_status') == 'Inactive' ? 'selected' : '' }}
+                            value="inactive"
+                            {{ request('account_status') == 'inactive' ? 'selected' : '' }}
                         >
                             Inactive
                         </option>
@@ -1088,7 +1088,7 @@
                                             <input
                                                 type="hidden"
                                                 name="account_status"
-                                                value="{{ strtolower($status) === 'active' ? 'Inactive' : 'Active' }}"
+                                                value="{{ strtolower($status) === 'active' ? 'inactive' : 'active' }}"
                                             >
 
                                             <button
