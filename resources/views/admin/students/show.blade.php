@@ -281,6 +281,13 @@
             font-weight: 700;
             font-size: 22px;
             flex-shrink: 0;
+            overflow: hidden;
+        }
+
+        .avatar-lg img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
         .profile-name {
@@ -339,6 +346,25 @@
 
         .btn-status:hover {
             background: #0f172a;
+        }
+
+        .btn-outline {
+            background: white;
+            border: 1px solid #dce1e8;
+            color: #172033;
+        }
+
+        .btn-outline:hover {
+            background: #f8fafc;
+        }
+
+        .btn-danger {
+            background: #fdecec;
+            color: #b91c1c;
+        }
+
+        .btn-danger:hover {
+            background: #fbd5d5;
         }
 
         /* -------------------------------------------------
@@ -648,7 +674,11 @@
         <div class="profile-identity">
 
             <div class="avatar-lg">
-                {{ strtoupper(substr($student->user->first_name ?? 'S', 0, 1)) }}
+                @if($student->user->profile_image_url ?? null)
+                    <img src="{{ $student->user->profile_image_url }}" alt="">
+                @else
+                    {{ strtoupper(substr($student->user->first_name ?? 'S', 0, 1)) }}
+                @endif
             </div>
 
             <div>
@@ -664,7 +694,7 @@
                 </div>
 
                 <div style="margin-top: 8px;">
-                    @if(($student->user->account_status ?? null) === 'Active')
+                    @if(($student->user->account_status ?? null) === 'active')
                         <span class="badge status-active">Active</span>
                     @else
                         <span class="badge status-inactive">Inactive</span>
@@ -677,6 +707,10 @@
 
         <div class="profile-actions">
 
+            <a href="{{ route('admin.students.edit', $student) }}" class="btn btn-outline">
+                Edit Student
+            </a>
+
             <form
                 method="POST"
                 action="{{ route('admin.students.status', $student) }}"
@@ -684,9 +718,9 @@
                 @csrf
                 @method('PATCH')
 
-                @if(($student->user->account_status ?? null) === 'Active')
+                @if(($student->user->account_status ?? null) === 'active')
 
-                    <input type="hidden" name="account_status" value="Inactive">
+                    <input type="hidden" name="account_status" value="inactive">
 
                     <button
                         type="submit"
@@ -698,7 +732,7 @@
 
                 @else
 
-                    <input type="hidden" name="account_status" value="Active">
+                    <input type="hidden" name="account_status" value="active">
 
                     <button
                         type="submit"
@@ -709,6 +743,23 @@
                     </button>
 
                 @endif
+
+            </form>
+
+            <form
+                method="POST"
+                action="{{ route('admin.students.destroy', $student) }}"
+            >
+                @csrf
+                @method('DELETE')
+
+                <button
+                    type="submit"
+                    class="btn btn-danger"
+                    onclick="return confirm('Delete this student permanently? This cannot be undone. Students with applications on file cannot be deleted.')"
+                >
+                    Delete Student
+                </button>
 
             </form>
 

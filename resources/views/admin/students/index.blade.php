@@ -219,6 +219,175 @@
             font-size: 14px;
         }
 
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-primary {
+            height: 40px;
+            padding: 0 16px;
+            border-radius: 7px;
+            border: none;
+            background: #f97316;
+            color: white;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        .btn-primary:hover {
+            background: #ea670f;
+        }
+
+        .btn-outline {
+            height: 40px;
+            padding: 0 16px;
+            border-radius: 7px;
+            border: 1px solid #dce1e8;
+            background: white;
+            color: #172033;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        .btn-outline:hover {
+            background: #f8fafc;
+        }
+
+        /* =====================================
+           MODAL
+        ====================================== */
+
+        .modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 23, 42, 0.5);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-backdrop.show {
+            display: flex;
+        }
+
+        .modal-box {
+            background: white;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 640px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.15);
+        }
+
+        .modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid #edf0f4;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #172033;
+        }
+
+        .modal-close-btn {
+            background: transparent;
+            border: none;
+            color: #8c96a8;
+            cursor: pointer;
+            font-size: 20px;
+            line-height: 1;
+            padding: 4px;
+        }
+
+        .modal-close-btn:hover {
+            color: #172033;
+        }
+
+        .modal-body {
+            padding: 22px 24px;
+        }
+
+        .modal-footer {
+            padding: 16px 24px;
+            border-top: 1px solid #edf0f4;
+            background: #fafbfc;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            border-bottom-left-radius: 12px;
+            border-bottom-right-radius: 12px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .form-grid .form-group.full {
+            grid-column: span 2;
+        }
+
+        .form-grid label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #172033;
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        .form-hint {
+            color: #8a94a6;
+            font-size: 11px;
+            margin-top: 4px;
+            display: block;
+        }
+
+        textarea.form-control {
+            height: 70px;
+            padding: 10px 12px;
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        .btn-secondary {
+            height: 40px;
+            padding: 0 18px;
+            border-radius: 7px;
+            border: 1px solid #dce1e8;
+            background: white;
+            color: #172033;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-secondary:hover {
+            background: #f8fafc;
+        }
+
         /* -------------------------------------------------
            Alerts
         ------------------------------------------------- */
@@ -440,6 +609,13 @@
             font-weight: bold;
             font-size: 13px;
             flex-shrink: 0;
+            overflow: hidden;
+        }
+
+        .student-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
         .student-name {
@@ -522,6 +698,12 @@
             border-color: #fed7aa;
             color: #c2410c;
             background: #fff7ed;
+        }
+
+        .action-btn.delete:hover {
+            border-color: #fecaca;
+            color: #b91c1c;
+            background: #fdecec;
         }
 
         .inline-form {
@@ -720,6 +902,16 @@
                 <h1>Student Management</h1>
                 <p>View and manage every registered student, their accounts, applications, and consultancy progress.</p>
             </div>
+
+            <div class="header-actions">
+                <a href="{{ route('admin.students.export', request()->query()) }}" class="btn-outline">
+                    <i class="bi bi-download"></i> Download CSV
+                </a>
+
+                <button type="button" id="btnOpenAddStudent" class="btn-primary">
+                    <i class="bi bi-plus-lg"></i> Add Student
+                </button>
+            </div>
         </div>
 
         @if(session('success'))
@@ -787,8 +979,8 @@
                         <label for="account_status">Status</label>
                         <select id="account_status" name="account_status" class="form-control">
                             <option value="">All Statuses</option>
-                            <option value="Active" {{ request('account_status') === 'Active' ? 'selected' : '' }}>Active</option>
-                            <option value="Inactive" {{ request('account_status') === 'Inactive' ? 'selected' : '' }}>Inactive</option>
+                            <option value="active" {{ request('account_status') === 'active' ? 'selected' : '' }}>Active</option>
+                            <option value="inactive" {{ request('account_status') === 'inactive' ? 'selected' : '' }}>Inactive</option>
                         </select>
                     </div>
 
@@ -844,7 +1036,11 @@
                                     <td>
                                         <div class="student-identity">
                                             <div class="student-avatar">
-                                                {{ strtoupper(substr($student->user->first_name ?? 'S', 0, 1)) }}
+                                                @if($student->user->profile_image_url ?? null)
+                                                    <img src="{{ $student->user->profile_image_url }}" alt="">
+                                                @else
+                                                    {{ strtoupper(substr($student->user->first_name ?? 'S', 0, 1)) }}
+                                                @endif
                                             </div>
                                             <div>
                                                 <div class="student-name">
@@ -869,7 +1065,7 @@
                                         {{ $student->applications_count }} {{ Str::plural('application', $student->applications_count) }}
                                     </td>
                                     <td>
-                                        @if(($student->user->account_status ?? null) === 'Active')
+                                        @if(($student->user->account_status ?? null) === 'active')
                                             <span class="status status-success">Active</span>
                                         @else
                                             <span class="status status-muted">Inactive</span>
@@ -881,21 +1077,34 @@
                                                 <i class="bi bi-eye-fill"></i>
                                             </a>
 
+                                            <a href="{{ route('admin.students.edit', $student) }}" class="action-btn" title="Edit Student">
+                                                <i class="bi bi-pencil-fill"></i>
+                                            </a>
+
                                             <form method="POST" action="{{ route('admin.students.status', $student) }}" class="inline-form">
                                                 @csrf
                                                 @method('PATCH')
 
-                                                @if(($student->user->account_status ?? null) === 'Active')
-                                                    <input type="hidden" name="account_status" value="Inactive">
+                                                @if(($student->user->account_status ?? null) === 'active')
+                                                    <input type="hidden" name="account_status" value="inactive">
                                                     <button type="submit" class="action-btn deactivate" title="Deactivate" onclick="return confirm('Deactivate this student account?')">
                                                         <i class="bi bi-slash-circle"></i>
                                                     </button>
                                                 @else
-                                                    <input type="hidden" name="account_status" value="Active">
+                                                    <input type="hidden" name="account_status" value="active">
                                                     <button type="submit" class="action-btn activate" title="Activate" onclick="return confirm('Activate this student account?')">
                                                         <i class="bi bi-check-circle"></i>
                                                     </button>
                                                 @endif
+                                            </form>
+
+                                            <form method="POST" action="{{ route('admin.students.destroy', $student) }}" class="inline-form">
+                                                @csrf
+                                                @method('DELETE')
+
+                                                <button type="submit" class="action-btn delete" title="Delete Student" onclick="return confirm('Delete this student permanently? This cannot be undone. Students with applications on file cannot be deleted.')">
+                                                    <i class="bi bi-trash-fill"></i>
+                                                </button>
                                             </form>
                                         </div>
                                     </td>
@@ -925,6 +1134,172 @@
     </section>
 
 </main>
+
+<!-- =====================================
+     MODAL: ADD STUDENT
+====================================== -->
+
+<div class="modal-backdrop @if($errors->any() && old('first_name') !== null) show @endif" id="modalAddStudentBackdrop">
+    <div class="modal-box">
+
+        <div class="modal-header">
+            <h3 class="modal-title">Add New Student</h3>
+            <button type="button" class="modal-close-btn" id="btnCloseAddStudentModal">&times;</button>
+        </div>
+
+        <form method="POST" action="{{ route('admin.students.store') }}">
+            @csrf
+
+            <div class="modal-body">
+
+                @if($errors->any())
+                    <div class="alert alert-error">
+                        <strong>Please fix the following:</strong>
+                        <ul style="margin: 6px 0 0 18px;">
+                            @foreach($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
+                <div class="form-grid">
+
+                    <div class="form-group">
+                        <label for="modal_first_name">Full Name *</label>
+                        <input type="text" id="modal_first_name" name="first_name" class="form-control" placeholder="e.g. Jane" value="{{ old('first_name') }}" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="modal_last_name">Last Name</label>
+                        <input type="text" id="modal_last_name" name="last_name" class="form-control" placeholder="e.g. Perera" value="{{ old('last_name') }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="modal_email">Email Address *</label>
+                        <input type="email" id="modal_email" name="email" class="form-control" placeholder="e.g. jane.perera@email.com" value="{{ old('email') }}" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="modal_phone">Phone Number</label>
+                        <input type="text" id="modal_phone" name="phone" class="form-control" placeholder="e.g. +94 77 123 4567" value="{{ old('phone') }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="modal_password">Password *</label>
+                        <input type="password" id="modal_password" name="password" class="form-control" required>
+                        <span class="form-hint">Minimum 8 characters.</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="modal_password_confirmation">Confirm Password *</label>
+                        <input type="password" id="modal_password_confirmation" name="password_confirmation" class="form-control" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="modal_account_status">Account Status *</label>
+                        <select id="modal_account_status" name="account_status" class="form-control" required>
+                            <option value="active" {{ old('account_status', 'active') === 'active' ? 'selected' : '' }}>Active</option>
+                            <option value="inactive" {{ old('account_status') === 'inactive' ? 'selected' : '' }}>Inactive</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="modal_nationality">Nationality</label>
+                        <input type="text" id="modal_nationality" name="nationality" class="form-control" placeholder="e.g. Sri Lankan" value="{{ old('nationality') }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="modal_date_of_birth">Date of Birth</label>
+                        <input type="date" id="modal_date_of_birth" name="date_of_birth" class="form-control" value="{{ old('date_of_birth') }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="modal_gender">Gender</label>
+                        <select id="modal_gender" name="gender" class="form-control">
+                            <option value="">Select gender</option>
+                            <option value="Male" {{ old('gender') === 'Male' ? 'selected' : '' }}>Male</option>
+                            <option value="Female" {{ old('gender') === 'Female' ? 'selected' : '' }}>Female</option>
+                            <option value="Other" {{ old('gender') === 'Other' ? 'selected' : '' }}>Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="modal_passport_number">Passport Number</label>
+                        <input type="text" id="modal_passport_number" name="passport_number" class="form-control" value="{{ old('passport_number') }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="modal_city">City</label>
+                        <input type="text" id="modal_city" name="city" class="form-control" value="{{ old('city') }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="modal_country">Country</label>
+                        <select id="modal_country" name="country" class="form-control">
+                            <option value="">Select country</option>
+                            @foreach($countryOptions as $countryOption)
+                                <option value="{{ $countryOption->country_name }}" {{ old('country') === $countryOption->country_name ? 'selected' : '' }}>
+                                    {{ $countryOption->country_name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="form-group full">
+                        <label for="modal_current_address">Address</label>
+                        <textarea id="modal_current_address" name="current_address" class="form-control">{{ old('current_address') }}</textarea>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" id="btnCancelAddStudentModal">Cancel</button>
+                <button type="submit" class="btn-primary">Save Student</button>
+            </div>
+
+        </form>
+
+    </div>
+</div>
+
+<script>
+    (function () {
+        var backdrop = document.getElementById('modalAddStudentBackdrop');
+        var openBtn = document.getElementById('btnOpenAddStudent');
+        var closeBtn = document.getElementById('btnCloseAddStudentModal');
+        var cancelBtn = document.getElementById('btnCancelAddStudentModal');
+
+        function openModal() {
+            backdrop.classList.add('show');
+        }
+
+        function closeModal() {
+            backdrop.classList.remove('show');
+        }
+
+        if (openBtn) {
+            openBtn.addEventListener('click', openModal);
+        }
+
+        if (closeBtn) {
+            closeBtn.addEventListener('click', closeModal);
+        }
+
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', closeModal);
+        }
+
+        if (backdrop) {
+            backdrop.addEventListener('click', function (event) {
+                if (event.target === backdrop) {
+                    closeModal();
+                }
+            });
+        }
+    })();
+</script>
 
 </body>
 </html>

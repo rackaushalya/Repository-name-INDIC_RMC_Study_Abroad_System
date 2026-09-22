@@ -936,15 +936,15 @@
                         </option>
 
                         <option
-                            value="Active"
-                            {{ request('account_status') === 'Active' ? 'selected' : '' }}
+                            value="active"
+                            {{ request('account_status') === 'active' ? 'selected' : '' }}
                         >
                             Active
                         </option>
 
                         <option
-                            value="Inactive"
-                            {{ request('account_status') === 'Inactive' ? 'selected' : '' }}
+                            value="inactive"
+                            {{ request('account_status') === 'inactive' ? 'selected' : '' }}
                         >
                             Inactive
                         </option>
@@ -1135,7 +1135,7 @@
 
                                     <td>
 
-                                        @if($user->account_status === 'Active')
+                                        @if($user->account_status === 'active')
 
                                             <span class="badge status-active">
                                                 Active
@@ -1190,12 +1190,12 @@
 
                                                 @method('PATCH')
 
-                                                @if($user->account_status === 'Active')
+                                                @if($user->account_status === 'active')
 
                                                     <input
                                                         type="hidden"
                                                         name="account_status"
-                                                        value="Inactive"
+                                                        value="inactive"
                                                     >
 
                                                     <button
@@ -1211,7 +1211,7 @@
                                                     <input
                                                         type="hidden"
                                                         name="account_status"
-                                                        value="Active"
+                                                        value="active"
                                                     >
 
                                                     <button

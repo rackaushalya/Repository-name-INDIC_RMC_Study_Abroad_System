@@ -426,14 +426,44 @@ Route::prefix('admin')
         )->name('students');
 
         Route::get(
+            '/students/export',
+            [AdminController::class, 'exportStudents']
+        )->name('students.export');
+
+        Route::get(
+            '/students/create',
+            [AdminController::class, 'createStudent']
+        )->name('students.create');
+
+        Route::post(
+            '/students',
+            [AdminController::class, 'storeStudent']
+        )->name('students.store');
+
+        Route::get(
             '/students/{student}',
             [AdminController::class, 'showStudent']
         )->name('students.show');
+
+        Route::get(
+            '/students/{student}/edit',
+            [AdminController::class, 'editStudent']
+        )->name('students.edit');
+
+        Route::put(
+            '/students/{student}',
+            [AdminController::class, 'updateStudent']
+        )->name('students.update');
 
         Route::patch(
             '/students/{student}/status',
             [AdminController::class, 'updateStudentStatus']
         )->name('students.status');
+
+        Route::delete(
+            '/students/{student}',
+            [AdminController::class, 'destroyStudent']
+        )->name('students.destroy');
 
         Route::get(
             '/consultants',

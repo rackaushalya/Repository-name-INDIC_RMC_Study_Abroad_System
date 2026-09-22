@@ -801,15 +801,15 @@
                     >
 
                         <option
-                            value="Active"
-                            {{ old('account_status', 'Active') === 'Active' ? 'selected' : '' }}
+                            value="active"
+                            {{ old('account_status', 'active') === 'active' ? 'selected' : '' }}
                         >
                             Active
                         </option>
 
                         <option
-                            value="Inactive"
-                            {{ old('account_status') === 'Inactive' ? 'selected' : '' }}
+                            value="inactive"
+                            {{ old('account_status') === 'inactive' ? 'selected' : '' }}
                         >
                             Inactive
                         </option>
