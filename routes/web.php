@@ -115,6 +115,8 @@ Route::get('/auth/google/callback', [GoogleController::class, 'callback'])
 |--------------------------------------------------------------------------
 */
 
+
+
 Route::middleware('auth')->prefix('student')->name('student.')->group(function () {
 
     Route::get('/dashboard', [StudentController::class, 'dashboard'])

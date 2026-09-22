@@ -37,12 +37,12 @@ class HomeController extends Controller
 
     public function about()
     {
-        return view('pages.about');
+        return view('public.about');
     }
 
     public function howItWorks()
     {
-        return view('pages.how-it-works');
+        return view('public.how-it-works');
     }
 
     public function countries()
@@ -51,7 +51,7 @@ class HomeController extends Controller
             ->orderBy('country_name')
             ->get();
 
-        return view('pages.countries', compact('countries'));
+        return view('public.countries', compact('countries'));
     }
 
     public function universities()
@@ -71,7 +71,7 @@ class HomeController extends Controller
             ->orderBy('course_name')
             ->get();
 
-        return view('pages.courses', compact('courses'));
+        return view('public.courses', compact('courses'));
     }
 
     public function scholarships()
@@ -81,11 +81,11 @@ class HomeController extends Controller
             ->latest()
             ->get();
 
-        return view('pages.scholarships', compact('scholarships'));
+        return view('public.scholarships', compact('scholarships'));
     }
 
     public function contact()
     {
-        return view('pages.contact');
+        return view('public.contact');
     }
 }
