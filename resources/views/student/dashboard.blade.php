@@ -478,6 +478,23 @@
             color: white;
         }
 
+        .step-circle.failed {
+            background: #ef4444;
+            border-color: #ef4444;
+            color: white;
+        }
+
+        .empty-card-state {
+            text-align: center;
+            padding: 30px 15px;
+            color: #8b95a5;
+            font-size: 12px;
+        }
+
+        .empty-card-state p {
+            margin-bottom: 10px;
+        }
+
         .step-title {
             font-size: 10px;
             font-weight: 600;
@@ -1042,16 +1059,20 @@
                         </div>
 
                         <div class="summary-value">
-                            Under Review
+                            {{ $latestApplication->application_status ?? 'No Applications' }}
                         </div>
 
                         <div class="summary-status">
-                            Application submitted
+                            @if($latestApplication)
+                                Submitted {{ $latestApplication->submitted_at?->format('d M Y') }}
+                            @else
+                                Start your first application
+                            @endif
                         </div>
                     </div>
 
                     <div class="summary-icon orange">
-                        ▤
+                        <i class="bi bi-file-earmark-text-fill"></i>
                     </div>
 
                 </div>
@@ -1072,17 +1093,17 @@
                         </div>
 
                         <div class="summary-value">
-                            8
+                            {{ $recommendations->count() }}
                         </div>
 
                         <div class="summary-status">
-                            Study options available
+                            {{ $recommendations->isNotEmpty() ? 'Study options available' : 'No recommendations yet' }}
                         </div>
 
                     </div>
 
                     <div class="summary-icon blue">
-                        ◆
+                        <i class="bi bi-star-fill"></i>
                     </div>
 
                 </div>
@@ -1103,17 +1124,17 @@
                         </div>
 
                         <div class="summary-value">
-                            01
+                            {{ str_pad($upcomingAppointments->count(), 2, '0', STR_PAD_LEFT) }}
                         </div>
 
                         <div class="summary-status">
-                            15 September 2026
+                            {{ $nextAppointment ? $nextAppointment->appointment_date->format('d F Y') : 'None scheduled' }}
                         </div>
 
                     </div>
 
                     <div class="summary-icon green">
-                        □
+                        <i class="bi bi-calendar2-check-fill"></i>
                     </div>
 
                 </div>
@@ -1144,7 +1165,7 @@
                     </div>
 
                     <div class="summary-icon purple">
-                        ○
+                        <i class="bi bi-person-check-fill"></i>
                     </div>
 
                 </div>
@@ -1172,105 +1193,57 @@
                         Consultancy Application Status
                     </h2>
 
-                    <a href="#" class="view-link">
+                    <a href="{{ route('student.applications.index') }}" class="view-link">
                         View Details
                     </a>
 
                 </div>
 
 
-                <div class="timeline">
+                @if($latestApplication)
 
-                    <div class="timeline-line"></div>
+                    <div class="timeline">
 
-                    <div class="timeline-progress"></div>
+                        <div class="timeline-line"></div>
 
+                        <div class="timeline-progress" style="width: {{ $timelineProgressPercent }}%;"></div>
 
-                    <div class="timeline-step">
+                        @foreach($applicationTimeline as $stepNumber => $step)
 
-                        <div class="step-circle completed">
-                            ✓
-                        </div>
+                            <div class="timeline-step">
 
-                        <div class="step-title">
-                            Submitted
-                        </div>
+                                <div class="step-circle {{ $step['completed'] ? ($step['failed'] ? 'failed' : 'completed') : '' }}">
+                                    @if($step['failed'])
+                                        ✕
+                                    @elseif($step['completed'])
+                                        ✓
+                                    @else
+                                        {{ $stepNumber }}
+                                    @endif
+                                </div>
 
-                        <div class="step-date">
-                            01 Sep 2026
-                        </div>
+                                <div class="step-title">
+                                    {{ $step['label'] }}
+                                </div>
 
-                    </div>
+                                <div class="step-date">
+                                    {{ $step['date'] ? $step['date']->format('d M Y') : 'Pending' }}
+                                </div>
 
+                            </div>
 
-                    <div class="timeline-step">
-
-                        <div class="step-circle completed">
-                            ✓
-                        </div>
-
-                        <div class="step-title">
-                            Under Review
-                        </div>
-
-                        <div class="step-date">
-                            05 Sep 2026
-                        </div>
+                        @endforeach
 
                     </div>
 
+                @else
 
-                    <div class="timeline-step">
-
-                        <div class="step-circle completed">
-                            ✓
-                        </div>
-
-                        <div class="step-title">
-                            Consultant Assigned
-                        </div>
-
-                        <div class="step-date">
-                            10 Sep 2026
-                        </div>
-
+                    <div class="empty-card-state">
+                        <p>You haven't submitted a consultancy application yet.</p>
+                        <a href="{{ route('student.applications.index') }}" class="view-link">Start an application</a>
                     </div>
 
-
-                    <div class="timeline-step">
-
-                        <div class="step-circle">
-                            4
-                        </div>
-
-                        <div class="step-title">
-                            Consultation
-                        </div>
-
-                        <div class="step-date">
-                            Pending
-                        </div>
-
-                    </div>
-
-
-                    <div class="timeline-step">
-
-                        <div class="step-circle">
-                            5
-                        </div>
-
-                        <div class="step-title">
-                            Completed
-                        </div>
-
-                        <div class="step-date">
-                            Pending
-                        </div>
-
-                    </div>
-
-                </div>
+                @endif
 
             </div>
 
@@ -1286,49 +1259,67 @@
                         My Consultant
                     </h2>
 
-                    <a href="#" class="view-link">
-                        View Profile
-                    </a>
+                    @if($assignedConsultant)
+                        <a href="#" class="view-link">
+                            View Profile
+                        </a>
+                    @endif
 
                 </div>
 
+                @if($assignedConsultant)
 
-                <div class="consultant-box">
+                    <div class="consultant-box">
 
-                    <div class="consultant-avatar">
-                        CS
+                        <div class="consultant-avatar">
+                            {{ strtoupper(substr($assignedConsultant->user->first_name ?? 'C', 0, 1) . substr($assignedConsultant->user->last_name ?? '', 0, 1)) }}
+                        </div>
+
+                        <div class="consultant-info">
+
+                            <h3>
+                                {{ trim(($assignedConsultant->user->first_name ?? '') . ' ' . ($assignedConsultant->user->last_name ?? '')) ?: 'Consultant' }}
+                            </h3>
+
+                            <p>
+                                {{ $assignedConsultant->specialization ?: 'Study Abroad Consultant' }}
+                            </p>
+
+                        </div>
+
                     </div>
 
-                    <div class="consultant-info">
 
-                        <h3>
-                            Consultant Name
-                        </h3>
+                    @if($nextAppointment)
 
-                        <p>
-                            Senior Study Abroad Consultant
-                        </p>
+                        <div class="appointment-box">
 
+                            <div class="appointment-label">
+                                Next Consultation
+                            </div>
+
+                            <div class="appointment-time">
+                                {{ $nextAppointment->appointment_date->format('d F Y') }}
+                                @if($nextAppointment->start_time)
+                                    | {{ \Carbon\Carbon::parse($nextAppointment->start_time)->format('h:i A') }}
+                                @endif
+                            </div>
+
+                            <a href="#" class="appointment-button">
+                                View Appointment
+                            </a>
+
+                        </div>
+
+                    @endif
+
+                @else
+
+                    <div class="empty-card-state">
+                        <p>No consultant has been assigned yet.</p>
                     </div>
 
-                </div>
-
-
-                <div class="appointment-box">
-
-                    <div class="appointment-label">
-                        Next Consultation
-                    </div>
-
-                    <div class="appointment-time">
-                        15 September 2026 | 10:30 AM
-                    </div>
-
-                    <a href="#" class="appointment-button">
-                        View Appointment
-                    </a>
-
-                </div>
+                @endif
 
             </div>
 
@@ -1353,92 +1344,50 @@
                         Recommended Study Options
                     </h2>
 
-                    <a href="#" class="view-link">
-                        View All
-                    </a>
+                    @if($recommendations->isNotEmpty())
+                        <a href="#" class="view-link">
+                            View All
+                        </a>
+                    @endif
 
                 </div>
 
+                @forelse($recommendations->take(3) as $recommendation)
 
-                <!-- RECOMMENDATION 1 -->
+                    <div class="recommendation">
 
-                <div class="recommendation">
+                        <div class="university-image">
+                            UNIVERSITY
+                        </div>
 
-                    <div class="university-image">
-                        UNIVERSITY
-                    </div>
+                        <div class="recommendation-info">
 
-                    <div class="recommendation-info">
+                            <h3>
+                                {{ $recommendation->course->course_name ?? 'Course' }}
+                            </h3>
 
-                        <h3>
-                            BSc Computer Science
-                        </h3>
+                            <p>
+                                {{ $recommendation->course->university->university_name ?? 'University' }}
+                                @if($recommendation->course->university->country->country_name ?? null)
+                                    • {{ $recommendation->course->university->country->country_name }}
+                                @endif
+                            </p>
 
-                        <p>
-                            University of Manchester • United Kingdom
-                        </p>
+                        </div>
 
-                    </div>
-
-                    <div class="match">
-                        94% Match
-                    </div>
-
-                </div>
-
-
-                <!-- RECOMMENDATION 2 -->
-
-                <div class="recommendation">
-
-                    <div class="university-image">
-                        UNIVERSITY
-                    </div>
-
-                    <div class="recommendation-info">
-
-                        <h3>
-                            BSc Software Engineering
-                        </h3>
-
-                        <p>
-                            University of Melbourne • Australia
-                        </p>
+                        <div class="match">
+                            {{ (int) round($recommendation->match_percentage) }}% Match
+                        </div>
 
                     </div>
 
-                    <div class="match">
-                        91% Match
+                @empty
+
+                    <div class="empty-card-state">
+                        <p>No study recommendations yet.</p>
                     </div>
 
-                </div>
-
-
-                <!-- RECOMMENDATION 3 -->
-
-                <div class="recommendation">
-
-                    <div class="university-image">
-                        UNIVERSITY
-                    </div>
-
-                    <div class="recommendation-info">
-
-                        <h3>
-                            BSc Information Technology
-                        </h3>
-
-                        <p>
-                            University of Auckland • New Zealand
-                        </p>
-
-                    </div>
-
-                    <div class="match">
-                        87% Match
-                    </div>
-
-                </div>
+                @endforelse
 
             </div>
 
@@ -1454,87 +1403,41 @@
                         Recent Notifications
                     </h2>
 
-                    <a href="#" class="view-link">
-                        View All
-                    </a>
+                    @if($notifications->isNotEmpty())
+                        <a href="#" class="view-link">
+                            View All
+                        </a>
+                    @endif
 
                 </div>
 
+                @forelse($notifications as $notification)
 
-                <div class="notification-item">
+                    <div class="notification-item">
 
-                    <div class="notification-dot"></div>
+                        <div class="notification-dot"></div>
 
-                    <div>
+                        <div>
 
-                        <div class="notification-text">
-                            Your consultancy application is under review.
-                        </div>
+                            <div class="notification-text">
+                                {{ $notification->message ?: $notification->title }}
+                            </div>
 
-                        <div class="notification-time">
-                            2 hours ago
+                            <div class="notification-time">
+                                {{ $notification->created_at?->diffForHumans() }}
+                            </div>
+
                         </div>
 
                     </div>
 
-                </div>
+                @empty
 
-
-                <div class="notification-item">
-
-                    <div class="notification-dot"></div>
-
-                    <div>
-
-                        <div class="notification-text">
-                            New university recommendations are available.
-                        </div>
-
-                        <div class="notification-time">
-                            Yesterday
-                        </div>
-
+                    <div class="empty-card-state">
+                        <p>No new notifications.</p>
                     </div>
 
-                </div>
-
-
-                <div class="notification-item">
-
-                    <div class="notification-dot"></div>
-
-                    <div>
-
-                        <div class="notification-text">
-                            Your consultation appointment has been confirmed.
-                        </div>
-
-                        <div class="notification-time">
-                            2 days ago
-                        </div>
-
-                    </div>
-
-                </div>
-
-
-                <div class="notification-item">
-
-                    <div class="notification-dot"></div>
-
-                    <div>
-
-                        <div class="notification-text">
-                            New message from your consultant.
-                        </div>
-
-                        <div class="notification-time">
-                            3 days ago
-                        </div>
-
-                    </div>
-
-                </div>
+                @endforelse
 
             </div>
 
@@ -1554,56 +1457,67 @@
                     Fund Requirement Summary
                 </h2>
 
-                <a href="#" class="view-link">
-                    View Details
-                </a>
+                @if($fundRequirement)
+                    <a href="#" class="view-link">
+                        View Details
+                    </a>
+                @endif
 
             </div>
 
+            @if($fundRequirement)
 
-            <div class="fund-grid">
+                <div class="fund-grid">
 
 
-                <div class="fund-item">
+                    <div class="fund-item">
 
-                    <span>
-                        Tuition Fee
-                    </span>
+                        <span>
+                            Tuition Fee
+                        </span>
 
-                    <strong>
-                        LKR 3,500,000
-                    </strong>
+                        <strong>
+                            {{ $fundRequirement->currency }} {{ number_format($fundRequirement->total_tuition, 0) }}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="fund-item">
+
+                        <span>
+                            Living Expenses
+                        </span>
+
+                        <strong>
+                            {{ $fundRequirement->currency }} {{ number_format($fundRequirement->total_living_cost, 0) }}
+                        </strong>
+
+                    </div>
+
+
+                    <div class="fund-item">
+
+                        <span>
+                            Estimated Total
+                        </span>
+
+                        <strong>
+                            {{ $fundRequirement->currency }} {{ number_format($fundRequirement->total_required_amount, 0) }}
+                        </strong>
+
+                    </div>
+
 
                 </div>
 
+            @else
 
-                <div class="fund-item">
-
-                    <span>
-                        Living Expenses
-                    </span>
-
-                    <strong>
-                        LKR 1,800,000
-                    </strong>
-
+                <div class="empty-card-state">
+                    <p>No fund requirement has been generated yet.</p>
                 </div>
 
-
-                <div class="fund-item">
-
-                    <span>
-                        Estimated Total
-                    </span>
-
-                    <strong>
-                        LKR 5,450,000
-                    </strong>
-
-                </div>
-
-
-            </div>
+            @endif
 
         </div>
 
