@@ -514,16 +514,135 @@ class AdminController extends Controller
     /**
      * View Students
      */
-    public function students()
+    public function students(Request $request)
     {
-        $students = Student::with('user')
+        $query = Student::with('user')
+            ->withCount('applications');
+
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+
+            $query->where(function ($q) use ($search) {
+                $q->where('nationality', 'like', "%{$search}%")
+                    ->orWhere('country', 'like', "%{$search}%")
+                    ->orWhere('passport_number', 'like', "%{$search}%")
+                    ->orWhereHas('user', function ($uq) use ($search) {
+                        $uq->where('first_name', 'like', "%{$search}%")
+                            ->orWhere('last_name', 'like', "%{$search}%")
+                            ->orWhere('email', 'like', "%{$search}%")
+                            ->orWhere('phone', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        if ($request->filled('account_status')) {
+            $status = $request->input('account_status');
+
+            $query->whereHas('user', function ($uq) use ($status) {
+                $uq->where('account_status', $status);
+            });
+        }
+
+        if ($request->filled('country')) {
+            $query->where('country', $request->input('country'));
+        }
+
+        $students = $query
             ->latest('student_id')
-            ->paginate(20);
+            ->paginate(20)
+            ->withQueryString();
+
+        $countries = Student::whereNotNull('country')
+            ->where('country', '!=', '')
+            ->distinct()
+            ->orderBy('country')
+            ->pluck('country');
+
+        $stats = [
+            'total' => Student::count(),
+            'active' => Student::whereHas('user', function ($uq) {
+                $uq->where('account_status', 'Active');
+            })->count(),
+            'inactive' => Student::whereHas('user', function ($uq) {
+                $uq->where('account_status', 'Inactive');
+            })->count(),
+            'new_this_month' => Student::whereMonth('created_at', now()->month)
+                ->whereYear('created_at', now()->year)
+                ->count(),
+            'total_applications' => Application::count(),
+        ];
 
         return view(
             'admin.students.index',
-            compact('students')
+            compact(
+                'students',
+                'countries',
+                'stats'
+            )
         );
+    }
+
+
+    /**
+     * Show a specific student's full profile.
+     */
+    public function showStudent(Student $student)
+    {
+        $student->load([
+            'user',
+            'academicQualifications',
+            'englishQualifications',
+            'workExperiences',
+            'preferences.preferredCountry',
+            'applications' => function ($query) {
+                $query->with(['preferredCountry', 'preferredCourse'])
+                    ->latest('submitted_at');
+            },
+            'documents',
+            'appointments' => function ($query) {
+                $query->with('consultant.user')
+                    ->orderByDesc('appointment_date');
+            },
+        ]);
+
+        return view(
+            'admin.students.show',
+            compact('student')
+        );
+    }
+
+
+    /**
+     * Activate / deactivate a student's account.
+     */
+    public function updateStudentStatus(
+        Request $request,
+        Student $student
+    ) {
+        $validated = $request->validate([
+            'account_status' => [
+                'required',
+                'in:Active,Inactive'
+            ],
+        ]);
+
+        $student->loadMissing('user');
+
+        if (!$student->user) {
+            abort(404);
+        }
+
+        $student->user->account_status =
+            $validated['account_status'];
+
+        $student->user->save();
+
+        return redirect()
+            ->route('admin.students')
+            ->with(
+                'success',
+                'Student account status updated successfully.'
+            );
     }
 
 
