@@ -1214,7 +1214,8 @@
 
                     <div class="form-group">
                         <label for="modal_date_of_birth">Date of Birth</label>
-                        <input type="date" id="modal_date_of_birth" name="date_of_birth" class="form-control" max="{{ now()->format('Y-m-d') }}" value="{{ old('date_of_birth') }}">
+                        <input type="date" id="modal_date_of_birth" name="date_of_birth" class="form-control" max="{{ now()->subYears(16)->format('Y-m-d') }}" value="{{ old('date_of_birth') }}">
+                        <span class="form-hint">Student must be at least 16 years old.</span>
                     </div>
 
                     <div class="form-group">

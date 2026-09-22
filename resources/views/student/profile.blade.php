@@ -109,6 +109,7 @@
         }
         .field textarea { resize: vertical; min-height: 80px; }
         .field-error { color: #c0362c; font-size: 12px; margin-top: 5px; }
+        .field-hint { display: block; color: #9aa2b0; font-size: 12px; margin-top: 5px; }
 
         .btn-primary {
             padding: 11px 22px; background: #f97316; color: white; border: none; border-radius: 8px;
@@ -318,8 +319,9 @@
                         <div class="field">
                             <label for="date_of_birth">Date of birth</label>
                             <input type="date" id="date_of_birth" name="date_of_birth"
-                                max="{{ now()->format('Y-m-d') }}"
+                                max="{{ now()->subYears(16)->format('Y-m-d') }}"
                                 value="{{ old('date_of_birth', optional($student->date_of_birth)->format('Y-m-d')) }}">
+                            <span class="field-hint">You must be at least 16 years old.</span>
                             @error('date_of_birth')<div class="field-error">{{ $message }}</div>@enderror
                         </div>
 

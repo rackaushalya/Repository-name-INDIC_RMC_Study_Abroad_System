@@ -252,7 +252,11 @@ class StudentController extends Controller
             'first_name' => ['required', 'string', 'max:100'],
             'last_name' => ['nullable', 'string', 'max:100'],
             'phone' => ['nullable', 'digits:10'],
-            'date_of_birth' => ['nullable', 'date', 'before_or_equal:today'],
+            'date_of_birth' => [
+                'nullable',
+                'date',
+                'before_or_equal:' . now()->subYears(16)->format('Y-m-d')
+            ],
             'gender' => ['nullable', 'in:Male,Female,Other'],
             'nationality' => ['nullable', 'string', 'max:100'],
             'passport_number' => ['nullable', 'string', 'max:100'],
