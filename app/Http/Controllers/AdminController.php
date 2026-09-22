@@ -690,7 +690,11 @@ class AdminController extends Controller
             'phone' => ['nullable', 'digits:10'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'account_status' => ['required', 'in:active,inactive'],
-            'date_of_birth' => ['nullable', 'date', 'before_or_equal:today'],
+            'date_of_birth' => [
+                'nullable',
+                'date',
+                'before_or_equal:' . now()->subYears(16)->format('Y-m-d')
+            ],
             'gender' => ['nullable', 'in:Male,Female,Other'],
             'nationality' => ['nullable', 'string', 'max:100'],
             'passport_number' => ['nullable', 'string', 'max:100'],
@@ -778,7 +782,11 @@ class AdminController extends Controller
             'phone' => ['nullable', 'digits:10'],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
             'account_status' => ['required', 'in:active,inactive'],
-            'date_of_birth' => ['nullable', 'date', 'before_or_equal:today'],
+            'date_of_birth' => [
+                'nullable',
+                'date',
+                'before_or_equal:' . now()->subYears(16)->format('Y-m-d')
+            ],
             'gender' => ['nullable', 'in:Male,Female,Other'],
             'nationality' => ['nullable', 'string', 'max:100'],
             'passport_number' => ['nullable', 'string', 'max:100'],
