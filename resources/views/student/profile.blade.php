@@ -151,7 +151,7 @@
 
     <div class="menu-section">
         <div class="menu-title">Study Abroad</div>
-        <a href="#" class="menu-item">
+        <a href="{{ route('student.applications.index') }}" class="menu-item">
             <div class="menu-icon"><i class="bi bi-file-earmark-text-fill"></i></div><span>Consultancy Application</span>
         </a>
         <a href="#" class="menu-item">
