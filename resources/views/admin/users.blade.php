@@ -488,11 +488,10 @@
 
             </div>
 
-            <a href="{{ route('admin.users.create') }}" class="add-btn">
-                + Add New User
+          <a href="{{ route('admin.dashboard') }}" class="add-btn">
+                 ← Dashboard
             </a>
-
-        </div>
+             </div>
 
 
         {{-- -------------------------------------------------
@@ -856,11 +855,11 @@
                                             {{-- View --}}
 
                                             <a
-                                                href="{{ route('admin.users.show', $user) }}"
-                                                class="action-btn view-btn"
-                                            >
-                                                View
-                                            </a>
+                                         href="{{ route('admin.users') }}"
+                                           class="action-btn view-btn"
+                                        >
+                                        View
+                                        </a>
 
 
                                             {{-- Edit --}}

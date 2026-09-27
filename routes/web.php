@@ -80,7 +80,9 @@ Route::post('/logout', [AuthController::class, 'logout'])
 
 
 /*
+|--------------------------------------------------------------------------
 | Password Reset
+|--------------------------------------------------------------------------
 */
 
 Route::get('/forgot-password', [AuthController::class, 'showForgotPassword'])
@@ -115,25 +117,29 @@ Route::get('/auth/google/callback', [GoogleController::class, 'callback'])
 |--------------------------------------------------------------------------
 */
 
-Route::middleware('auth')->prefix('student')->name('student.')->group(function () {
+Route::middleware('auth')
+    ->prefix('student')
+    ->name('student.')
+    ->group(function () {
 
-    Route::get('/dashboard', [StudentController::class, 'dashboard'])
-        ->name('dashboard');
+        Route::get('/dashboard', [StudentController::class, 'dashboard'])
+            ->name('dashboard');
 
-    Route::get('/profile', [StudentController::class, 'profile'])
-        ->name('profile');
+        Route::get('/profile', [StudentController::class, 'profile'])
+            ->name('profile');
 
-    Route::put('/profile', [StudentController::class, 'updateProfile'])
-        ->name('profile.update');
+        Route::put('/profile', [StudentController::class, 'updateProfile'])
+            ->name('profile.update');
 
-    Route::get('/preferences', [StudentController::class, 'preferences'])
-        ->name('preferences');
+        Route::get('/preferences', [StudentController::class, 'preferences'])
+            ->name('preferences');
 
-    Route::put('/preferences', [StudentController::class, 'updatePreferences'])
-        ->name('preferences.update');
+        Route::put('/preferences', [StudentController::class, 'updatePreferences'])
+            ->name('preferences.update');
 
-    Route::get('/applications', [StudentController::class, 'applications'])
-        ->name('applications');
+        Route::get('/applications', [StudentController::class, 'applications'])
+            ->name('applications');
+
 
         /*
         |--------------------------------------------------------------------------
@@ -141,11 +147,12 @@ Route::middleware('auth')->prefix('student')->name('student.')->group(function (
         |--------------------------------------------------------------------------
         */
 
-    Route::get('/recommendations', [StudentController::class, 'recommendations'])
-        ->name('recommendations');
+        Route::get('/recommendations', [StudentController::class, 'recommendations'])
+            ->name('recommendations');
 
-    Route::get('/appointments', [StudentController::class, 'appointments'])
-        ->name('appointments');
+        Route::get('/appointments', [StudentController::class, 'appointments'])
+            ->name('appointments');
+
 
         /*
         |--------------------------------------------------------------------------
@@ -155,6 +162,16 @@ Route::middleware('auth')->prefix('student')->name('student.')->group(function (
 
         Route::get('/applications', [StudentController::class, 'applications'])
             ->name('applications');
+
+        Route::resource(
+            'applications',
+            ApplicationController::class
+        )->except(['destroy']);
+
+        Route::delete(
+            '/applications/{application}',
+            [ApplicationController::class, 'destroy']
+        )->name('applications.destroy');
 
 
         /*
@@ -167,43 +184,46 @@ Route::middleware('auth')->prefix('student')->name('student.')->group(function (
             ->name('recommendations');
 
 
-    /*
-    | Qualifications
-    */
+        /*
+        |--------------------------------------------------------------------------
+        | Qualifications
+        |--------------------------------------------------------------------------
+        */
 
-    Route::get('/qualifications', [QualificationController::class, 'index'])
-        ->name('qualifications');
+        Route::get('/qualifications', [QualificationController::class, 'index'])
+            ->name('qualifications');
 
-    Route::post('/qualifications/academic', [
-        QualificationController::class,
-        'storeAcademic'
-    ])->name('qualifications.academic.store');
+        Route::post('/qualifications/academic', [
+            QualificationController::class,
+            'storeAcademic'
+        ])->name('qualifications.academic.store');
 
-    Route::put('/qualifications/academic/{qualification}', [
-        QualificationController::class,
-        'updateAcademic'
-    ])->name('qualifications.academic.update');
+        Route::put('/qualifications/academic/{qualification}', [
+            QualificationController::class,
+            'updateAcademic'
+        ])->name('qualifications.academic.update');
 
-    Route::delete('/qualifications/academic/{qualification}', [
-        QualificationController::class,
-        'deleteAcademic'
-    ])->name('qualifications.academic.delete');
+        Route::delete('/qualifications/academic/{qualification}', [
+            QualificationController::class,
+            'deleteAcademic'
+        ])->name('qualifications.academic.delete');
 
 
-    Route::post('/qualifications/english', [
-        QualificationController::class,
-        'storeEnglish'
-    ])->name('qualifications.english.store');
+        Route::post('/qualifications/english', [
+            QualificationController::class,
+            'storeEnglish'
+        ])->name('qualifications.english.store');
 
-    Route::put('/qualifications/english/{qualification}', [
-        QualificationController::class,
-        'updateEnglish'
-    ])->name('qualifications.english.update');
+        Route::put('/qualifications/english/{qualification}', [
+            QualificationController::class,
+            'updateEnglish'
+        ])->name('qualifications.english.update');
 
-    Route::delete('/qualifications/english/{qualification}', [
-        QualificationController::class,
-        'deleteEnglish'
-    ])->name('qualifications.english.delete');
+        Route::delete('/qualifications/english/{qualification}', [
+            QualificationController::class,
+            'deleteEnglish'
+        ])->name('qualifications.english.delete');
+
 
         /*
         |--------------------------------------------------------------------------
@@ -227,124 +247,133 @@ Route::middleware('auth')->prefix('student')->name('student.')->group(function (
         ])->name('qualifications.academic.delete');
 
 
-    Route::post('/qualifications/work-experience', [
-        QualificationController::class,
-        'storeWorkExperience'
-    ])->name('qualifications.work.store');
+        Route::post('/qualifications/work-experience', [
+            QualificationController::class,
+            'storeWorkExperience'
+        ])->name('qualifications.work.store');
 
-    Route::put('/qualifications/work-experience/{workExperience}', [
-        QualificationController::class,
-        'updateWorkExperience'
-    ])->name('qualifications.work.update');
+        Route::put('/qualifications/work-experience/{workExperience}', [
+            QualificationController::class,
+            'updateWorkExperience'
+        ])->name('qualifications.work.update');
 
-    Route::delete('/qualifications/work-experience/{workExperience}', [
-        QualificationController::class,
-        'deleteWorkExperience'
-    ])->name('qualifications.work.delete');
-
-
-    /*
-    | Applications
-    */
-
-    Route::resource(
-        'applications',
-        ApplicationController::class
-    )->except(['destroy']);
+        Route::delete('/qualifications/work-experience/{workExperience}', [
+            QualificationController::class,
+            'deleteWorkExperience'
+        ])->name('qualifications.work.delete');
 
 
-    Route::delete(
-        '/applications/{application}',
-        [ApplicationController::class, 'destroy']
-    )->name('applications.destroy');
+        /*
+        |--------------------------------------------------------------------------
+        | Applications
+        |--------------------------------------------------------------------------
+        */
+
+        Route::resource(
+            'applications',
+            ApplicationController::class
+        )->except(['destroy']);
+
+        Route::delete(
+            '/applications/{application}',
+            [ApplicationController::class, 'destroy']
+        )->name('applications.destroy');
 
 
-    /*
-    | Recommendations
-    */
+        /*
+        |--------------------------------------------------------------------------
+        | Recommendations
+        |--------------------------------------------------------------------------
+        */
 
-    Route::get(
-        '/recommendations',
-        [RecommendationController::class, 'index']
-    )->name('recommendations.index');
+        Route::get(
+            '/recommendations',
+            [RecommendationController::class, 'index']
+        )->name('recommendations.index');
 
-    Route::get(
-        '/recommendations/{recommendation}',
-        [RecommendationController::class, 'show']
-    )->name('recommendations.show');
+        Route::get(
+            '/recommendations/{recommendation}',
+            [RecommendationController::class, 'show']
+        )->name('recommendations.show');
 
-    Route::post(
-        '/recommendations/generate',
-        [RecommendationController::class, 'generate']
-    )->name('recommendations.generate');
-
-
-    /*
-    | Fund Requirements
-    */
-
-    Route::resource(
-        'fund-requirements',
-        FundRequirementController::class
-    )->only([
-        'index',
-        'create',
-        'store',
-        'show',
-        'destroy'
-    ]);
+        Route::post(
+            '/recommendations/generate',
+            [RecommendationController::class, 'generate']
+        )->name('recommendations.generate');
 
 
-    /*
-    | Documents
-    */
+        /*
+        |--------------------------------------------------------------------------
+        | Fund Requirements
+        |--------------------------------------------------------------------------
+        */
 
-    Route::get(
-        '/documents',
-        [StudentDocumentController::class, 'index']
-    )->name('documents');
-
-    Route::post(
-        '/documents',
-        [StudentDocumentController::class, 'store']
-    )->name('documents.store');
-
-    Route::delete(
-        '/documents/{document}',
-        [StudentDocumentController::class, 'destroy']
-    )->name('documents.destroy');
+        Route::resource(
+            'fund-requirements',
+            FundRequirementController::class
+        )->only([
+            'index',
+            'create',
+            'store',
+            'show',
+            'destroy'
+        ]);
 
 
-    /*
-    | Account Settings
-    */
+        /*
+        |--------------------------------------------------------------------------
+        | Documents
+        |--------------------------------------------------------------------------
+        */
 
-    Route::get(
-        '/account-settings',
-        [StudentAccountController::class, 'edit']
-    )->name('account.edit');
+        Route::get(
+            '/documents',
+            [StudentDocumentController::class, 'index']
+        )->name('documents');
 
-    Route::post(
-        '/account-settings/photo',
-        [StudentAccountController::class, 'updatePhoto']
-    )->name('account.photo.update');
+        Route::post(
+            '/documents',
+            [StudentDocumentController::class, 'store']
+        )->name('documents.store');
 
-    Route::delete(
-        '/account-settings/photo',
-        [StudentAccountController::class, 'removePhoto']
-    )->name('account.photo.destroy');
+        Route::delete(
+            '/documents/{document}',
+            [StudentDocumentController::class, 'destroy']
+        )->name('documents.destroy');
 
-    Route::put(
-        '/account-settings/password',
-        [StudentAccountController::class, 'updatePassword']
-    )->name('account.password.update');
 
-    Route::post(
-        '/account-settings/deactivate',
-        [StudentAccountController::class, 'deactivate']
-    )->name('account.deactivate');
+        /*
+        |--------------------------------------------------------------------------
+        | Account Settings
+        |--------------------------------------------------------------------------
+        */
 
-});
+        Route::get(
+            '/account-settings',
+            [StudentAccountController::class, 'edit']
+        )->name('account.edit');
+
+        Route::post(
+            '/account-settings/photo',
+            [StudentAccountController::class, 'updatePhoto']
+        )->name('account.photo.update');
+
+        Route::delete(
+            '/account-settings/photo',
+            [StudentAccountController::class, 'removePhoto']
+        )->name('account.photo.destroy');
+
+        Route::put(
+            '/account-settings/password',
+            [StudentAccountController::class, 'updatePassword']
+        )->name('account.password.update');
+
+        Route::post(
+            '/account-settings/deactivate',
+            [StudentAccountController::class, 'deactivate']
+        )->name('account.deactivate');
+
+    });
 
 
 /*
@@ -387,6 +416,7 @@ Route::middleware('auth')
             '/settings',
             [ConsultantController::class, 'settings']
         )->name('settings');
+
     });
 
 
@@ -415,10 +445,67 @@ Route::prefix('admin')
             [AdminController::class, 'upcomingAppointments']
         )->name('upcoming-appointments');
 
+
+        /*
+        |--------------------------------------------------------------------------
+        | User Management
+        |--------------------------------------------------------------------------
+        */
+
+        // User Management - List
         Route::get(
             '/users',
             [AdminController::class, 'users']
         )->name('users');
+
+        // User Management - Create page
+        Route::get(
+            '/users/create',
+            [AdminController::class, 'createUser']
+        )->name('users.create');
+
+        // User Management - Store
+        Route::post(
+            '/users',
+            [AdminController::class, 'storeUser']
+        )->name('users.store');
+
+        // User Management - View
+        Route::get(
+            '/users/{user}',
+            [AdminController::class, 'showUser']
+        )->name('users.show');
+
+        // User Management - Edit page
+        Route::get(
+            '/users/{user}/edit',
+            [AdminController::class, 'editUser']
+        )->name('users.edit');
+
+        // User Management - Update
+        Route::put(
+            '/users/{user}',
+            [AdminController::class, 'updateUser']
+        )->name('users.update');
+
+        // User Management - Delete
+        Route::delete(
+            '/users/{user}',
+            [AdminController::class, 'destroyUser']
+        )->name('users.destroy');
+
+        // User Management - Change Status
+        Route::patch(
+            '/users/{user}/status',
+            [AdminController::class, 'updateUserStatus']
+        )->name('users.status');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Other Admin Lists
+        |--------------------------------------------------------------------------
+        */
 
         Route::get(
             '/students',
@@ -444,6 +531,13 @@ Route::prefix('admin')
             '/courses-list',
             [AdminController::class, 'courses']
         )->name('courses-list');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Application Management
+        |--------------------------------------------------------------------------
+        */
 
         Route::get(
             '/applications-list',
@@ -493,7 +587,9 @@ Route::prefix('admin')
 
 
         /*
+        |--------------------------------------------------------------------------
         | University Management
+        |--------------------------------------------------------------------------
         */
 
         Route::resource(
@@ -503,7 +599,9 @@ Route::prefix('admin')
 
 
         /*
+        |--------------------------------------------------------------------------
         | Country Management
+        |--------------------------------------------------------------------------
         */
 
         Route::resource(
@@ -513,7 +611,9 @@ Route::prefix('admin')
 
 
         /*
+        |--------------------------------------------------------------------------
         | Course Management
+        |--------------------------------------------------------------------------
         */
 
         Route::resource(
@@ -523,7 +623,9 @@ Route::prefix('admin')
 
 
         /*
+        |--------------------------------------------------------------------------
         | Course Intake Management
+        |--------------------------------------------------------------------------
         */
 
         Route::resource(
@@ -533,7 +635,9 @@ Route::prefix('admin')
 
 
         /*
+        |--------------------------------------------------------------------------
         | Scholarship Management
+        |--------------------------------------------------------------------------
         */
 
         Route::resource(
@@ -543,7 +647,9 @@ Route::prefix('admin')
 
 
         /*
+        |--------------------------------------------------------------------------
         | Tuition Fee Management
+        |--------------------------------------------------------------------------
         */
 
         Route::resource(
@@ -553,7 +659,9 @@ Route::prefix('admin')
 
 
         /*
+        |--------------------------------------------------------------------------
         | Appointment Management
+        |--------------------------------------------------------------------------
         */
 
         Route::resource(
@@ -563,7 +671,9 @@ Route::prefix('admin')
 
 
         /*
+        |--------------------------------------------------------------------------
         | Lead Management / CRM
+        |--------------------------------------------------------------------------
         */
 
         Route::resource(
@@ -573,7 +683,9 @@ Route::prefix('admin')
 
 
         /*
+        |--------------------------------------------------------------------------
         | Inquiry Management / CRM
+        |--------------------------------------------------------------------------
         */
 
         Route::resource(
@@ -583,7 +695,9 @@ Route::prefix('admin')
 
 
         /*
+        |--------------------------------------------------------------------------
         | Reports
+        |--------------------------------------------------------------------------
         */
 
         Route::resource(
@@ -630,21 +744,32 @@ Route::middleware('auth')
 
     });
 
-Route::get('/test-univ', function () {
-    return view('admin.universities');
-});
 
-Route::get('/test-countries', function () {
-    return view('admin.countries');
-});
+/*
+|--------------------------------------------------------------------------
+| Temporary Test Routes
+|--------------------------------------------------------------------------
+*/
 
-Route::get('/test-courses', function () {
-    return view('admin.courses');
-});
+Route::get(
+    '/test-univ',
+    [UniversityController::class, 'index']
+);
 
-Route::get('/test-scholarships', function () {
-    return view('admin.scholarships');
-});
+Route::get(
+    '/test-countries',
+    [CountryController::class, 'index']
+);
+
+Route::get(
+    '/test-courses',
+    [CourseController::class, 'index']
+);
+
+Route::get(
+    '/test-scholarships',
+    [ScholarshipController::class, 'index']
+);
 
 Route::get('/test-consultants', function () {
     return view('admin.consultants');
