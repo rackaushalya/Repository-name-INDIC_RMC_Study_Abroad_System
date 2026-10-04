@@ -1250,6 +1250,10 @@
 
 
 
+        @include('student.partials.readiness')
+
+        @include('student.partials.eligibility-matcher')
+
         <!-- =================================================
              APPLICATION + CONSULTANT
         ================================================== -->

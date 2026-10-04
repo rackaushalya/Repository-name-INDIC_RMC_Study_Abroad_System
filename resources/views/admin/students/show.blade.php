@@ -127,7 +127,7 @@
             border-bottom: 1px solid #e6e9ef;
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            justify-content: flex-end;
             padding: 0 28px;
             position: sticky;
             top: 0;
@@ -626,11 +626,6 @@
 <main class="main">
 
     <header class="topbar">
-
-        <div class="search-box">
-            <span class="search-icon"><i class="bi bi-search"></i></span>
-            <input type="text" placeholder="Search students, applications...">
-        </div>
 
         <div class="admin-profile">
             <div class="profile-circle">

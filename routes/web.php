@@ -135,6 +135,9 @@ Route::middleware('auth')->prefix('student')->name('student.')->group(function (
     Route::put('/preferences', [StudentController::class, 'updatePreferences'])
         ->name('preferences.update');
 
+    Route::get('/preferences/tips', [StudentController::class, 'preferenceTips'])
+        ->name('preferences.tips');
+
     Route::get('/applications', [StudentController::class, 'applications'])
         ->name('applications');
 
@@ -176,6 +179,9 @@ Route::middleware('auth')->prefix('student')->name('student.')->group(function (
 
     Route::get('/qualifications', [QualificationController::class, 'index'])
         ->name('qualifications');
+
+    Route::get('/qualifications/english-converter', [QualificationController::class, 'convertEnglishScore'])
+        ->name('qualifications.english.convert');
 
     Route::post('/qualifications/academic', [
         QualificationController::class,

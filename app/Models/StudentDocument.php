@@ -24,6 +24,7 @@ class StudentDocument extends Model
         'file_size',
         'status',
         'remarks',
+        'expiry_date',
         'uploaded_at',
     ];
 
@@ -31,7 +32,34 @@ class StudentDocument extends Model
     {
         return [
             'uploaded_at' => 'datetime',
+            'expiry_date' => 'date',
         ];
+    }
+
+    /**
+     * Months a document should stay valid for before we warn the student
+     * (most universities want 6+ months of validity on a passport).
+     */
+    public const EXPIRY_WARNING_MONTHS = 6;
+
+    /**
+     * 'expired', 'expiring' (inside the warning window) or null.
+     */
+    public function expiryState(): ?string
+    {
+        if (!$this->expiry_date) {
+            return null;
+        }
+
+        if ($this->expiry_date->isPast()) {
+            return 'expired';
+        }
+
+        if ($this->expiry_date->lte(now()->addMonths(self::EXPIRY_WARNING_MONTHS))) {
+            return 'expiring';
+        }
+
+        return null;
     }
 
     public function student()

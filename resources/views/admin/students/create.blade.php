@@ -127,7 +127,7 @@
             border-bottom: 1px solid #e6e9ef;
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            justify-content: flex-end;
             padding: 0 28px;
             position: sticky;
             top: 0;
@@ -514,11 +514,6 @@
 
     <header class="topbar">
 
-        <div class="search-box">
-            <span class="search-icon"><i class="bi bi-search"></i></span>
-            <input type="text" placeholder="Search students, applications...">
-        </div>
-
         <div class="admin-profile">
             <div class="profile-circle">
                 {{ strtoupper(substr(auth()->user()->first_name ?? 'A', 0, 1)) }}
@@ -562,17 +557,17 @@
 
                         <div class="form-group">
                             <label for="first_name">First Name *</label>
-                            <input type="text" id="first_name" name="first_name" class="form-control" value="{{ old('first_name') }}" required>
+                            <input type="text" id="first_name" name="first_name" class="form-control" minlength="2" maxlength="100" pattern="[\p{L}][\p{L}\s.'\-]*" title="Letters, spaces and . ' - only" value="{{ old('first_name') }}" required>
                         </div>
 
                         <div class="form-group">
                             <label for="last_name">Last Name</label>
-                            <input type="text" id="last_name" name="last_name" class="form-control" value="{{ old('last_name') }}">
+                            <input type="text" id="last_name" name="last_name" class="form-control" maxlength="100" pattern="[\p{L}][\p{L}\s.'\-]*" title="Letters, spaces and . ' - only" value="{{ old('last_name') }}">
                         </div>
 
                         <div class="form-group">
                             <label for="email">Email *</label>
-                            <input type="email" id="email" name="email" class="form-control" value="{{ old('email') }}" required>
+                            <input type="email" id="email" name="email" class="form-control" maxlength="255" pattern="[^@\s]+@[^@\s]+\.[A-Za-z]{2,}" title="Enter a valid email address" value="{{ old('email') }}" required>
                         </div>
 
                         <div class="form-group">
@@ -585,13 +580,14 @@
 
                         <div class="form-group">
                             <label for="password">Password *</label>
-                            <input type="password" id="password" name="password" class="form-control" required>
+                            <input type="password" id="password" name="password" class="form-control" minlength="8" maxlength="72" autocomplete="new-password" required>
+                            <span class="form-hint">At least 8 characters with an uppercase letter, a lowercase letter and a number.</span>
                             <span class="form-hint">Minimum 8 characters.</span>
                         </div>
 
                         <div class="form-group">
                             <label for="password_confirmation">Confirm Password *</label>
-                            <input type="password" id="password_confirmation" name="password_confirmation" class="form-control" required>
+                            <input type="password" id="password_confirmation" name="password_confirmation" class="form-control" maxlength="72" autocomplete="new-password" required>
                         </div>
 
                         <div class="form-group">
@@ -612,7 +608,7 @@
 
                         <div class="form-group">
                             <label for="date_of_birth">Date of Birth</label>
-                            <input type="date" id="date_of_birth" name="date_of_birth" class="form-control" max="{{ now()->subYears(16)->format('Y-m-d') }}" value="{{ old('date_of_birth') }}">
+                            <input type="date" id="date_of_birth" name="date_of_birth" class="form-control" min="1900-01-01" max="{{ now()->subYears(16)->format('Y-m-d') }}" value="{{ old('date_of_birth') }}">
                             <span class="form-hint">Student must be at least 16 years old.</span>
                         </div>
 
@@ -628,17 +624,17 @@
 
                         <div class="form-group">
                             <label for="nationality">Nationality</label>
-                            <input type="text" id="nationality" name="nationality" class="form-control" value="{{ old('nationality') }}">
+                            <input type="text" id="nationality" name="nationality" class="form-control" maxlength="100" pattern="[\p{L}][\p{L}\s.'\-]*" title="Letters, spaces and . ' - only" value="{{ old('nationality') }}">
                         </div>
 
                         <div class="form-group">
                             <label for="passport_number">Passport Number</label>
-                            <input type="text" id="passport_number" name="passport_number" class="form-control" value="{{ old('passport_number') }}">
+                            <input type="text" id="passport_number" name="passport_number" class="form-control" maxlength="100" pattern="[A-Za-z0-9]+" title="Letters and numbers only" oninput="this.value = this.value.replace(/[^A-Za-z0-9]/g, '')" value="{{ old('passport_number') }}">
                         </div>
 
                         <div class="form-group">
                             <label for="city">City</label>
-                            <input type="text" id="city" name="city" class="form-control" value="{{ old('city') }}">
+                            <input type="text" id="city" name="city" class="form-control" maxlength="100" pattern="[\p{L}][\p{L}\s.'\-]*" title="Letters, spaces and . ' - only" value="{{ old('city') }}">
                         </div>
 
                         <div class="form-group">
@@ -655,7 +651,7 @@
 
                         <div class="form-group full">
                             <label for="current_address">Address</label>
-                            <textarea id="current_address" name="current_address" class="form-control" maxlength="500">{{ old('current_address') }}</textarea>
+                            <textarea id="current_address" name="current_address" class="form-control" maxlength="500" minlength="5">{{ old('current_address') }}</textarea>
                         </div>
 
                     </div>
@@ -672,6 +668,30 @@
     </section>
 
 </main>
+
+
+<script>
+    (function () {
+        var pw = document.getElementById('password');
+        var conf = document.getElementById('password_confirmation');
+
+        function checkPasswords() {
+            pw.setCustomValidity('');
+            conf.setCustomValidity('');
+
+            if (pw.value && !(/[a-z]/.test(pw.value) && /[A-Z]/.test(pw.value) && /[0-9]/.test(pw.value))) {
+                pw.setCustomValidity('Use at least one uppercase letter, one lowercase letter and one number.');
+            }
+            if ((pw.value || conf.value) && conf.value !== pw.value) {
+                conf.setCustomValidity('The passwords do not match.');
+            }
+        }
+
+        pw.addEventListener('input', checkPasswords);
+        conf.addEventListener('input', checkPasswords);
+        pw.form.addEventListener('submit', checkPasswords);
+    })();
+</script>
 
 </body>
 </html>

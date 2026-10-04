@@ -509,6 +509,8 @@
                 </div>
 
             </div>
+
+            @include('student.partials.english-converter')
         </div>
 
 
