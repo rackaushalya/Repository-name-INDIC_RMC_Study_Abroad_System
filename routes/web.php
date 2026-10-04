@@ -9,6 +9,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\StudentDocumentController;
 use App\Http\Controllers\StudentAccountController;
+use App\Http\Controllers\StudentNotificationController;
 use App\Http\Controllers\ConsultantController;
 use App\Http\Controllers\QualificationController;
 use App\Http\Controllers\AppointmentController;
@@ -318,6 +319,26 @@ Route::middleware('auth')->prefix('student')->name('student.')->group(function (
 
 
     /*
+    | Notifications
+    */
+
+    Route::get(
+        '/notifications/feed',
+        [StudentNotificationController::class, 'feed']
+    )->name('notifications.feed');
+
+    Route::post(
+        '/notifications/read-all',
+        [StudentNotificationController::class, 'markAllAsRead']
+    )->name('notifications.read-all');
+
+    Route::post(
+        '/notifications/{notification}/read',
+        [StudentNotificationController::class, 'markAsRead']
+    )->name('notifications.read');
+
+
+    /*
     | Account Settings
     */
 
@@ -515,6 +536,14 @@ Route::prefix('admin')
             '/applications-list/{application}/status',
             [AdminController::class, 'updateApplicationStatus']
         )->name('applications-status');
+
+        // The status URL is only a form target; if someone reloads it or
+        // opens it directly (GET), send them back to the application page.
+        Route::get(
+            '/applications-list/{application}/status',
+            fn (\App\Models\Application $application) => redirect()
+                ->route('admin.applications-show', $application)
+        );
 
 
         /*

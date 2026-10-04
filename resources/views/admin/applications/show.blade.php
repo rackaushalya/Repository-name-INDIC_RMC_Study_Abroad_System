@@ -951,40 +951,14 @@
                             required
                         >
 
-                            <option
-                                value="Submitted"
-                                {{ old('application_status', $application->application_status) === 'Submitted' ? 'selected' : '' }}
-                            >
-                                Submitted
-                            </option>
-
-                            <option
-                                value="Under Review"
-                                {{ old('application_status', $application->application_status) === 'Under Review' ? 'selected' : '' }}
-                            >
-                                Under Review
-                            </option>
-
-                            <option
-                                value="Approved"
-                                {{ old('application_status', $application->application_status) === 'Approved' ? 'selected' : '' }}
-                            >
-                                Approved
-                            </option>
-
-                            <option
-                                value="Rejected"
-                                {{ old('application_status', $application->application_status) === 'Rejected' ? 'selected' : '' }}
-                            >
-                                Rejected
-                            </option>
-
-                            <option
-                                value="Cancelled"
-                                {{ old('application_status', $application->application_status) === 'Cancelled' ? 'selected' : '' }}
-                            >
-                                Cancelled
-                            </option>
+                            @foreach(\App\Models\Application::STATUSES as $status)
+                                <option
+                                    value="{{ $status }}"
+                                    {{ old('application_status', $application->application_status) === $status ? 'selected' : '' }}
+                                >
+                                    {{ $status }}
+                                </option>
+                            @endforeach
 
                         </select>
 

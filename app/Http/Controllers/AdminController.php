@@ -8,6 +8,7 @@ use App\Models\Appointment;
 use App\Models\Consultant;
 use App\Models\Country;
 use App\Models\Course;
+use App\Models\Notification;
 use App\Models\Role;
 use App\Models\Student;
 use App\Models\University;
@@ -1030,7 +1031,7 @@ class AdminController extends Controller
         $validated = $request->validate([
             'application_status' => [
                 'required',
-                'in:Submitted,Under Review,Approved,Rejected,Cancelled'
+                Rule::in(Application::STATUSES)
             ],
 
             'remarks' => [
@@ -1095,6 +1096,33 @@ class AdminController extends Controller
 
             'changed_at' => now(),
         ]);
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Notify the student
+        |--------------------------------------------------------------------------
+        */
+
+        $studentUserId = $application->student?->user_id;
+
+        if ($studentUserId) {
+            $message = "Your application #{$application->application_id} has moved from {$oldStatus} to {$newStatus}.";
+
+            if (!empty($validated['remarks'])) {
+                $message .= " Remarks: {$validated['remarks']}";
+            }
+
+            Notification::create([
+                'user_id' => $studentUserId,
+                'title' => "Application {$newStatus}",
+                'message' => $message,
+                'notification_type' => 'application_status',
+                'related_application_id' => $application->application_id,
+                'is_read' => false,
+                'created_at' => now(),
+            ]);
+        }
 
 
         return redirect()

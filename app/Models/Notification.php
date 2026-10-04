@@ -34,6 +34,16 @@ class Notification extends Model
         ];
     }
 
+    /**
+     * is_read is nullable in the schema, so treat NULL as unread too.
+     */
+    public function scopeUnread($query)
+    {
+        return $query->where(function ($q) {
+            $q->where('is_read', false)->orWhereNull('is_read');
+        });
+    }
+
     public function user()
     {
         return $this->belongsTo(

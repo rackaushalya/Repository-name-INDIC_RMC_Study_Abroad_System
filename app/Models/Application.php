@@ -6,6 +6,22 @@ use Illuminate\Database\Eloquent\Model;
 
 class Application extends Model
 {
+    /**
+     * Must match the application_status enum on the applications table.
+     */
+    public const STATUSES = [
+        'Submitted',
+        'Under Review',
+        'Consultant Assigned',
+        'Consultation Scheduled',
+        'Consultation Completed',
+        'Recommendation Provided',
+        'Follow-up Required',
+        'Completed',
+        'Rejected',
+        'Cancelled',
+    ];
+
     protected $table = 'applications';
 
     protected $primaryKey = 'application_id';

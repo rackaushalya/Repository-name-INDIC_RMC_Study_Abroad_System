@@ -49,9 +49,14 @@ class StudentController extends Controller
         $notifications = $user
             ? $user->notifications()
                 ->latest('created_at')
-                ->take(4)
+                ->latest('notification_id')
+                ->take(10)
                 ->get()
             : collect();
+
+        $unreadNotificationCount = $user
+            ? $user->notifications()->unread()->count()
+            : 0;
 
         $profileCompletion = $this->profileCompletion($student);
 
@@ -84,6 +89,7 @@ class StudentController extends Controller
             'appointments',
             'fundRequirement',
             'notifications',
+            'unreadNotificationCount',
             'profileCompletion',
             'latestApplication',
             'applicationTimeline',

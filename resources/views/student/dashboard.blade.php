@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <title>INDIC RMC - Student Dashboard</title>
 
@@ -149,75 +150,139 @@
         }
 
 
-        /* SEARCH BAR */
-
-        .search-container {
-            width: 440px;
-            position: relative;
-        }
-
-        .search-container input {
-            width: 100%;
-            height: 42px;
-
-            border: 1px solid #dfe4ec;
-            border-radius: 8px;
-
-            padding: 0 15px 0 42px;
-
-            font-size: 13px;
-            outline: none;
-
-            background: #f8fafc;
-        }
-
-        .search-container input:focus {
-            background: white;
-            border-color: #f97316;
-        }
-
-        .search-icon {
-            position: absolute;
-            left: 15px;
-            top: 12px;
-            color: #8a94a6;
-            font-size: 17px;
-        }
-
-
         /* TOP RIGHT */
 
         .top-right {
             display: flex;
             align-items: center;
             gap: 25px;
+            margin-left: auto;
+        }
+
+        .notification-wrap {
+            position: relative;
         }
 
         .notification {
             position: relative;
+            display: block;
+            padding: 0;
+            background: none;
+            border: none;
             font-size: 20px;
             color: #4b5563;
             cursor: pointer;
         }
 
+        .notification:hover,
+        .notification[aria-expanded="true"] {
+            color: #f97316;
+        }
+
+        .notification-popup {
+            display: none;
+            position: absolute;
+            top: calc(100% + 18px);
+            right: -10px;
+            z-index: 20;
+
+            width: 380px;
+            max-width: calc(100vw - 30px);
+
+            background: white;
+            border: 1px solid #e6e9ef;
+            border-radius: 12px;
+            box-shadow: 0 12px 32px rgba(16, 26, 43, 0.14);
+        }
+
+        .notification-popup.open {
+            display: block;
+        }
+
+        .popup-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 18px;
+            border-bottom: 1px solid #eef0f4;
+        }
+
+        .popup-header h3 {
+            font-size: 14px;
+        }
+
+        .popup-mark-all {
+            background: none;
+            border: none;
+            padding: 0;
+            font-family: inherit;
+            font-size: 11px;
+            font-weight: 600;
+            color: #f97316;
+            cursor: pointer;
+        }
+
+        .popup-mark-all[hidden] {
+            display: none;
+        }
+
+        .popup-list {
+            max-height: 380px;
+            overflow-y: auto;
+            padding: 0 18px;
+        }
+
+        .popup-item {
+            cursor: pointer;
+        }
+
+        .popup-item.read {
+            cursor: default;
+        }
+
+        .popup-item a {
+            display: inline-block;
+            margin-top: 4px;
+            font-size: 10px;
+            font-weight: 600;
+            color: #f97316;
+        }
+
+        .popup-empty {
+            padding: 30px 15px;
+            text-align: center;
+            color: #8b95a5;
+            font-size: 12px;
+        }
+
         .notification-badge {
             position: absolute;
             top: -7px;
-            right: -8px;
+            right: -10px;
 
-            width: 17px;
+            min-width: 17px;
             height: 17px;
+            padding: 0 4px;
+            border-radius: 9px;
 
             background: #ef4444;
             color: white;
-
-            border-radius: 50%;
 
             display: flex;
             align-items: center;
             justify-content: center;
 
             font-size: 9px;
+        }
+
+        .notification-badge.pop {
+            animation: badge-pop 0.5s ease;
+        }
+
+        @keyframes badge-pop {
+            0%   { transform: scale(1); }
+            40%  { transform: scale(1.5); }
+            100% { transform: scale(1); }
         }
 
         .user {
@@ -671,6 +736,19 @@
             flex-shrink: 0;
         }
 
+        .notification-dot.read {
+            background: #d8dee8;
+        }
+
+        .notification-item.read .notification-text {
+            color: #8b95a5;
+        }
+
+        .notification-title {
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+
         .notification-text {
             font-size: 11px;
             line-height: 1.4;
@@ -757,20 +835,12 @@
                 grid-template-columns: 1fr;
             }
 
-            .search-container {
-                width: 350px;
-            }
-
         }
 
         @media (max-width: 650px) {
 
             .topbar {
                 padding: 0 15px;
-            }
-
-            .search-container {
-                width: 200px;
             }
 
             .user-info {
@@ -943,22 +1013,6 @@
     <header class="topbar">
 
 
-        <!-- SEARCH BAR -->
-
-        <div class="search-container">
-
-            <div class="search-icon">
-                <i class="bi bi-search"></i>
-            </div>
-
-            <input
-                type="text"
-                placeholder="Search universities, courses, countries..."
-            >
-
-        </div>
-
-
         <!-- TOP RIGHT -->
 
         <div class="top-right">
@@ -966,12 +1020,32 @@
 
             <!-- NOTIFICATION -->
 
-            <div class="notification">
+            <div class="notification-wrap">
 
-                <i class="bi bi-bell-fill"></i>
+                <button type="button" class="notification" id="notificationToggle" title="Notifications" aria-haspopup="true" aria-expanded="false">
 
-                <div class="notification-badge">
-                    3
+                    <i class="bi bi-bell-fill"></i>
+
+                    <div class="notification-badge" id="notificationBadge" data-count="{{ $unreadNotificationCount }}" @if($unreadNotificationCount < 1) style="display:none" @endif>
+                        {{ $unreadNotificationCount > 9 ? '9+' : $unreadNotificationCount }}
+                    </div>
+
+                </button>
+
+                <div class="notification-popup" id="notificationPopup" role="dialog" aria-label="Notifications">
+
+                    <div class="popup-header">
+                        <h3>Notifications</h3>
+
+                        <button type="button" class="popup-mark-all" id="markAllRead" @if($unreadNotificationCount < 1) hidden @endif>
+                            Mark all as read
+                        </button>
+                    </div>
+
+                    <div class="popup-list" id="popupList">
+                        @include('student.partials.notification-popup-items')
+                    </div>
+
                 </div>
 
             </div>
@@ -1403,41 +1477,15 @@
                         Recent Notifications
                     </h2>
 
-                    @if($notifications->isNotEmpty())
-                        <a href="#" class="view-link">
-                            View All
-                        </a>
-                    @endif
+                    <a href="#" class="view-link" id="viewAllNotifications" @if($notifications->isEmpty()) style="display:none" @endif>
+                        View All
+                    </a>
 
                 </div>
 
-                @forelse($notifications as $notification)
-
-                    <div class="notification-item">
-
-                        <div class="notification-dot"></div>
-
-                        <div>
-
-                            <div class="notification-text">
-                                {{ $notification->message ?: $notification->title }}
-                            </div>
-
-                            <div class="notification-time">
-                                {{ $notification->created_at?->diffForHumans() }}
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                @empty
-
-                    <div class="empty-card-state">
-                        <p>No new notifications.</p>
-                    </div>
-
-                @endforelse
+                <div id="cardNotifications">
+                    @include('student.partials.notification-card-items')
+                </div>
 
             </div>
 
@@ -1526,6 +1574,157 @@
 
 </main>
 
+
+<script>
+(function () {
+    const toggle = document.getElementById('notificationToggle');
+    const popup = document.getElementById('notificationPopup');
+    const badge = document.getElementById('notificationBadge');
+    const markAll = document.getElementById('markAllRead');
+    const viewAll = document.getElementById('viewAllNotifications');
+    const popupList = document.getElementById('popupList');
+    const cardList = document.getElementById('cardNotifications');
+    const csrf = document.querySelector('meta[name="csrf-token"]').content;
+
+    function setOpen(open) {
+        popup.classList.toggle('open', open);
+        toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
+
+    function markItemsRead(id) {
+        document.querySelectorAll('[data-notif-id="' + id + '"]').forEach(function (el) {
+            el.classList.add('read');
+            const dot = el.querySelector('.notification-dot');
+            if (dot) dot.classList.add('read');
+        });
+    }
+
+    function post(url) {
+        return fetch(url, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': csrf,
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        }).then(function (response) {
+            if (!response.ok) throw new Error('Request failed');
+            return response.json();
+        });
+    }
+
+    toggle.addEventListener('click', function (event) {
+        event.stopPropagation();
+        setOpen(!popup.classList.contains('open'));
+    });
+
+    if (viewAll) {
+        viewAll.addEventListener('click', function (event) {
+            event.preventDefault();
+            event.stopPropagation();
+            setOpen(true);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    }
+
+    document.addEventListener('click', function (event) {
+        if (!popup.contains(event.target)) setOpen(false);
+    });
+
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape') setOpen(false);
+    });
+
+    // Delegated, because the list is re-rendered whenever new data arrives.
+    popupList.addEventListener('click', function (event) {
+        const item = event.target.closest('.popup-item');
+
+        if (!item || event.target.closest('a') || item.classList.contains('read')) return;
+
+        post(item.dataset.readUrl)
+            .then(function (data) {
+                markItemsRead(item.dataset.notifId);
+                setUnread(data.unread);
+            })
+            .catch(function () {});
+    });
+
+    markAll.addEventListener('click', function () {
+        post(@json(route('student.notifications.read-all')))
+            .then(function () {
+                popup.querySelectorAll('.popup-item').forEach(function (item) {
+                    markItemsRead(item.dataset.notifId);
+                });
+                setUnread(0);
+            })
+            .catch(function () {});
+    });
+
+
+    /* Live updates: poll for new notifications while the tab is visible. */
+
+    const FEED_URL = @json(route('student.notifications.feed'));
+    const POLL_MS = 10000;
+    let polling = false;
+    let timer = null;
+
+    function poll() {
+        if (polling || document.hidden) return Promise.resolve();
+        polling = true;
+
+        return fetch(FEED_URL, {
+            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+            cache: 'no-store'
+        }).then(function (response) {
+            // Logged out or session expired: stop quietly instead of erroring.
+            if (response.status === 401 || response.status === 403 || response.status === 419) {
+                clearInterval(timer);
+                throw new Error('stopped');
+            }
+            if (!response.ok) throw new Error('Request failed');
+            return response.json();
+        }).then(function (data) {
+            const previous = parseInt(badge.dataset.count || '0', 10);
+
+            if (popupList.innerHTML.trim() !== data.popup_html.trim()) {
+                const scroll = popupList.scrollTop;
+                popupList.innerHTML = data.popup_html;
+                popupList.scrollTop = scroll;
+            }
+
+            if (cardList.innerHTML.trim() !== data.card_html.trim()) {
+                cardList.innerHTML = data.card_html;
+            }
+
+            viewAll.style.display = data.has_any ? '' : 'none';
+            setUnread(data.unread);
+
+            if (data.unread > previous) {
+                badge.classList.remove('pop');
+                void badge.offsetWidth; // restart the animation
+                badge.classList.add('pop');
+            }
+        }).catch(function () {
+            // Network blips are fine; the next tick will try again.
+        }).then(function () {
+            polling = false;
+        });
+    }
+
+    function setUnread(count) {
+        badge.dataset.count = count;
+        badge.textContent = count > 9 ? '9+' : count;
+        badge.style.display = count > 0 ? 'flex' : 'none';
+        markAll.hidden = count < 1;
+    }
+
+    timer = setInterval(poll, POLL_MS);
+
+    document.addEventListener('visibilitychange', function () {
+        if (!document.hidden) poll();
+    });
+})();
+</script>
 
 </body>
 </html>
