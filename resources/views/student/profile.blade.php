@@ -109,6 +109,7 @@
         }
         .field textarea { resize: vertical; min-height: 80px; }
         .field-error { color: #c0362c; font-size: 12px; margin-top: 5px; }
+        .field-hint { display: block; color: #9aa2b0; font-size: 12px; margin-top: 5px; }
 
         .btn-primary {
             padding: 11px 22px; background: #f97316; color: white; border: none; border-radius: 8px;
@@ -150,7 +151,7 @@
 
     <div class="menu-section">
         <div class="menu-title">Study Abroad</div>
-        <a href="#" class="menu-item">
+        <a href="{{ route('student.applications.index') }}" class="menu-item">
             <div class="menu-icon"><i class="bi bi-file-earmark-text-fill"></i></div><span>Consultancy Application</span>
         </a>
         <a href="#" class="menu-item">
@@ -292,7 +293,9 @@
 
                         <div class="field">
                             <label for="phone">Phone number</label>
-                            <input type="text" id="phone" name="phone"
+                            <input type="tel" id="phone" name="phone"
+                                inputmode="numeric" pattern="[0-9]{10}" maxlength="10"
+                                oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10)"
                                 value="{{ old('phone', $student->user->phone ?? '') }}" placeholder="07XXXXXXXX">
                             @error('phone')<div class="field-error">{{ $message }}</div>@enderror
                         </div>
@@ -316,7 +319,9 @@
                         <div class="field">
                             <label for="date_of_birth">Date of birth</label>
                             <input type="date" id="date_of_birth" name="date_of_birth"
+                                max="{{ now()->subYears(16)->format('Y-m-d') }}"
                                 value="{{ old('date_of_birth', optional($student->date_of_birth)->format('Y-m-d')) }}">
+                            <span class="field-hint">You must be at least 16 years old.</span>
                             @error('date_of_birth')<div class="field-error">{{ $message }}</div>@enderror
                         </div>
 
@@ -362,7 +367,7 @@
 
                     <div class="field">
                         <label for="current_address">Current address</label>
-                        <textarea id="current_address" name="current_address">{{ old('current_address', $student->current_address) }}</textarea>
+                        <textarea id="current_address" name="current_address" maxlength="500">{{ old('current_address', $student->current_address) }}</textarea>
                         @error('current_address')<div class="field-error">{{ $message }}</div>@enderror
                     </div>
 

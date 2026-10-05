@@ -30,9 +30,11 @@ class AuthController extends Controller
             ->first();
 
         if (!$user || !Hash::check($credentials['password'], $user->password_hash)) {
-            return back()->withErrors([
-                'email' => 'Invalid email or password.',
-            ])->withInput();
+            return back()
+                ->withErrors([
+                    'email' => 'Invalid email or password.',
+                ])
+                ->withInput();
         }
 
         Auth::login($user);
@@ -64,9 +66,11 @@ class AuthController extends Controller
         $studentRole = Role::where('role_name', 'Student')->first();
 
         if (!$studentRole) {
-            return back()->withErrors([
-                'email' => 'Student role is not configured.',
-            ])->withInput();
+            return back()
+                ->withErrors([
+                    'email' => 'Student role is not configured.',
+                ])
+                ->withInput();
         }
 
         $user = User::create([

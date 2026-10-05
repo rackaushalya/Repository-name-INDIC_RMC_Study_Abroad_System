@@ -28,7 +28,7 @@ class StudentController extends Controller
 
         $recommendations = $student
             ? $student->recommendations()
-                ->with('course.university')
+                ->with('course.university.country')
                 ->latest('created_at')
                 ->get()
             : collect();
@@ -40,15 +40,137 @@ class StudentController extends Controller
                 ->get()
             : collect();
 
+        $fundRequirement = $student
+            ? $student->fundRequirements()
+                ->latest('generated_at')
+                ->first()
+            : null;
+
+        $notifications = $user
+            ? $user->notifications()
+                ->latest('created_at')
+                ->take(4)
+                ->get()
+            : collect();
+
         $profileCompletion = $this->profileCompletion($student);
+
+        $latestApplication = $applications->first();
+
+        $applicationTimeline = $this->applicationTimeline($latestApplication);
+
+        $completedSteps = collect($applicationTimeline)
+            ->where('completed', true)
+            ->count();
+
+        $timelineProgressPercent = $completedSteps > 1
+            ? (int) round((($completedSteps - 1) / (count($applicationTimeline) - 1)) * 100)
+            : 0;
+
+        $upcomingAppointments = $appointments
+            ->whereIn('appointment_status', ['Requested', 'Confirmed'])
+            ->filter(fn ($appointment) => $appointment->appointment_date
+                && $appointment->appointment_date->isFuture())
+            ->sortBy('appointment_date');
+
+        $nextAppointment = $upcomingAppointments->first();
+
+        $assignedConsultant = ($nextAppointment ?? $appointments->first())?->consultant;
 
         return view('student.dashboard', compact(
             'student',
             'applications',
             'recommendations',
             'appointments',
-            'profileCompletion'
+            'fundRequirement',
+            'notifications',
+            'profileCompletion',
+            'latestApplication',
+            'applicationTimeline',
+            'timelineProgressPercent',
+            'upcomingAppointments',
+            'nextAppointment',
+            'assignedConsultant'
         ));
+    }
+
+    /**
+     * Reduce an application's real status (and status history) down to the
+     * 5 milestone steps shown on the dashboard timeline: Submitted, Under
+     * Review, Consultant Assigned, Consultation, and Completed.
+     *
+     * @return array<int, array{label: string, date: ?\Carbon\Carbon, completed: bool, current: bool}>
+     */
+    private function applicationTimeline($application): array
+    {
+        $steps = [
+            1 => 'Submitted',
+            2 => 'Under Review',
+            3 => 'Consultant Assigned',
+            4 => 'Consultation',
+            5 => 'Completed',
+        ];
+
+        $statusToStep = [
+            'Submitted' => 1,
+            'Under Review' => 2,
+            'Consultant Assigned' => 3,
+            'Consultation Scheduled' => 4,
+            'Consultation Completed' => 4,
+            'Recommendation Provided' => 4,
+            'Follow-up Required' => 4,
+            'Completed' => 5,
+            'Rejected' => 5,
+            'Cancelled' => 5,
+        ];
+
+        if (!$application) {
+            return collect($steps)->map(fn ($label) => [
+                'label' => $label,
+                'date' => null,
+                'completed' => false,
+                'current' => false,
+            ])->all();
+        }
+
+        $isTerminalNegative = in_array(
+            $application->application_status,
+            ['Rejected', 'Cancelled'],
+            true
+        );
+
+        $currentStep = $statusToStep[$application->application_status] ?? 1;
+
+        $history = $application->statusHistory ?? collect();
+
+        return collect($steps)->map(function ($label, $stepNumber) use (
+            $application,
+            $statusToStep,
+            $history,
+            $currentStep,
+            $isTerminalNegative
+        ) {
+            $date = null;
+
+            if ($stepNumber === 1) {
+                $date = $application->submitted_at;
+            } else {
+                $matchingChange = $history
+                    ->filter(fn ($entry) => ($statusToStep[$entry->new_status] ?? null) === $stepNumber)
+                    ->sortByDesc('changed_at')
+                    ->first();
+
+                $date = $matchingChange?->changed_at;
+            }
+
+            return [
+                'label' => $label,
+                'date' => $date,
+                'completed' => $stepNumber <= $currentStep,
+                'current' => $stepNumber === $currentStep,
+                'failed' => $stepNumber === $currentStep && $isTerminalNegative,
+            ];
+        })->all();
     }
 
     /**
@@ -129,12 +251,16 @@ class StudentController extends Controller
         $validated = $request->validate([
             'first_name' => ['required', 'string', 'max:100'],
             'last_name' => ['nullable', 'string', 'max:100'],
-            'phone' => ['nullable', 'string', 'max:30'],
-            'date_of_birth' => ['nullable', 'date'],
+            'phone' => ['nullable', 'digits:10'],
+            'date_of_birth' => [
+                'nullable',
+                'date',
+                'before_or_equal:' . now()->subYears(16)->format('Y-m-d')
+            ],
             'gender' => ['nullable', 'in:Male,Female,Other'],
             'nationality' => ['nullable', 'string', 'max:100'],
             'passport_number' => ['nullable', 'string', 'max:100'],
-            'current_address' => ['nullable', 'string'],
+            'current_address' => ['nullable', 'string', 'max:500'],
             'city' => ['nullable', 'string', 'max:100'],
             'country' => ['nullable', 'string', 'max:100'],
         ]);

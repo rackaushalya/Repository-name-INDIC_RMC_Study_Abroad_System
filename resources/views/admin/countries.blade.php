@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>INDIC RMC | Country Management</title>
 
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
     <style>
         * {
             margin: 0;
@@ -13,8 +15,7 @@
         }
 
         body {
-            font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI",
-                         Roboto, Arial, sans-serif;
+            font-family: Arial, Helvetica, sans-serif;
             background: #f7f8fa;
             color: #172033;
         }
@@ -33,99 +34,83 @@
         }
 
         /* =====================================================
-           SIDEBAR (Exact match to Dashboard & Universities)
+           SIDEBAR (Canonical shell)
         ===================================================== */
         .sidebar {
-            width: 250px;
-            background: #111827;
-            color: #ffffff;
             position: fixed;
-            top: 0;
             left: 0;
-            bottom: 0;
+            top: 0;
+            width: 245px;
+            height: 100vh;
+            background: #101a2b;
+            color: white;
+            padding: 25px 15px;
             overflow-y: auto;
-            z-index: 100;
         }
 
-        .brand {
-            height: 76px;
-            display: flex;
-            align-items: center;
-            padding: 0 24px;
-            border-bottom: 1px solid #252d3b;
+        .logo {
+            padding: 0 12px;
+            margin-bottom: 35px;
         }
 
-        .brand-mark {
-            width: 38px;
-            height: 38px;
-            border-radius: 8px;
-            background: #f58220;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 13px;
+        .logo-main {
+            font-size: 25px;
             font-weight: 700;
-            margin-right: 11px;
-            color: #ffffff;
+            color: #f97316;
         }
 
-        .brand-name {
-            font-size: 17px;
-            font-weight: 700;
-            letter-spacing: -.3px;
-            color: #ffffff;
+        .logo-main span {
+            color: white;
         }
 
-        .brand-subtitle {
-            font-size: 10px;
-            color: #8c96a8;
-            margin-top: 2px;
+        .logo-subtitle {
+            font-size: 8px;
+            letter-spacing: 0.8px;
+            color: #aeb7c7;
+            margin-top: 4px;
         }
 
-        .nav {
-            padding: 20px 12px;
+        .menu-section {
+            margin-bottom: 25px;
         }
 
-        .nav-section {
+        .menu-title {
+            color: #7e8ba1;
             font-size: 10px;
             text-transform: uppercase;
-            color: #697386;
-            font-weight: 700;
-            letter-spacing: .8px;
-            padding: 0 12px;
-            margin: 18px 0 8px;
+            letter-spacing: 1px;
+            margin: 0 12px 10px;
         }
 
-        .nav-section:first-child {
-            margin-top: 0;
-        }
-
-        .nav-link {
-            height: 42px;
+        .menu-item {
             display: flex;
             align-items: center;
             gap: 12px;
-            padding: 0 12px;
+            padding: 11px 12px;
+            margin-bottom: 4px;
             border-radius: 7px;
-            color: #b9c0cc;
+            color: #cbd3df;
             font-size: 13px;
-            margin-bottom: 3px;
-            transition: all .2s ease;
+            transition: 0.2s;
         }
 
-        .nav-link:hover {
-            background: #1c2534;
-            color: #ffffff;
+        .menu-item:hover {
+            background: #1d2a40;
+            color: white;
         }
 
-        .nav-link.active {
-            background: #f58220;
-            color: #ffffff;
+        .menu-item.active {
+            background: #f97316;
+            color: white;
         }
 
-        .nav-icon {
-            width: 18px;
-            height: 18px;
+        .menu-icon {
+            width: 19px;
+            height: 19px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
             flex-shrink: 0;
         }
 
@@ -142,130 +127,85 @@
            MAIN
         ===================================================== */
         .main {
-            margin-left: 250px;
-            width: calc(100% - 250px);
+            margin-left: 245px;
+            width: calc(100% - 245px);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
         }
 
         /* =====================================================
-           TOPBAR (Exact match to Dashboard & Universities)
+           TOPBAR (Canonical shell)
         ===================================================== */
         .topbar {
-            height: 76px;
-            background: #ffffff;
-            border-bottom: 1px solid #e7e9ee;
+            height: 72px;
+            background: white;
+            border-bottom: 1px solid #e6e9ef;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 30px;
+            padding: 0 28px;
             position: sticky;
             top: 0;
-            z-index: 90;
+            z-index: 10;
         }
 
-        .search {
+        .search-box {
             width: 330px;
             position: relative;
         }
 
-        .search input {
+        .search-box input {
             width: 100%;
-            height: 40px;
-            border: 1px solid #e1e5eb;
+            padding: 11px 15px 11px 40px;
+            border: 1px solid #dce1e8;
             border-radius: 7px;
-            background: #fafbfc;
-            padding: 0 14px 0 38px;
-            font-size: 12px;
             outline: none;
-            transition: border-color .2s;
-        }
-
-        .search input:focus {
-            border-color: #f58220;
-            background: #ffffff;
-        }
-
-        .search svg {
-            position: absolute;
-            top: 12px;
-            left: 12px;
-            width: 16px;
-            height: 16px;
-            color: #8c96a8;
-        }
-
-        .topbar-right {
-            display: flex;
-            align-items: center;
-            gap: 22px;
-        }
-
-        .notification {
-            width: 36px;
-            height: 36px;
-            border-radius: 7px;
-            border: 1px solid #e4e7ec;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-            color: #4b5565;
-            cursor: pointer;
-            transition: all .2s ease;
-        }
-
-        .notification:hover {
+            font-size: 13px;
             background: #f8fafc;
-            border-color: #d0d5dd;
         }
 
-        .notification svg {
-            width: 17px;
-            height: 17px;
+        .search-box input:focus {
+            border-color: #f97316;
+            background: white;
         }
 
-        .notification-dot {
-            width: 7px;
-            height: 7px;
-            background: #f58220;
-            border-radius: 50%;
+        .search-icon {
             position: absolute;
-            top: 7px;
-            right: 7px;
-            border: 2px solid white;
+            left: 14px;
+            top: 11px;
+            color: #8a94a6;
         }
 
-        .profile {
+        .admin-profile {
             display: flex;
             align-items: center;
-            gap: 10px;
-            cursor: pointer;
+            gap: 12px;
         }
 
-        .profile-avatar {
-            width: 36px;
-            height: 36px;
+        .profile-circle {
+            width: 38px;
+            height: 38px;
             border-radius: 50%;
-            background: #f58220;
-            color: #ffffff;
+            background: #f97316;
+            color: white;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: 700;
+            font-weight: bold;
             font-size: 13px;
         }
 
-        .profile-name {
-            font-size: 12px;
-            font-weight: 600;
-            color: #172033;
+        .profile-info strong {
+            display: block;
+            font-size: 13px;
         }
 
-        .profile-role {
-            font-size: 10px;
-            color: #8c96a8;
+        .profile-info span {
+            display: block;
+            font-size: 11px;
+            color: #8a94a6;
+            margin-top: 3px;
         }
 
         /* =====================================================
@@ -294,12 +234,12 @@
 
         .title-badge {
             background: #fff2e8;
-            color: #f58220;
+            color: #f97316;
             font-size: 11px;
             font-weight: 600;
             padding: 3px 10px;
             border-radius: 20px;
-            border: 1px solid rgba(245, 130, 32, 0.2);
+            border: 1px solid rgba(249, 115, 22, 0.2);
         }
 
         .page-header p {
@@ -354,9 +294,9 @@
         }
 
         .search-control input:focus {
-            border-color: #f58220;
+            border-color: #f97316;
             background: #ffffff;
-            box-shadow: 0 0 0 3px rgba(245, 130, 32, 0.1);
+            box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
         }
 
         .search-control svg {
@@ -382,7 +322,7 @@
         }
 
         .filter-select:focus {
-            border-color: #f58220;
+            border-color: #f97316;
             background: #ffffff;
         }
 
@@ -421,7 +361,7 @@
         }
 
         .btn-orange {
-            background: #f58220;
+            background: #f97316;
             color: #ffffff;
             border: none;
             height: 38px;
@@ -502,7 +442,7 @@
         }
 
         table.uni-table th.sortable:hover {
-            color: #f58220;
+            color: #f97316;
         }
 
         table.uni-table td {
@@ -604,7 +544,7 @@
         }
 
         .guidelines-summary:hover {
-            color: #f58220;
+            color: #f97316;
         }
 
         .actions-cell {
@@ -832,8 +772,8 @@
         }
 
         .form-input:focus, .form-select-modal:focus {
-            border-color: #f58220;
-            box-shadow: 0 0 0 3px rgba(245, 130, 32, 0.1);
+            border-color: #f97316;
+            box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
         }
 
         .form-textarea {
@@ -851,8 +791,8 @@
         }
 
         .form-textarea:focus {
-            border-color: #f58220;
-            box-shadow: 0 0 0 3px rgba(245, 130, 32, 0.1);
+            border-color: #f97316;
+            box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
         }
 
         /* Desktop Country Image Upload Styling (from Universities) */
@@ -861,8 +801,8 @@
         }
 
         .country-img-dropzone:hover, .country-img-dropzone.dragover {
-            border-color: #f58220 !important;
-            box-shadow: 0 0 0 3px rgba(245, 130, 32, 0.15) !important;
+            border-color: #f97316 !important;
+            box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.15) !important;
             background: #fffaf5 !important;
         }
 
@@ -928,10 +868,13 @@
         /* Responsive */
         @media (max-width: 750px) {
             .sidebar { width: 70px; }
-            .brand { justify-content: center; padding: 0; }
-            .brand-mark { margin: 0; }
-            .brand-name, .brand-subtitle, .nav-section, .nav-link span, .nav-badge { display: none; }
-            .nav-link { justify-content: center; }
+            .logo-subtitle,
+            .logo-main span,
+            .menu-title,
+            .menu-item span:not(.menu-icon) { display: none; }
+            .logo { text-align: center; padding: 0; }
+            .logo-main { font-size: 17px; }
+            .menu-item { justify-content: center; }
             .main { margin-left: 70px; width: calc(100% - 70px); }
             .content { padding: 16px; }
             .form-grid { grid-template-columns: 1fr; }
@@ -943,158 +886,82 @@
 <div class="app">
 
     <!-- =====================================================
-         SIDEBAR (Group Repo Standard with All Sections)
+         SIDEBAR
     ====================================================== -->
     <aside class="sidebar">
-        <div class="brand">
-            <div class="brand-mark">IR</div>
-            <div>
-                <div class="brand-name">INDIC RMC</div>
-                <div class="brand-subtitle">Administration Portal</div>
-            </div>
+
+        <div class="logo">
+            <div class="logo-main">INDIC <span>RMC</span></div>
+            <div class="logo-subtitle">ADMINISTRATION PORTAL</div>
         </div>
 
-        <nav class="nav">
-            <!-- SECTION 1: OVERVIEW -->
-            <div class="nav-section">Overview</div>
-            <a href="{{ url('/admin/dashboard') }}" class="nav-link">
-                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                    <rect x="3" y="3" width="7" height="7"/>
-                    <rect x="14" y="3" width="7" height="7"/>
-                    <rect x="3" y="14" width="7" height="7"/>
-                    <rect x="14" y="14" width="7" height="7"/>
-                </svg>
+        <div class="menu-section">
+            <div class="menu-title">OVERVIEW</div>
+
+            <a href="{{ route('admin.dashboard') }}" class="menu-item">
+                <span class="menu-icon"><i class="bi bi-grid-1x2-fill"></i></span>
                 <span>Dashboard</span>
             </a>
+        </div>
 
-            <!-- SECTION 2: MANAGEMENT -->
-            <div class="nav-section">Management</div>
-            <a href="#" class="nav-link">
-                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
-                    <circle cx="9" cy="7" r="4"/>
-                    <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
-                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                </svg>
+        <div class="menu-section">
+            <div class="menu-title">MANAGEMENT</div>
+
+            <a href="{{ route('admin.users') }}" class="menu-item">
+                <span class="menu-icon"><i class="bi bi-people-fill"></i></span>
+                <span>Users</span>
+            </a>
+
+            <a href="{{ route('admin.students') }}" class="menu-item">
+                <span class="menu-icon"><i class="bi bi-person-fill"></i></span>
                 <span>Students</span>
             </a>
 
-            <a href="#" class="nav-link">
-                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                    <circle cx="12" cy="7" r="4"/>
-                    <path d="M5.5 21a6.5 6.5 0 0 1 13 0"/>
-                </svg>
+            <a href="{{ route('admin.consultants') }}" class="menu-item">
+                <span class="menu-icon"><i class="bi bi-person-badge-fill"></i></span>
                 <span>Consultants</span>
             </a>
 
-            <a href="#" class="nav-link">
-                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                    <path d="M6 2h12v20H6z"/>
-                    <path d="M9 6h6"/>
-                    <path d="M9 10h6"/>
-                    <path d="M9 14h4"/>
-                </svg>
+            <a href="{{ route('admin.applications-list') }}" class="menu-item">
+                <span class="menu-icon"><i class="bi bi-file-earmark-text-fill"></i></span>
                 <span>Applications</span>
             </a>
 
-            <a href="#" class="nav-link">
-                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                    <rect x="3" y="4" width="18" height="17" rx="2"/>
-                    <path d="M16 2v4"/>
-                    <path d="M8 2v4"/>
-                    <path d="M3 10h18"/>
-                </svg>
+            <a href="{{ route('admin.appointments-list') }}" class="menu-item">
+                <span class="menu-icon"><i class="bi bi-calendar2-check-fill"></i></span>
                 <span>Appointments</span>
             </a>
+        </div>
 
-            <!-- SECTION 3: STUDY ABROAD -->
-            <div class="nav-section">Study Abroad</div>
-            <!-- ACTIVE ITEM: Countries -->
-            <a href="{{ url('/admin/countries') }}" class="nav-link active">
-                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                    <circle cx="12" cy="12" r="9"/>
-                    <path d="M3 12h18"/>
-                    <path d="M12 3c3 3 3 15 0 18"/>
-                    <path d="M12 3c-3 3-3 15 0 18"/>
-                </svg>
+        <div class="menu-section">
+            <div class="menu-title">STUDY ABROAD</div>
+
+            <a href="{{ route('admin.countries-list') }}" class="menu-item active">
+                <span class="menu-icon"><i class="bi bi-globe-americas"></i></span>
                 <span>Countries</span>
                 <span class="nav-badge" id="navCountryCountBadge">12</span>
             </a>
 
-            <a href="{{ url('/admin/universities') }}" class="nav-link">
-                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                    <path d="M3 21h18"/>
-                    <path d="M5 21V8l7-5 7 5v13"/>
-                    <path d="M9 21v-6h6v6"/>
-                </svg>
+            <a href="{{ route('admin.universities-list') }}" class="menu-item">
+                <span class="menu-icon"><i class="bi bi-bank"></i></span>
                 <span>Universities</span>
             </a>
 
-            <a href="{{ url('/admin/courses') }}" class="nav-link">
-                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                    <path d="M3 10l9-6 9 6"/>
-                    <path d="M5 10v9h14v-9"/>
-                    <path d="M9 19v-5h6v5"/>
-                </svg>
+            <a href="{{ route('admin.courses-list') }}" class="menu-item">
+                <span class="menu-icon"><i class="bi bi-mortarboard-fill"></i></span>
                 <span>Courses</span>
             </a>
+        </div>
 
-            <a href="{{ url('/admin/scholarships') }}" class="nav-link">
-                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                    <path d="M12 3v18"/>
-                    <path d="M17 7H9.5a3 3 0 0 0 0 6H14.5a3 3 0 0 1 0 6H7"/>
-                </svg>
-                <span>Scholarships</span>
-                <span class="nav-badge" id="navScholarshipCountBadge">14</span>
-            </a>
+        <div class="menu-section">
+            <div class="menu-title">SYSTEM</div>
 
-            <a href="#" class="nav-link">
-                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                    <path d="M5 12l4 4L19 6"/>
-                </svg>
-                <span>Eligibility Rules</span>
+            <a href="{{ route('admin.users') }}" class="menu-item">
+                <span class="menu-icon"><i class="bi bi-gear-fill"></i></span>
+                <span>User Management</span>
             </a>
+        </div>
 
-            <!-- SECTION 4: CRM & INTELLIGENCE -->
-            <div class="nav-section">CRM & Intelligence</div>
-            <a href="#" class="nav-link">
-                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                    <path d="M3 12h18"/>
-                    <path d="M5 12a7 7 0 0 1 14 0"/>
-                    <path d="M5 12a7 7 0 0 0 14 0"/>
-                </svg>
-                <span>CRM</span>
-            </a>
-
-            <a href="#" class="nav-link">
-                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                    <path d="M4 19V5"/>
-                    <path d="M4 19h17"/>
-                    <path d="M7 15l4-5 3 3 5-7"/>
-                </svg>
-                <span>Reports & Analytics</span>
-            </a>
-
-            <!-- SECTION 5: SYSTEM (Settings & Audit Logs) -->
-            <div class="nav-section">System</div>
-            <a href="#" class="nav-link">
-                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                    <circle cx="12" cy="12" r="3"/>
-                    <path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-1.5 1.5-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1 1.55V20h-2v-.41a1.7 1.7 0 0 0-1-1.55 1.7 1.7 0 0 0-1.88.34l-.06.06-1.5-1.5.06-.06A1.7 1.7 0 0 0 7.4 15a1.7 1.7 0 0 0-1.55-1H5v-2h.85a1.7 1.7 0 0 0 1.55-1 1.7 1.7 0 0 0-.34-1.88L7 9.06l1.5-1.5.06.06a1.7 1.7 0 0 0 1.88.34 1.7 1.7 0 0 0 1-1.55V6h2v.41a1.7 1.7 0 0 0 1 1.55 1.7 1.7 0 0 0 1.88-.34l.06-.06 1.5 1.5-.06.06a1.7 1.7 0 0 0-.34 1.88 1.7 1.7 0 0 0 1.55 1H20v2h-.41a1.7 1.7 0 0 0-1.55 1z"/>
-                </svg>
-                <span>Settings</span>
-            </a>
-
-            <a href="#" class="nav-link">
-                <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                    <rect x="4" y="4" width="16" height="16" rx="2"/>
-                    <path d="M8 8h8"/>
-                    <path d="M8 12h8"/>
-                    <path d="M8 16h5"/>
-                </svg>
-                <span>Audit Logs</span>
-            </a>
-        </nav>
     </aside>
 
     <!-- =====================================================
@@ -1102,35 +969,24 @@
     ====================================================== -->
     <main class="main">
 
-        <!-- TOPBAR (Exact match to Dashboard & Universities) -->
+        <!-- TOPBAR -->
         <header class="topbar">
-            <div class="search">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="11" cy="11" r="7"/>
-                    <path d="m20 20-4-4"/>
-                </svg>
-                <input type="text" id="topbarSearchInput" placeholder="Quick search countries, capitals, visa guidelines...">
+
+            <div class="search-box">
+                <span class="search-icon"><i class="bi bi-search"></i></span>
+                <input type="text" id="topbarSearchInput" placeholder="Search students, applications...">
             </div>
 
-            <div class="topbar-right">
-                <!-- Shared 36x36px Notification Bell Icon -->
-                <div class="notification" title="Notifications">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                        <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/>
-                        <path d="M10 21h4"/>
-                    </svg>
-                    <span class="notification-dot"></span>
+            <div class="admin-profile">
+                <div class="profile-circle">
+                    {{ strtoupper(substr(auth()->user()->first_name ?? 'A', 0, 1)) }}
                 </div>
-
-                <!-- Admin Profile matching layout -->
-                <div class="profile">
-                    <div class="profile-avatar">A</div>
-                    <div>
-                        <div class="profile-name">Admin User</div>
-                        <div class="profile-role">Administrator</div>
-                    </div>
+                <div class="profile-info">
+                    <strong>{{ auth()->user()->first_name ?? 'Admin' }} {{ auth()->user()->last_name ?? 'User' }}</strong>
+                    <span>Administrator</span>
                 </div>
             </div>
+
         </header>
 
         <!-- CONTENT SECTION -->

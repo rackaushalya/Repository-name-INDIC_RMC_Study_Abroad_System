@@ -140,48 +140,11 @@ Route::middleware('auth')
         Route::get('/applications', [StudentController::class, 'applications'])
             ->name('applications');
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | Student Preferences
-        |--------------------------------------------------------------------------
-        */
-
         Route::get('/recommendations', [StudentController::class, 'recommendations'])
             ->name('recommendations');
 
         Route::get('/appointments', [StudentController::class, 'appointments'])
             ->name('appointments');
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Student Applications
-        |--------------------------------------------------------------------------
-        */
-
-        Route::get('/applications', [StudentController::class, 'applications'])
-            ->name('applications');
-
-        Route::resource(
-            'applications',
-            ApplicationController::class
-        )->except(['destroy']);
-
-        Route::delete(
-            '/applications/{application}',
-            [ApplicationController::class, 'destroy']
-        )->name('applications.destroy');
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Student Recommendations
-        |--------------------------------------------------------------------------
-        */
-
-        Route::get('/recommendations', [StudentController::class, 'recommendations'])
-            ->name('recommendations');
 
 
         /*
@@ -208,7 +171,6 @@ Route::middleware('auth')
             'deleteAcademic'
         ])->name('qualifications.academic.delete');
 
-
         Route::post('/qualifications/english', [
             QualificationController::class,
             'storeEnglish'
@@ -223,29 +185,6 @@ Route::middleware('auth')
             QualificationController::class,
             'deleteEnglish'
         ])->name('qualifications.english.delete');
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Academic Qualifications
-        |--------------------------------------------------------------------------
-        */
-
-        Route::post('/qualifications/academic', [
-            QualificationController::class,
-            'storeAcademic'
-        ])->name('qualifications.academic.store');
-
-        Route::put('/qualifications/academic/{qualification}', [
-            QualificationController::class,
-            'updateAcademic'
-        ])->name('qualifications.academic.update');
-
-        Route::delete('/qualifications/academic/{qualification}', [
-            QualificationController::class,
-            'deleteAcademic'
-        ])->name('qualifications.academic.delete');
-
 
         Route::post('/qualifications/work-experience', [
             QualificationController::class,
@@ -430,6 +369,12 @@ Route::prefix('admin')
     ->name('admin.')
     ->group(function () {
 
+        /*
+        |--------------------------------------------------------------------------
+        | Dashboard
+        |--------------------------------------------------------------------------
+        */
+
         Route::get(
             '/dashboard',
             [AdminController::class, 'dashboard']
@@ -458,7 +403,7 @@ Route::prefix('admin')
             [AdminController::class, 'users']
         )->name('users');
 
-        // User Management - Create page
+        // User Management - Create
         Route::get(
             '/users/create',
             [AdminController::class, 'createUser']
@@ -476,7 +421,7 @@ Route::prefix('admin')
             [AdminController::class, 'showUser']
         )->name('users.show');
 
-        // User Management - Edit page
+        // User Management - Edit
         Route::get(
             '/users/{user}/edit',
             [AdminController::class, 'editUser']
@@ -503,14 +448,70 @@ Route::prefix('admin')
 
         /*
         |--------------------------------------------------------------------------
-        | Other Admin Lists
+        | Student Management
         |--------------------------------------------------------------------------
         */
 
+        // Student List
         Route::get(
             '/students',
             [AdminController::class, 'students']
         )->name('students');
+
+        // Student Export
+        Route::get(
+            '/students/export',
+            [AdminController::class, 'exportStudents']
+        )->name('students.export');
+
+        // Student Create
+        Route::get(
+            '/students/create',
+            [AdminController::class, 'createStudent']
+        )->name('students.create');
+
+        // Student Store
+        Route::post(
+            '/students',
+            [AdminController::class, 'storeStudent']
+        )->name('students.store');
+
+        // Student View
+        Route::get(
+            '/students/{student}',
+            [AdminController::class, 'showStudent']
+        )->name('students.show');
+
+        // Student Edit
+        Route::get(
+            '/students/{student}/edit',
+            [AdminController::class, 'editStudent']
+        )->name('students.edit');
+
+        // Student Update
+        Route::put(
+            '/students/{student}',
+            [AdminController::class, 'updateStudent']
+        )->name('students.update');
+
+        // Student Change Status
+        Route::patch(
+            '/students/{student}/status',
+            [AdminController::class, 'updateStudentStatus']
+        )->name('students.status');
+
+        // Student Delete
+        Route::delete(
+            '/students/{student}',
+            [AdminController::class, 'destroyStudent']
+        )->name('students.destroy');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Other Admin Lists
+        |--------------------------------------------------------------------------
+        */
 
         Route::get(
             '/consultants',
@@ -544,24 +545,10 @@ Route::prefix('admin')
             [AdminController::class, 'applications']
         )->name('applications-list');
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | Application Details
-        |--------------------------------------------------------------------------
-        */
-
         Route::get(
             '/applications-list/{application}',
             [AdminController::class, 'applicationShow']
         )->name('applications-show');
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Update Application Status
-        |--------------------------------------------------------------------------
-        */
 
         Route::patch(
             '/applications-list/{application}/status',
@@ -571,7 +558,7 @@ Route::prefix('admin')
 
         /*
         |--------------------------------------------------------------------------
-        | Appointments List
+        | Appointments
         |--------------------------------------------------------------------------
         */
 
