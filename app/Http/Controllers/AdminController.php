@@ -8,6 +8,7 @@ use App\Models\Appointment;
 use App\Models\Consultant;
 use App\Models\Country;
 use App\Models\Course;
+use App\Models\Notification;
 use App\Models\Role;
 use App\Models\Student;
 use App\Models\University;
@@ -16,6 +17,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Password;
 
 class AdminController extends Controller
 {
@@ -684,26 +686,36 @@ class AdminController extends Controller
     public function storeStudent(Request $request)
     {
         $validated = $request->validate([
-            'first_name' => ['required', 'string', 'max:100'],
-            'last_name' => ['nullable', 'string', 'max:100'],
-            'email' => ['required', 'email', 'max:255', 'unique:users,email'],
+            'first_name' => ['required', 'string', 'min:2', 'max:100', 'regex:/^[\p{L}][\p{L}\s.\'\-]*$/u'],
+            'last_name' => ['nullable', 'string', 'max:100', 'regex:/^[\p{L}][\p{L}\s.\'\-]*$/u'],
+            'email' => ['required', 'email', 'max:255', 'regex:/^[^@\s]+@[^@\s]+\.[A-Za-z]{2,}$/', 'unique:users,email'],
             'phone' => ['nullable', 'digits:10'],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'password' => ['required', 'string', 'max:72', 'confirmed', Password::min(8)->mixedCase()->numbers()],
             'account_status' => ['required', 'in:active,inactive'],
             'date_of_birth' => [
                 'nullable',
                 'date',
+                'after_or_equal:1900-01-01',
                 'before_or_equal:' . now()->subYears(16)->format('Y-m-d')
             ],
             'gender' => ['nullable', 'in:Male,Female,Other'],
-            'nationality' => ['nullable', 'string', 'max:100'],
-            'passport_number' => ['nullable', 'string', 'max:100'],
-            'current_address' => ['nullable', 'string', 'max:500'],
-            'city' => ['nullable', 'string', 'max:100'],
+            'nationality' => ['nullable', 'string', 'max:100', 'regex:/^[\p{L}][\p{L}\s.\'\-]*$/u'],
+            'passport_number' => ['nullable', 'string', 'max:100', 'regex:/^[A-Za-z0-9]+$/'],
+            'current_address' => ['nullable', 'string', 'min:5', 'max:500'],
+            'city' => ['nullable', 'string', 'max:100', 'regex:/^[\p{L}][\p{L}\s.\'\-]*$/u'],
             'country' => [
                 'nullable',
                 Rule::in(Country::pluck('country_name'))
             ],
+        ], [
+            'first_name.regex' => 'The first name may only contain letters, spaces and . \' -',
+            'last_name.regex' => 'The last name may only contain letters, spaces and . \' -',
+            'email.regex' => 'Please enter a valid email address.',
+            'nationality.regex' => 'The nationality may only contain letters, spaces and . \' -',
+            'city.regex' => 'The city may only contain letters, spaces and . \' -',
+            'passport_number.regex' => 'The passport number may only contain letters and numbers.',
+            'date_of_birth.before_or_equal' => 'The student must be at least 16 years old.',
+            'date_of_birth.after_or_equal' => 'Please enter a valid date of birth.',
         ]);
 
         $studentRole = Role::where('role_name', 'Student')->first();
@@ -771,31 +783,42 @@ class AdminController extends Controller
         }
 
         $validated = $request->validate([
-            'first_name' => ['required', 'string', 'max:100'],
-            'last_name' => ['nullable', 'string', 'max:100'],
+            'first_name' => ['required', 'string', 'min:2', 'max:100', 'regex:/^[\p{L}][\p{L}\s.\'\-]*$/u'],
+            'last_name' => ['nullable', 'string', 'max:100', 'regex:/^[\p{L}][\p{L}\s.\'\-]*$/u'],
             'email' => [
                 'required',
                 'email',
                 'max:255',
+                'regex:/^[^@\s]+@[^@\s]+\.[A-Za-z]{2,}$/',
                 'unique:users,email,' . $student->user->user_id . ',user_id'
             ],
             'phone' => ['nullable', 'digits:10'],
-            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
+            'password' => ['nullable', 'string', 'max:72', 'confirmed', Password::min(8)->mixedCase()->numbers()],
             'account_status' => ['required', 'in:active,inactive'],
             'date_of_birth' => [
                 'nullable',
                 'date',
+                'after_or_equal:1900-01-01',
                 'before_or_equal:' . now()->subYears(16)->format('Y-m-d')
             ],
             'gender' => ['nullable', 'in:Male,Female,Other'],
-            'nationality' => ['nullable', 'string', 'max:100'],
-            'passport_number' => ['nullable', 'string', 'max:100'],
-            'current_address' => ['nullable', 'string', 'max:500'],
-            'city' => ['nullable', 'string', 'max:100'],
+            'nationality' => ['nullable', 'string', 'max:100', 'regex:/^[\p{L}][\p{L}\s.\'\-]*$/u'],
+            'passport_number' => ['nullable', 'string', 'max:100', 'regex:/^[A-Za-z0-9]+$/'],
+            'current_address' => ['nullable', 'string', 'min:5', 'max:500'],
+            'city' => ['nullable', 'string', 'max:100', 'regex:/^[\p{L}][\p{L}\s.\'\-]*$/u'],
             'country' => [
                 'nullable',
                 Rule::in(Country::pluck('country_name'))
             ],
+        ], [
+            'first_name.regex' => 'The first name may only contain letters, spaces and . \' -',
+            'last_name.regex' => 'The last name may only contain letters, spaces and . \' -',
+            'email.regex' => 'Please enter a valid email address.',
+            'nationality.regex' => 'The nationality may only contain letters, spaces and . \' -',
+            'city.regex' => 'The city may only contain letters, spaces and . \' -',
+            'passport_number.regex' => 'The passport number may only contain letters and numbers.',
+            'date_of_birth.before_or_equal' => 'The student must be at least 16 years old.',
+            'date_of_birth.after_or_equal' => 'Please enter a valid date of birth.',
         ]);
 
         $student->user->first_name = $validated['first_name'];
@@ -1030,7 +1053,7 @@ class AdminController extends Controller
         $validated = $request->validate([
             'application_status' => [
                 'required',
-                'in:Submitted,Under Review,Approved,Rejected,Cancelled'
+                Rule::in(Application::STATUSES)
             ],
 
             'remarks' => [
@@ -1095,6 +1118,33 @@ class AdminController extends Controller
 
             'changed_at' => now(),
         ]);
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Notify the student
+        |--------------------------------------------------------------------------
+        */
+
+        $studentUserId = $application->student?->user_id;
+
+        if ($studentUserId) {
+            $message = "Your application #{$application->application_id} has moved from {$oldStatus} to {$newStatus}.";
+
+            if (!empty($validated['remarks'])) {
+                $message .= " Remarks: {$validated['remarks']}";
+            }
+
+            Notification::create([
+                'user_id' => $studentUserId,
+                'title' => "Application {$newStatus}",
+                'message' => $message,
+                'notification_type' => 'application_status',
+                'related_application_id' => $application->application_id,
+                'is_read' => false,
+                'created_at' => now(),
+            ]);
+        }
 
 
         return redirect()

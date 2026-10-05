@@ -230,6 +230,12 @@
 
         @if ($student)
 
+            @include('student.partials.tips-card', [
+                'tips' => $profileTips,
+                'tipsTitle' => 'Profile strength tips',
+                'tipsSubtitle' => 'Small fixes that make your application stronger.',
+            ])
+
             <div class="card">
                 <div class="profile-banner">
                     @if ($student->user->profile_image_url ?? null)
@@ -346,7 +352,11 @@
                         <div class="field">
                             <label for="passport_number">Passport number</label>
                             <input type="text" id="passport_number" name="passport_number"
+                                maxlength="100" pattern="[A-Za-z0-9]+"
+                                title="Only letters and numbers are allowed"
+                                oninput="this.value = this.value.replace(/[^A-Za-z0-9]/g, '')"
                                 value="{{ old('passport_number', $student->passport_number) }}">
+                            <span class="field-hint">Letters and numbers only.</span>
                             @error('passport_number')<div class="field-error">{{ $message }}</div>@enderror
                         </div>
 

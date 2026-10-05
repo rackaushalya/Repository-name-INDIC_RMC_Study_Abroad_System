@@ -66,6 +66,7 @@
         .field input:focus { outline: none; border-color: #f97316; background: white; }
         .field-error { color: #c0362c; font-size: 12px; margin-top: 5px; }
 
+        .field-hint { display: block; color: #9aa2b0; font-size: 12px; margin-top: 5px; }
         .password-field { position: relative; }
         .password-field input { padding-right: 42px; }
         .password-toggle {
@@ -205,7 +206,7 @@
                 <div class="field">
                     <label for="current_password">Current password</label>
                     <div class="password-field">
-                        <input type="password" id="current_password" name="current_password" required>
+                        <input type="password" id="current_password" name="current_password" required maxlength="255" autocomplete="current-password">
                         <button type="button" class="password-toggle" data-target="current_password" aria-label="Show password">
                             <i class="bi bi-eye"></i>
                         </button>
@@ -216,18 +217,19 @@
                 <div class="field">
                     <label for="password">New password</label>
                     <div class="password-field">
-                        <input type="password" id="password" name="password" required>
+                        <input type="password" id="password" name="password" required minlength="8" maxlength="72" autocomplete="new-password">
                         <button type="button" class="password-toggle" data-target="password" aria-label="Show password">
                             <i class="bi bi-eye"></i>
                         </button>
                     </div>
+                    <span class="field-hint">At least 8 characters with an uppercase letter, a lowercase letter and a number.</span>
                     @error('password')<div class="field-error">{{ $message }}</div>@enderror
                 </div>
 
                 <div class="field">
                     <label for="password_confirmation">Confirm new password</label>
                     <div class="password-field">
-                        <input type="password" id="password_confirmation" name="password_confirmation" required>
+                        <input type="password" id="password_confirmation" name="password_confirmation" required maxlength="72" autocomplete="new-password">
                         <button type="button" class="password-toggle" data-target="password_confirmation" aria-label="Show password">
                             <i class="bi bi-eye"></i>
                         </button>
@@ -251,7 +253,7 @@
                 <div class="field" style="max-width: 320px;">
                     <label for="confirm_password">Confirm your password</label>
                     <div class="password-field">
-                        <input type="password" id="confirm_password" name="confirm_password" required>
+                        <input type="password" id="confirm_password" name="confirm_password" required maxlength="255" autocomplete="current-password">
                         <button type="button" class="password-toggle" data-target="confirm_password" aria-label="Show password">
                             <i class="bi bi-eye"></i>
                         </button>
@@ -280,6 +282,29 @@
             btn.setAttribute('aria-label', isHidden ? 'Hide password' : 'Show password');
         });
     });
+
+    var passwordForm = document.getElementById('password').form;
+    var curPw = document.getElementById('current_password');
+    var newPw = document.getElementById('password');
+    var confPw = document.getElementById('password_confirmation');
+
+    function checkPasswordForm() {
+        newPw.setCustomValidity('');
+        confPw.setCustomValidity('');
+
+        if (newPw.value && !(/[a-z]/.test(newPw.value) && /[A-Z]/.test(newPw.value) && /[0-9]/.test(newPw.value))) {
+            newPw.setCustomValidity('Use at least one uppercase letter, one lowercase letter and one number.');
+        } else if (newPw.value && newPw.value === curPw.value) {
+            newPw.setCustomValidity('The new password must be different from your current password.');
+        }
+
+        if (confPw.value && confPw.value !== newPw.value) {
+            confPw.setCustomValidity('The passwords do not match.');
+        }
+    }
+
+    [curPw, newPw, confPw].forEach(function (el) { el.addEventListener('input', checkPasswordForm); });
+    passwordForm.addEventListener('submit', checkPasswordForm);
 </script>
 
 </body>

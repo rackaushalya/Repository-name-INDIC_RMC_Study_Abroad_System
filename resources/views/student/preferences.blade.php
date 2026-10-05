@@ -145,6 +145,13 @@
             </div>
         @endif
 
+        @include('student.partials.tips-card', [
+            'tips' => $preferenceTips,
+            'tipsTitle' => 'Smart tips',
+            'tipsSubtitle' => 'Updates as you change your preferences.',
+            'liveUrl' => route('student.preferences.tips'),
+        ])
+
         <form method="POST" action="{{ route('student.preferences.update') }}">
             @csrf
             @method('PUT')
@@ -173,7 +180,9 @@
                         <label for="preferred_course_field">Preferred field of study</label>
                         <input type="text" id="preferred_course_field" name="preferred_course_field"
                             value="{{ old('preferred_course_field', $preferences?->preferred_course_field) }}"
-                            placeholder="e.g. Computer Science, Business">
+                            placeholder="e.g. Computer Science, Business"
+                            maxlength="255" pattern="[A-Za-z][A-Za-z\s&amp;,.\-\/()]*"
+                            title="Letters, spaces and & , . - / ( ) only">
                         @error('preferred_course_field')<div class="field-error">{{ $message }}</div>@enderror
                     </div>
 
@@ -192,7 +201,9 @@
                         <label for="preferred_intake">Preferred intake</label>
                         <input type="text" id="preferred_intake" name="preferred_intake"
                             value="{{ old('preferred_intake', $preferences?->preferred_intake) }}"
-                            placeholder="e.g. September 2027">
+                            placeholder="e.g. September 2027"
+                            maxlength="100" pattern="[A-Za-z0-9][A-Za-z0-9\s,\-\/]*"
+                            title="Letters, numbers, spaces and , - / only">
                         @error('preferred_intake')<div class="field-error">{{ $message }}</div>@enderror
                     </div>
 
@@ -211,20 +222,26 @@
                         <label for="preferred_duration">Preferred duration</label>
                         <input type="text" id="preferred_duration" name="preferred_duration"
                             value="{{ old('preferred_duration', $preferences?->preferred_duration) }}"
-                            placeholder="e.g. 2 years">
+                            placeholder="e.g. 2 years"
+                            maxlength="100" pattern="\d+(\.\d+)?(\s*-\s*\d+(\.\d+)?)?\s*([Ww]eeks?|[Mm]onths?|[Yy]ears?)"
+                            title="A number followed by weeks, months or years (e.g. 2 years)">
                         @error('preferred_duration')<div class="field-error">{{ $message }}</div>@enderror
                     </div>
 
                     <div class="field">
                         <label for="min_budget">Minimum budget (per year)</label>
-                        <input type="number" step="0.01" min="0" id="min_budget" name="min_budget"
+                        <input type="number" step="0.01" min="0" max="9999999999.99" id="min_budget" name="min_budget" inputmode="decimal"
+                            onkeydown="if(['e','E','+','-'].includes(event.key)) event.preventDefault()"
+                            oninput="this.value = this.value.replace(/[^0-9.]/g, '')"
                             value="{{ old('min_budget', $preferences?->min_budget) }}">
                         @error('min_budget')<div class="field-error">{{ $message }}</div>@enderror
                     </div>
 
                     <div class="field">
                         <label for="max_budget">Maximum budget (per year)</label>
-                        <input type="number" step="0.01" min="0" id="max_budget" name="max_budget"
+                        <input type="number" step="0.01" min="0" max="9999999999.99" id="max_budget" name="max_budget" inputmode="decimal"
+                            onkeydown="if(['e','E','+','-'].includes(event.key)) event.preventDefault()"
+                            oninput="this.value = this.value.replace(/[^0-9.]/g, '')"
                             value="{{ old('max_budget', $preferences?->max_budget) }}">
                         @error('max_budget')<div class="field-error">{{ $message }}</div>@enderror
                     </div>
@@ -237,6 +254,20 @@
     </section>
 
 </main>
+
+<script>
+    document.getElementById('max_budget').form.addEventListener('submit', function (e) {
+        var min = document.getElementById('min_budget');
+        var max = document.getElementById('max_budget');
+        max.setCustomValidity('');
+        if (min.value !== '' && max.value !== '' && parseFloat(max.value) < parseFloat(min.value)) {
+            max.setCustomValidity('Maximum budget must be greater than or equal to the minimum budget.');
+            max.reportValidity();
+            e.preventDefault();
+        }
+    });
+    document.getElementById('max_budget').addEventListener('input', function () { this.setCustomValidity(''); });
+</script>
 
 </body>
 </html>

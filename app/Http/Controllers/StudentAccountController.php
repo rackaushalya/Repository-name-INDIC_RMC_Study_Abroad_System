@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rules\Password;
 
 class StudentAccountController extends Controller
 {
@@ -76,8 +77,18 @@ class StudentAccountController extends Controller
         $user = $this->getUser();
 
         $validated = $request->validate([
-            'current_password' => ['required', 'string'],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'current_password' => ['required', 'string', 'max:255'],
+            'password' => [
+                'required',
+                'string',
+                'max:72',
+                'confirmed',
+                'different:current_password',
+                Password::min(8)->mixedCase()->numbers(),
+            ],
+        ], [
+            'password.different' => 'The new password must be different from your current password.',
+            'password.max' => 'The new password may not be longer than 72 characters.',
         ]);
 
         if (!Hash::check($validated['current_password'], $user->password_hash)) {
@@ -101,7 +112,7 @@ class StudentAccountController extends Controller
         $user = $this->getUser();
 
         $validated = $request->validate([
-            'confirm_password' => ['required', 'string'],
+            'confirm_password' => ['required', 'string', 'max:255'],
         ]);
 
         if (!Hash::check($validated['confirm_password'], $user->password_hash)) {

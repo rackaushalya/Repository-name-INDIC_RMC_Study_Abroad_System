@@ -6,9 +6,11 @@ use App\Models\RequiredDocument;
 use App\Models\Student;
 use App\Models\StudentDocument;
 use App\Models\User;
+use App\Services\StudentReadiness;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 class StudentDocumentController extends Controller
 {
@@ -32,19 +34,62 @@ class StudentDocumentController extends Controller
             ->latest('uploaded_at')
             ->get();
 
-        $requiredDocuments = RequiredDocument::where('is_active', true)
-            ->where(function ($query) use ($student) {
-                $query->whereNull('country_id')
-                    ->orWhere('country_id', $student->preferences?->preferred_country_id);
-            })
-            ->orderBy('document_name')
-            ->get();
+        $requiredDocuments = StudentReadiness::applicableRequiredDocuments($student);
+
+        $checklist = $this->buildChecklist($requiredDocuments, $documents);
+
+        $expiryAlerts = $documents->filter(fn ($document) => $document->expiryState() !== null);
 
         return view('student.documents', compact(
             'student',
             'documents',
-            'requiredDocuments'
+            'requiredDocuments',
+            'checklist',
+            'expiryAlerts'
         ));
+    }
+
+    /**
+     * One row per required document, with its current state:
+     * missing, pending, verified, rejected or expired.
+     *
+     * @return array{rows: \Illuminate\Support\Collection, done: int, total: int, percent: int}
+     */
+    private function buildChecklist($requiredDocuments, $documents): array
+    {
+        $rows = $requiredDocuments->map(function ($required) use ($documents) {
+            $upload = $documents
+                ->where('required_document_id', $required->required_document_id)
+                ->sortByDesc('uploaded_at')
+                ->first();
+
+            $state = match (true) {
+                !$upload => 'missing',
+                $upload->expiryState() === 'expired' => 'expired',
+                $upload->status === 'rejected' => 'rejected',
+                $upload->status === 'verified' => 'verified',
+                default => 'pending',
+            };
+
+            return [
+                'required' => $required,
+                'upload' => $upload,
+                'state' => $state,
+                'expiring' => $upload?->expiryState() === 'expiring',
+            ];
+        })->values();
+
+        // A mandatory document counts as complete once a valid copy is on file.
+        $mandatory = $rows->filter(fn ($row) => $row['required']->is_mandatory);
+        $done = $mandatory->filter(fn ($row) => in_array($row['state'], ['pending', 'verified'], true))->count();
+        $total = $mandatory->count();
+
+        return [
+            'rows' => $rows,
+            'done' => $done,
+            'total' => $total,
+            'percent' => $total > 0 ? (int) round(($done / $total) * 100) : 0,
+        ];
     }
 
     public function store(Request $request)
@@ -52,9 +97,20 @@ class StudentDocumentController extends Controller
         $student = $this->getStudent();
 
         $validated = $request->validate([
-            'document_name' => ['required', 'string', 'max:255'],
-            'required_document_id' => ['nullable', 'exists:required_documents,required_document_id'],
+            'document_name' => ['required', 'string', 'min:2', 'max:100', 'regex:/^[A-Za-z0-9][A-Za-z0-9\s._\-()&]*$/'],
+            'required_document_id' => [
+                'nullable',
+                Rule::exists('required_documents', 'required_document_id')->where('is_active', true),
+            ],
+            'expiry_date' => ['nullable', 'date', 'after:today', 'before:' . now()->addYears(50)->format('Y-m-d')],
             'file' => ['required', 'file', 'max:5120', 'mimes:pdf,jpg,jpeg,png,doc,docx'],
+        ], [
+            'expiry_date.after' => 'The expiry date must be in the future. This document has already expired.',
+            'document_name.regex' => 'The document name may only contain letters, numbers, spaces and . _ - ( ) &.',
+            'required_document_id.exists' => 'Please choose a valid required document.',
+            'file.required' => 'Please choose a file to upload.',
+            'file.max' => 'The file must not be larger than 5MB.',
+            'file.mimes' => 'The file must be a PDF, JPG, PNG, DOC or DOCX.',
         ]);
 
         $file = $request->file('file');
@@ -68,6 +124,7 @@ class StudentDocumentController extends Controller
             'student_id' => $student->student_id,
             'required_document_id' => $validated['required_document_id'] ?? null,
             'document_name' => $validated['document_name'],
+            'expiry_date' => $validated['expiry_date'] ?? null,
             'file_path' => $path,
             'original_name' => $file->getClientOriginalName(),
             'mime_type' => $file->getClientMimeType(),

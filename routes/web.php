@@ -9,6 +9,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\StudentDocumentController;
 use App\Http\Controllers\StudentAccountController;
+use App\Http\Controllers\StudentNotificationController;
 use App\Http\Controllers\ConsultantController;
 use App\Http\Controllers\QualificationController;
 use App\Http\Controllers\AppointmentController;
@@ -554,6 +555,14 @@ Route::prefix('admin')
             '/applications-list/{application}/status',
             [AdminController::class, 'updateApplicationStatus']
         )->name('applications-status');
+
+        // The status URL is only a form target; if someone reloads it or
+        // opens it directly (GET), send them back to the application page.
+        Route::get(
+            '/applications-list/{application}/status',
+            fn (\App\Models\Application $application) => redirect()
+                ->route('admin.applications-show', $application)
+        );
 
 
         /*

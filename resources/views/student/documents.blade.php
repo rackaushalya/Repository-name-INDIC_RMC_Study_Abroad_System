@@ -92,6 +92,26 @@
 
         .empty-state { font-size: 13px; color: #9aa2b0; padding: 20px 0; text-align: center; }
 
+        /* Document checklist + expiry tracking */
+        .chk-progress { margin-bottom: 16px; }
+        .chk-progress-top { display: flex; justify-content: space-between; font-size: 12.5px; color: #37415a; margin-bottom: 6px; }
+        .chk-bar { height: 8px; border-radius: 10px; background: #eef0f4; overflow: hidden; }
+        .chk-bar > div { height: 100%; border-radius: 10px; background: #f97316; }
+        .chk-bar.is-full > div { background: #22a05a; }
+        .chk-left { display: flex; align-items: flex-start; gap: 12px; }
+        .chk-icon { font-size: 18px; margin-top: 1px; }
+        .chk-icon-missing { color: #c3c9d4; }
+        .chk-icon-pending { color: #b7791f; }
+        .chk-icon-verified { color: #22a05a; }
+        .chk-icon-rejected, .chk-icon-expired { color: #c0362c; }
+        .chk-state-missing { background: #eef0f4; color: #7c8493; margin-left: 8px; }
+        .chk-state-pending { background: #fff7e6; color: #b7791f; margin-left: 8px; }
+        .chk-state-verified { background: #eafaf0; color: #1b7a43; margin-left: 8px; }
+        .chk-state-rejected, .chk-state-expired { background: #fff1f1; color: #c0362c; margin-left: 8px; }
+        .chk-expiry-warn { color: #c0362c; font-weight: 600; }
+        .alert-warning { background: #fff7e6; color: #8a5a0b; border: 1px solid #f6e0b3; }
+        .alert-warning ul { margin: 6px 0 0; padding-left: 18px; }
+
         @media (max-width: 900px) {
             .sidebar { display: none; }
             .main { margin-left: 0; }
@@ -180,6 +200,24 @@
             </div>
         @endif
 
+        @if ($expiryAlerts->isNotEmpty())
+            <div class="alert alert-warning">
+                <strong><i class="bi bi-exclamation-triangle-fill"></i> Document expiry warning</strong>
+                <ul>
+                    @foreach ($expiryAlerts as $alert)
+                        <li>
+                            {{ $alert->document_name }}
+                            @if ($alert->expiryState() === 'expired')
+                                expired on {{ $alert->expiry_date->format('d M Y') }}. Please upload a valid copy.
+                            @else
+                                expires on {{ $alert->expiry_date->format('d M Y') }}, which is less than {{ \App\Models\StudentDocument::EXPIRY_WARNING_MONTHS }} months away. Most universities need longer validity.
+                            @endif
+                        </li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
         @if ($requiredDocuments->isNotEmpty())
             <div class="card">
                 <div class="card-head">
@@ -189,25 +227,65 @@
                     </div>
                 </div>
 
+                @if ($checklist['total'] > 0)
+                    <div class="chk-progress">
+                        <div class="chk-progress-top">
+                            <span>{{ $checklist['done'] }} of {{ $checklist['total'] }} mandatory documents ready</span>
+                            <strong>{{ $checklist['percent'] }}%</strong>
+                        </div>
+                        <div class="chk-bar {{ $checklist['percent'] >= 100 ? 'is-full' : '' }}">
+                            <div style="width: {{ $checklist['percent'] }}%;"></div>
+                        </div>
+                    </div>
+                @endif
+
                 <div class="req-list">
-                    @foreach ($requiredDocuments as $required)
+                    @foreach ($checklist['rows'] as $row)
                         @php
-                            $isUploaded = $documents->contains('required_document_id', $required->required_document_id);
+                            $required = $row['required'];
+                            $upload = $row['upload'];
+                            $stateLabels = [
+                                'missing' => 'Not uploaded',
+                                'pending' => 'Pending review',
+                                'verified' => 'Verified',
+                                'rejected' => 'Rejected',
+                                'expired' => 'Expired',
+                            ];
+                            $stateIcons = [
+                                'missing' => 'bi-circle',
+                                'pending' => 'bi-hourglass-split',
+                                'verified' => 'bi-check-circle-fill',
+                                'rejected' => 'bi-x-circle-fill',
+                                'expired' => 'bi-exclamation-triangle-fill',
+                            ];
                         @endphp
                         <div class="req-item">
-                            <div>
-                                <div class="name">{{ $required->document_name }}</div>
-                                @if ($required->description)
-                                    <div class="desc">{{ $required->description }}</div>
-                                @endif
+                            <div class="chk-left">
+                                <i class="bi {{ $stateIcons[$row['state']] }} chk-icon chk-icon-{{ $row['state'] }}"></i>
+                                <div>
+                                    <div class="name">{{ $required->document_name }}</div>
+                                    @if ($required->description)
+                                        <div class="desc">{{ $required->description }}</div>
+                                    @endif
+                                    @if ($upload?->expiry_date)
+                                        <div class="desc {{ $upload->expiryState() ? 'chk-expiry-warn' : '' }}">
+                                            @if ($upload->expiryState() === 'expired')
+                                                Expired on {{ $upload->expiry_date->format('d M Y') }}
+                                            @elseif ($upload->expiryState() === 'expiring')
+                                                Expires {{ $upload->expiry_date->format('d M Y') }}
+                                                ({{ (int) now()->startOfDay()->diffInDays($upload->expiry_date) }} days left). Most universities want at least 6 months of validity.
+                                            @else
+                                                Valid until {{ $upload->expiry_date->format('d M Y') }}
+                                            @endif
+                                        </div>
+                                    @endif
+                                </div>
                             </div>
                             <div>
                                 <span class="tag {{ $required->is_mandatory ? 'tag-mandatory' : 'tag-optional' }}">
                                     {{ $required->is_mandatory ? 'Mandatory' : 'Optional' }}
                                 </span>
-                                @if ($isUploaded)
-                                    <span class="tag tag-uploaded">Uploaded</span>
-                                @endif
+                                <span class="tag chk-state chk-state-{{ $row['state'] }}">{{ $stateLabels[$row['state']] }}</span>
                             </div>
                         </div>
                     @endforeach
@@ -230,7 +308,9 @@
                     <div class="field">
                         <label for="document_name">Document name</label>
                         <input type="text" id="document_name" name="document_name"
-                            value="{{ old('document_name') }}" placeholder="e.g. Passport Copy" required>
+                            value="{{ old('document_name') }}" placeholder="e.g. Passport Copy" required
+                            minlength="2" maxlength="100" pattern="[A-Za-z0-9][A-Za-z0-9\s._\-()&amp;]*"
+                            title="Letters, numbers, spaces and . _ - ( ) &amp; only">
                         @error('document_name')<div class="field-error">{{ $message }}</div>@enderror
                     </div>
 
@@ -248,10 +328,31 @@
                     </div>
                 </div>
 
+                <div class="field" style="max-width: 320px;">
+                    <label for="expiry_date">Expiry date (optional)</label>
+                    <input type="date" id="expiry_date" name="expiry_date"
+                        min="{{ now()->addDay()->format('Y-m-d') }}"
+                        max="{{ now()->addYears(50)->format('Y-m-d') }}"
+                        value="{{ old('expiry_date') }}">
+                    <span class="hint" style="display:block; margin: 5px 0 0;">For passports and test certificates. We will warn you before it expires.</span>
+                    @error('expiry_date')<div class="field-error">{{ $message }}</div>@enderror
+                </div>
+
                 <div class="field">
                     <label for="file">Choose file</label>
                     <input type="file" id="file" name="file" required
-                        accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                        accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                        onchange="(function (i) {
+                            var f = i.files[0];
+                            i.setCustomValidity('');
+                            if (!f) return;
+                            if (!/\.(pdf|jpe?g|png|docx?)$/i.test(f.name)) {
+                                i.setCustomValidity('Only PDF, JPG, PNG, DOC or DOCX files are allowed.');
+                            } else if (f.size > 5 * 1024 * 1024) {
+                                i.setCustomValidity('The file must not be larger than 5MB.');
+                            }
+                            if (i.validationMessage) { i.reportValidity(); i.value = ''; i.setCustomValidity(''); }
+                        })(this)">
                     @error('file')<div class="field-error">{{ $message }}</div>@enderror
                 </div>
 
@@ -293,6 +394,11 @@
                                     <span class="status-badge status-{{ $document->status }}">{{ $document->status }}</span>
                                     @if ($document->status === 'rejected' && $document->remarks)
                                         <div class="doc-meta">{{ $document->remarks }}</div>
+                                    @endif
+                                    @if ($document->expiry_date)
+                                        <div class="doc-meta {{ $document->expiryState() ? 'chk-expiry-warn' : '' }}">
+                                            {{ $document->expiryState() === 'expired' ? 'Expired' : 'Expires' }} {{ $document->expiry_date->format('d M Y') }}
+                                        </div>
                                     @endif
                                 </td>
                                 <td>

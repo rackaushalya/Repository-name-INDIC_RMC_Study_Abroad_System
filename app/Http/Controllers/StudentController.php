@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Student;
 use App\Models\User;
+use App\Services\EligibilityMatcher;
+use App\Services\StudentReadiness;
+use App\Services\StudentTips;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -49,11 +52,20 @@ class StudentController extends Controller
         $notifications = $user
             ? $user->notifications()
                 ->latest('created_at')
-                ->take(4)
+                ->latest('notification_id')
+                ->take(10)
                 ->get()
             : collect();
 
+        $unreadNotificationCount = $user
+            ? $user->notifications()->unread()->count()
+            : 0;
+
         $profileCompletion = $this->profileCompletion($student);
+
+        $readiness = app(StudentReadiness::class)->evaluate($student);
+
+        $eligibleCourses = app(EligibilityMatcher::class)->topMatches($student);
 
         $latestApplication = $applications->first();
 
@@ -84,7 +96,10 @@ class StudentController extends Controller
             'appointments',
             'fundRequirement',
             'notifications',
+            'unreadNotificationCount',
             'profileCompletion',
+            'readiness',
+            'eligibleCourses',
             'latestApplication',
             'applicationTimeline',
             'timelineProgressPercent',
@@ -231,7 +246,11 @@ class StudentController extends Controller
         $user = User::find(Auth::id());
         $student = Student::with('user')->find($user?->student?->student_id);
 
-        return view('student.profile', compact('student', 'user'));
+        $profileTips = $student
+            ? app(StudentTips::class)->profileTips($student)
+            : [];
+
+        return view('student.profile', compact('student', 'user', 'profileTips'));
     }
 
     public function updateProfile(Request $request)
@@ -259,7 +278,7 @@ class StudentController extends Controller
             ],
             'gender' => ['nullable', 'in:Male,Female,Other'],
             'nationality' => ['nullable', 'string', 'max:100'],
-            'passport_number' => ['nullable', 'string', 'max:100'],
+            'passport_number' => ['nullable', 'string', 'max:100', 'regex:/^[A-Za-z0-9]+$/'],
             'current_address' => ['nullable', 'string', 'max:500'],
             'city' => ['nullable', 'string', 'max:100'],
             'country' => ['nullable', 'string', 'max:100'],
@@ -298,11 +317,47 @@ class StudentController extends Controller
             ->orderBy('country_name')
             ->get();
 
+        $preferenceTips = $student
+            ? app(StudentTips::class)->preferenceTips($student, $preferences?->only([
+                'preferred_country_id',
+                'preferred_course_level',
+                'preferred_course_field',
+                'max_budget',
+                'preferred_intake',
+            ]) ?? [])
+            : [];
+
         return view('student.preferences', compact(
             'student',
             'preferences',
-            'countries'
+            'countries',
+            'preferenceTips'
         ));
+    }
+
+    /**
+     * JSON endpoint: live tips while the student edits their study preferences.
+     */
+    public function preferenceTips(Request $request)
+    {
+        $user = User::find(Auth::id());
+        $student = Student::find($user?->student?->student_id);
+
+        if (!$student) {
+            abort(403);
+        }
+
+        $input = $request->validate([
+            'preferred_country_id' => ['nullable', 'integer'],
+            'preferred_course_level' => ['nullable', 'in:Certificate,Diploma,Bachelor,Master,PhD'],
+            'preferred_course_field' => ['nullable', 'string', 'max:255'],
+            'max_budget' => ['nullable', 'numeric', 'min:0'],
+            'preferred_intake' => ['nullable', 'string', 'max:100'],
+        ]);
+
+        return response()->json([
+            'tips' => app(StudentTips::class)->preferenceTips($student, $input),
+        ]);
     }
 
     public function updatePreferences(Request $request)
@@ -321,13 +376,34 @@ class StudentController extends Controller
 
         $validated = $request->validate([
             'preferred_country_id' => ['nullable', 'exists:countries,country_id'],
-            'preferred_course_field' => ['nullable', 'string', 'max:255'],
+            'preferred_course_field' => ['nullable', 'string', 'max:255', 'regex:/^[A-Za-z][A-Za-z\s&,.\-\/()]*$/'],
             'preferred_course_level' => ['nullable', 'in:Certificate,Diploma,Bachelor,Master,PhD'],
-            'preferred_intake' => ['nullable', 'string', 'max:100'],
-            'min_budget' => ['nullable', 'numeric', 'min:0'],
-            'max_budget' => ['nullable', 'numeric', 'min:0', 'gte:min_budget'],
+            'preferred_intake' => ['nullable', 'string', 'max:100', 'regex:/^[A-Za-z0-9][A-Za-z0-9\s,\-\/]*$/'],
+            'min_budget' => ['nullable', 'numeric', 'min:0', 'max:9999999999.99', 'regex:/^\d+(\.\d{1,2})?$/'],
+            'max_budget' => array_filter([
+                'nullable',
+                'numeric',
+                'min:0',
+                'max:9999999999.99',
+                'regex:/^\d+(\.\d{1,2})?$/',
+                $request->filled('min_budget') ? 'gte:min_budget' : null,
+            ]),
             'preferred_study_mode' => ['nullable', 'in:On Campus,Online,Hybrid'],
-            'preferred_duration' => ['nullable', 'string', 'max:100'],
+            'preferred_duration' => [
+                'nullable',
+                'string',
+                'max:100',
+                'regex:/^\d+(\.\d+)?(\s*-\s*\d+(\.\d+)?)?\s*(weeks?|months?|years?)$/i',
+            ],
+        ], [
+            'preferred_course_field.regex' => 'The field of study may only contain letters, spaces and & , . - / ( ).',
+            'preferred_intake.regex' => 'The intake may only contain letters, numbers, spaces and , - /.',
+            'preferred_duration.regex' => 'Enter the duration as a number followed by weeks, months or years (e.g. 2 years).',
+            'min_budget.regex' => 'The minimum budget must be a plain number with up to 2 decimal places.',
+            'max_budget.regex' => 'The maximum budget must be a plain number with up to 2 decimal places.',
+            'max_budget.gte' => 'The maximum budget must be greater than or equal to the minimum budget.',
+            'min_budget.max' => 'The minimum budget is too large.',
+            'max_budget.max' => 'The maximum budget is too large.',
         ]);
 
         $student->preferences()->updateOrCreate(

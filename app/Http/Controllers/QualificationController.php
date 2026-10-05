@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\AcademicQualification;
 use App\Models\EnglishQualification;
 use App\Models\WorkExperience;
+use App\Services\EnglishScoreConverter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -43,6 +44,44 @@ class QualificationController extends Controller
             'englishQualifications',
             'workExperiences'
         ));
+    }
+
+    /**
+     * JSON endpoint behind the English score converter on the Qualifications page.
+     */
+    public function convertEnglishScore(Request $request, EnglishScoreConverter $converter)
+    {
+        $this->getStudent();
+
+        $validated = $request->validate([
+            'test_type' => ['required', 'in:' . implode(',', EnglishScoreConverter::TESTS)],
+            'score' => ['required', 'numeric', 'min:0'],
+        ]);
+
+        $test = $validated['test_type'];
+        $score = (float) $validated['score'];
+
+        if ($score > EnglishScoreConverter::MAX_SCORE[$test]) {
+            return response()->json([
+                'message' => "The highest {$test} score is " . EnglishScoreConverter::MAX_SCORE[$test] . '.',
+            ], 422);
+        }
+
+        $band = $converter->toIeltsBand($test, $score);
+
+        if ($band === null) {
+            return response()->json([
+                'below_range' => true,
+                'message' => 'That score is below the range we can convert (IELTS 5.0 or equivalent).',
+            ]);
+        }
+
+        return response()->json([
+            'below_range' => false,
+            'ielts_band' => $band,
+            'equivalents' => $converter->equivalents($band),
+            'courses' => $converter->qualifyingCourses($band),
+        ]);
     }
 
     public function storeAcademic(Request $request)
