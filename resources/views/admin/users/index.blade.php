@@ -1058,7 +1058,7 @@
 
                                         {{-- View --}}
                                         <a
-                                            href="{{ route('admin.users.show', $user) }}"
+                                            href="{{ url('/admin/users/' . $user->user_id) }}"
                                             class="action-btn btn-view"
                                         >
                                             View

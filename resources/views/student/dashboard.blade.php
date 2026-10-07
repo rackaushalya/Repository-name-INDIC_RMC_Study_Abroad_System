@@ -939,7 +939,7 @@
         <span>Consultancy Application</span>
     </a>
 
-    <a href="#" class="menu-item">
+    <a href="{{ route('student.recommendations.index') }}"class="menu-item">
         <div class="menu-icon"><i class="bi bi-star-fill"></i></div>
         <span>Recommendations</span>
     </a>
@@ -1284,7 +1284,7 @@
 
                         <div class="timeline-line"></div>
 
-                        <div class="timeline-progress" style="width: {{ $timelineProgressPercent }}%;"></div>
+                        <div class="timeline-progress" data-progress="{{ $timelineProgressPercent ?? 0 }}"></div>
 
                         @foreach($applicationTimeline as $stepNumber => $step)
 
@@ -1581,6 +1581,12 @@
 
 <script>
 (function () {
+
+document.querySelectorAll('.timeline-progress[data-progress]').forEach(function (element) {
+    element.style.width = element.dataset.progress + '%';
+});
+
+
     const toggle = document.getElementById('notificationToggle');
     const popup = document.getElementById('notificationPopup');
     const badge = document.getElementById('notificationBadge');
@@ -1654,7 +1660,7 @@
     });
 
     markAll.addEventListener('click', function () {
-        post(@json(route('student.notifications.read-all')))
+        post("{{ route('student.notifications.read-all') }}")
             .then(function () {
                 popup.querySelectorAll('.popup-item').forEach(function (item) {
                     markItemsRead(item.dataset.notifId);
@@ -1667,7 +1673,7 @@
 
     /* Live updates: poll for new notifications while the tab is visible. */
 
-    const FEED_URL = @json(route('student.notifications.feed'));
+    const FEED_URL = "{{ route('student.notifications.feed') }}";
     const POLL_MS = 10000;
     let polling = false;
     let timer = null;

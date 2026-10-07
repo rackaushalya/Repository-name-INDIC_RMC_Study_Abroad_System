@@ -890,7 +890,7 @@
             <span class="menu-icon"><i class="bi bi-people-fill"></i></span>
 
             <span>
-                Users
+                 User Management
             </span>
 
         </a>

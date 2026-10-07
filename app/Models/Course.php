@@ -70,13 +70,13 @@ class Course extends Model
         );
     }
 
-    public function requirements()
+   public function requirements()
     {
-        return $this->hasMany(
-            CourseRequirement::class,
-            'course_id',
-            'course_id'
-        );
+    return $this->hasOne(
+        CourseRequirement::class,
+        'course_id',
+        'course_id'
+    );
     }
 
     public function englishRequirements()

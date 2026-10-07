@@ -149,7 +149,7 @@
             'tips' => $preferenceTips,
             'tipsTitle' => 'Smart tips',
             'tipsSubtitle' => 'Updates as you change your preferences.',
-            'liveUrl' => route('student.preferences.tips'),
+            'liveUrl' => route('student.preferences'),
         ])
 
         <form method="POST" action="{{ route('student.preferences.update') }}">

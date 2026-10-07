@@ -147,6 +147,36 @@ Route::middleware('auth')
         Route::get('/appointments', [StudentController::class, 'appointments'])
             ->name('appointments');
 
+        /*
+        |--------------------------------------------------------------------------
+        | Student Notifications
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get(
+            '/notifications',
+            [StudentNotificationController::class, 'index']
+        )->name('notifications.index');
+
+        Route::post(
+            '/notifications/read-all',
+            [StudentNotificationController::class, 'readAll']
+        )->name('notifications.read-all');
+
+        Route::get(
+            '/notifications/feed',
+            [StudentNotificationController::class, 'feed']
+        )->name('notifications.feed');
+
+        Route::patch(
+            '/notifications/{id}/read',
+            [StudentNotificationController::class, 'markRead']
+        )->name('notifications.read');
+
+        Route::delete(
+            '/notifications/{id}',
+            [StudentNotificationController::class, 'destroy']
+        )->name('notifications.destroy');
 
         /*
         |--------------------------------------------------------------------------
@@ -176,6 +206,11 @@ Route::middleware('auth')
             QualificationController::class,
             'storeEnglish'
         ])->name('qualifications.english.store');
+
+        Route::post('/qualifications/english/convert', [
+           QualificationController::class,
+           'convertEnglish'
+        ])->name('qualifications.english.convert');
 
         Route::put('/qualifications/english/{qualification}', [
             QualificationController::class,
@@ -706,6 +741,32 @@ Route::prefix('admin')
             'show',
             'destroy'
         ]);
+
+        /*
+        |--------------------------------------------------------------------------
+        | System Settings
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get(
+            '/settings',
+            [AdminController::class, 'systemSettings']
+        )->name('settings');
+
+        Route::post(
+            '/settings',
+            [AdminController::class, 'storeSystemSetting']
+        )->name('settings.store');
+
+        Route::put(
+            '/settings/{setting}',
+            [AdminController::class, 'updateSystemSetting']
+        )->name('settings.update');
+
+        Route::delete(
+            '/settings/{setting}',
+            [AdminController::class, 'destroySystemSetting']
+        )->name('settings.destroy');
 
     });
 

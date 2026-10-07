@@ -292,4 +292,54 @@ class QualificationController extends Controller
             'Work experience deleted successfully.'
         );
     }
-}
+
+
+        public function convertEnglish(Request $request, EnglishScoreConverter $converter)
+        {
+            $validated = $request->validate([
+                'test_type' => [
+                    'required',
+                    'string',
+                    'in:IELTS,TOEFL,PTE,Duolingo,Cambridge',
+                ],
+                'score' => [
+                    'required',
+                    'numeric',
+                    'min:0',
+                ],
+            ]);
+
+            $test = $validated['test_type'];
+            $score = (float) $validated['score'];
+
+            $maxScore = EnglishScoreConverter::MAX_SCORE[$test] ?? null;
+
+            if ($maxScore === null || $score > $maxScore) {
+                return response()->json([
+                    'below_range' => true,
+                    'message' => "The {$test} score must be between 0 and {$maxScore}.",
+                ], 422);
+            }
+
+            $band = $converter->toIeltsBand($test, $score);
+
+            if ($band === null) {
+                return response()->json([
+                    'below_range' => true,
+                    'message' => 'This score is below the supported conversion range.',
+                ]);
+            }
+
+            $equivalents = $converter->equivalents($band);
+            $courses = $converter->qualifyingCourses($band);
+
+            return response()->json([
+                'below_range' => false,
+                'band' => $band,
+                'equivalents' => $equivalents,
+                'qualifying' => $courses['qualifying'],
+                'total' => $courses['total'],
+            ]);
+        }
+
+    }

@@ -11,6 +11,7 @@ use App\Models\Course;
 use App\Models\Notification;
 use App\Models\Role;
 use App\Models\Student;
+use App\Models\SystemSetting;
 use App\Models\University;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -275,9 +276,10 @@ class AdminController extends Controller
     {
         $roles = Role::orderBy('role_name')->get();
 
-        return view(
-            'admin.users.edit',
+       return view(
+             'admin.users.edit',
             compact(
+                'user',
                 'roles'
             )
         );
@@ -330,9 +332,9 @@ class AdminController extends Controller
                 'max:30'
             ],
 
-            'account_status' => [
-                'required',
-                'in:active,inactive'
+           'account_status' => [
+                 'required',
+              'in:Active,Inactive,Suspended'
             ],
         ]);
 
@@ -422,9 +424,9 @@ class AdminController extends Controller
     ) {
         $validated = $request->validate([
             'account_status' => [
-                'required',
-                'in:active,inactive'
-            ],
+                 'required',
+                 'in:Active,Inactive,Suspended'
+    ],
         ]);
 
 
@@ -1227,4 +1229,149 @@ class AdminController extends Controller
     {
         return $this->dashboard();
     }
+
+        /*
+    |--------------------------------------------------------------------------
+    | System Settings
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * Display all system settings.
+     */
+    public function systemSettings()
+    {
+        $settings = SystemSetting::with('updatedBy')
+            ->orderBy('setting_key')
+            ->get();
+
+        return view(
+         'admin.settings',
+         compact('settings')
+        );
+    }
+
+
+    /**
+     * Store a new system setting.
+     */
+    public function storeSystemSetting(Request $request)
+    {
+        $validated = $request->validate([
+            'setting_key' => [
+                'required',
+                'string',
+                'max:100',
+                'unique:system_settings,setting_key'
+            ],
+
+            'setting_value' => [
+                'nullable',
+                'string'
+            ],
+
+            'description' => [
+                'nullable',
+                'string',
+                'max:500'
+            ],
+        ]);
+
+
+        SystemSetting::create([
+            'setting_key' => $validated['setting_key'],
+            'setting_value' => $validated['setting_value'] ?? null,
+            'description' => $validated['description'] ?? null,
+            'updated_by' => Auth::id(),
+            'updated_at' => now(),
+        ]);
+
+
+        return redirect()
+            ->route('admin.settings')
+            ->with(
+                'success',
+                'System setting created successfully.'
+            );
+    }
+
+
+    /**
+     * Update an existing system setting.
+     */
+    public function updateSystemSetting(
+        Request $request,
+        SystemSetting $setting
+    ) {
+        $validated = $request->validate([
+            'setting_key' => [
+                'required',
+                'string',
+                'max:100',
+                Rule::unique(
+                    'system_settings',
+                    'setting_key'
+                )->ignore(
+                    $setting->setting_id,
+                    'setting_id'
+                )
+            ],
+
+            'setting_value' => [
+                'nullable',
+                'string'
+            ],
+
+            'description' => [
+                'nullable',
+                'string',
+                'max:500'
+            ],
+        ]);
+
+
+        $setting->setting_key =
+            $validated['setting_key'];
+
+        $setting->setting_value =
+            $validated['setting_value'] ?? null;
+
+        $setting->description =
+            $validated['description'] ?? null;
+
+        $setting->updated_by =
+            Auth::id();
+
+        $setting->updated_at =
+            \Illuminate\Support\Carbon::now();
+
+        $setting->save();
+
+
+        return redirect()
+            ->route('admin.settings')
+            ->with(
+                'success',
+                'System setting updated successfully.'
+            );
+    }
+
+
+    /**
+     * Delete a system setting.
+     */
+    public function destroySystemSetting(
+        SystemSetting $setting
+    ) {
+        $setting->delete();
+
+
+        return redirect()
+            ->route('admin.settings')
+            ->with(
+                'success',
+                'System setting deleted successfully.'
+            );
+    }
+
 }
