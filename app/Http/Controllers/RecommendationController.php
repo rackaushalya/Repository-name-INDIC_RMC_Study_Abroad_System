@@ -301,7 +301,7 @@ class RecommendationController extends Controller
         | Therefore we use the first requirement record.
         */
 
-        $requirements = $course->requirements->first();
+        $requirements = $course->requirements;
 
         /*
         | If the course has no requirement record,
@@ -933,7 +933,7 @@ class RecommendationController extends Controller
         */
 
         $requirements =
-            $course->requirements->first();
+            $course->requirements;
 
         if (!$requirements) {
             return true;
@@ -1358,7 +1358,7 @@ class RecommendationController extends Controller
         */
 
         $requirements =
-            $course->requirements->first();
+            $course->requirements;
 
         if (!$requirements) {
             return true;

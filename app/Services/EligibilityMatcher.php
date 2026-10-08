@@ -117,7 +117,7 @@ class EligibilityMatcher
     private function evaluate(Course $course, array $profile, Student $student): array
     {
         $checks = [];
-        $req = $course->requirements->first();
+        $req = $course->requirements;
 
         if ($req?->required_qualification_level) {
             $needed = self::LEVEL_ORDER[$req->required_qualification_level] ?? 0;
