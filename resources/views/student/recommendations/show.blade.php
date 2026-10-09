@@ -361,9 +361,14 @@
             }
         }
     </style>
+@include('components.sidebar-style')
 </head>
 
 <body>
+
+@include('components.student-sidebar')
+
+<div class="main">
 
 <header class="topbar">
 
@@ -884,6 +889,8 @@
     </div>
 
 </main>
+
+</div>
 
 </body>
 </html>

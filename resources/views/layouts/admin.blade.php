@@ -85,9 +85,14 @@
     </style>
 
     @stack('styles')
+@include('components.sidebar-style')
 </head>
 
 <body>
+
+@include('components.admin-sidebar')
+
+<div class="main">
 
     <header class="admin-topbar">
 
@@ -137,6 +142,8 @@
     </script>
 
     @stack('scripts')
+
+</div>
 
 </body>
 

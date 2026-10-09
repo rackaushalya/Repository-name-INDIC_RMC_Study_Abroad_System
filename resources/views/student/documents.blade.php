@@ -14,18 +14,6 @@
         body { font-family: Arial, Helvetica, sans-serif; background: #f5f7fb; color: #172033; }
         a { text-decoration: none; color: inherit; }
 
-        .sidebar { position: fixed; left: 0; top: 0; width: 245px; height: 100vh; background: #101a2b; color: white; padding: 25px 15px; overflow-y: auto; }
-        .logo { padding: 0 12px; margin-bottom: 35px; }
-        .logo-main { font-size: 25px; font-weight: 700; color: #f97316; }
-        .logo-main span { color: white; }
-        .logo-subtitle { font-size: 8px; letter-spacing: 0.8px; color: #aeb7c7; margin-top: 4px; }
-        .menu-section { margin-bottom: 25px; }
-        .menu-title { color: #7e8ba1; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; margin: 0 12px 10px; }
-        .menu-item { display: flex; align-items: center; gap: 12px; padding: 11px 12px; margin-bottom: 4px; border-radius: 7px; color: #cbd3df; font-size: 13px; transition: 0.2s; }
-        .menu-item:hover { background: #1d2a40; color: white; }
-        .menu-item.active { background: #f97316; color: white; }
-        .menu-icon { width: 19px; height: 19px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
-
         .main { margin-left: 245px; min-height: 100vh; }
         .topbar { height: 72px; background: white; border-bottom: 1px solid #e6e9ef; display: flex; align-items: center; justify-content: space-between; padding: 0 30px; position: sticky; top: 0; z-index: 10; }
         .topbar h2 { font-size: 17px; color: #101a2b; }
@@ -113,7 +101,6 @@
         .alert-warning ul { margin: 6px 0 0; padding-left: 18px; }
 
         @media (max-width: 900px) {
-            .sidebar { display: none; }
             .main { margin-left: 0; }
             .grid-2 { grid-template-columns: 1fr; }
             table, thead, tbody, tr, td { display: block; width: 100%; }
@@ -122,45 +109,11 @@
         }
 
     </style>
+@include('components.sidebar-style')
 </head>
 <body>
 
-<aside class="sidebar">
-    <div class="logo">
-        <div class="logo-main">INDIC <span>RMC</span></div>
-        <div class="logo-subtitle">STUDY ABROAD, BRIGHTER TOMORROWS</div>
-    </div>
-
-    <div class="menu-section">
-        <div class="menu-title">Main</div>
-        <a href="{{ route('student.dashboard') }}" class="menu-item"><div class="menu-icon"><i class="bi bi-grid-1x2-fill"></i></div><span>Dashboard</span></a>
-        <a href="{{ route('student.profile') }}" class="menu-item"><div class="menu-icon"><i class="bi bi-person-fill"></i></div><span>My Profile</span></a>
-        <a href="{{ route('student.qualifications') }}" class="menu-item"><div class="menu-icon"><i class="bi bi-mortarboard-fill"></i></div><span>Qualifications</span></a>
-        <a href="{{ route('student.preferences') }}" class="menu-item"><div class="menu-icon"><i class="bi bi-sliders"></i></div><span>Study Preferences</span></a>
-    </div>
-
-    <div class="menu-section">
-        <div class="menu-title">Study Abroad</div>
-        <a href="{{ route('student.applications.index') }}" class="menu-item"><div class="menu-icon"><i class="bi bi-file-earmark-text-fill"></i></div><span>Consultancy Application</span></a>
-        <a href="#" class="menu-item"><div class="menu-icon"><i class="bi bi-star-fill"></i></div><span>Recommendations</span></a>
-        <a href="#" class="menu-item"><div class="menu-icon"><i class="bi bi-calendar2-check-fill"></i></div><span>Appointments</span></a>
-        <a href="#" class="menu-item"><div class="menu-icon"><i class="bi bi-chat-dots-fill"></i></div><span>Consultations</span></a>
-        <a href="#" class="menu-item"><div class="menu-icon"><i class="bi bi-arrow-repeat"></i></div><span>Follow-ups</span></a>
-        <a href="#" class="menu-item"><div class="menu-icon"><i class="bi bi-cash-coin"></i></div><span>Fund Requirement</span></a>
-        <a href="{{ route('student.documents') }}" class="menu-item active"><div class="menu-icon"><i class="bi bi-folder2-open"></i></div><span>Required Documents</span></a>
-    </div>
-
-    <div class="menu-section">
-        <div class="menu-title">Account</div>
-        <a href="{{ route('student.account.edit') }}" class="menu-item"><div class="menu-icon"><i class="bi bi-gear-fill"></i></div><span>Account Settings</span></a>
-        <form method="POST" action="{{ route('logout') }}">
-            @csrf
-            <button type="submit" class="menu-item" style="background:none;border:none;width:100%;text-align:left;cursor:pointer;font-family:inherit;">
-                <div class="menu-icon"><i class="bi bi-box-arrow-right"></i></div><span>Logout</span>
-            </button>
-        </form>
-    </div>
-</aside>
+@include('components.student-sidebar')
 
 <main class="main">
 
