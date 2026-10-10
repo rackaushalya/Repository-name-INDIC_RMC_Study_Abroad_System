@@ -226,15 +226,6 @@ class AuthController extends Controller
                 ->where('email', $validated['email'])
                 ->delete();
 
-            AuditLogService::log(
-                'Password Reset',
-                'users',
-                (int) $user->user_id,
-                null,
-                [
-                    'email' => $user->email,
-                ]
-            );
 
             return back()->withErrors([
                 'email' => 'This password reset link has expired.',
