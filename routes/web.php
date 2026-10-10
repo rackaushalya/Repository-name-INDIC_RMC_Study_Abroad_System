@@ -294,6 +294,10 @@ Route::middleware(['auth', 'role:Student'])
             'destroy'
         ]);
 
+        Route::get(
+            'fund-requirements/{fundRequirement}/pdf',
+            [FundRequirementController::class, 'downloadPdf']
+        )->name('fund-requirements.pdf');
 
         /*
         |--------------------------------------------------------------------------
@@ -768,6 +772,12 @@ Route::middleware(['auth', 'role:Admin,SuperAdmin'])
             '/settings/{setting}',
             [AdminController::class, 'destroySystemSetting']
         )->name('settings.destroy');
+
+                // Audit Logs
+        Route::get('/audit-logs', [
+            \App\Http\Controllers\AuditLogController::class,
+            'index'
+        ])->name('audit-logs.index');
 
     });
 

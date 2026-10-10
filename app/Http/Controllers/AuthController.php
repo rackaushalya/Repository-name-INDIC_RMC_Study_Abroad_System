@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use App\Services\AuditLogService;
 
 class AuthController extends Controller
 {
@@ -48,6 +49,17 @@ class AuthController extends Controller
         ]);
 
         $request->session()->regenerate();
+
+                AuditLogService::log(
+            'User Login',
+            'users',
+            (int) $user->user_id,
+            null,
+            [
+                'email' => $user->email,
+                'role' => $user->role?->role_name,
+            ]
+        );
 
         return $this->redirectByRole($user);
     }
@@ -91,6 +103,17 @@ class AuthController extends Controller
             'user_id' => $user->user_id,
         ]);
 
+        AuditLogService::log(
+            'User Registered',
+            'users',
+            (int) $user->user_id,
+            null,
+            [
+                'email' => $user->email,
+                'role' => $user->role?->role_name ?? 'Student',
+            ]
+        );
+
         Auth::login($user);
 
         $request->session()->regenerate();
@@ -98,15 +121,30 @@ class AuthController extends Controller
         return $this->redirectByRole($user);
     }
 
-    public function logout(Request $request)
-    {
-        Auth::logout();
+        public function logout(Request $request)
+        {
+            $user = Auth::user();
 
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+            if ($user) {
+                AuditLogService::log(
+                    'User Logout',
+                    'users',
+                    (int) $user->user_id,
+                    null,
+                    [
+                        'email' => $user->email,
+                        'role' => $user->role?->role_name,
+                    ]
+                );
+            }
 
-        return redirect()->route('login');
-    }
+            Auth::logout();
+
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return redirect()->route('login');
+        }
 
     /*
     |--------------------------------------------------------------------------
@@ -187,6 +225,16 @@ class AuthController extends Controller
             DB::table('password_reset_tokens')
                 ->where('email', $validated['email'])
                 ->delete();
+
+            AuditLogService::log(
+                'Password Reset',
+                'users',
+                (int) $user->user_id,
+                null,
+                [
+                    'email' => $user->email,
+                ]
+            );
 
             return back()->withErrors([
                 'email' => 'This password reset link has expired.',

@@ -14,6 +14,7 @@ use App\Models\Student;
 use App\Models\SystemSetting;
 use App\Models\University;
 use App\Models\User;
+use App\Services\AuditLogService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
@@ -227,23 +228,29 @@ class AdminController extends Controller
         ]);
 
 
-        User::create([
+            $user = User::create([
             'role_id' => $validated['role_id'],
-
             'first_name' => $validated['first_name'],
-
             'last_name' => $validated['last_name'],
-
             'email' => $validated['email'],
-
             'password_hash' => Hash::make(
                 $validated['password']
             ),
-
             'phone' => $validated['phone'] ?? null,
-
             'account_status' => $validated['account_status'],
         ]);
+
+        AuditLogService::log(
+            'Admin Created User',
+            'users',
+            (int) $user->user_id,
+            null,
+            [
+                'email' => $user->email,
+                'role_id' => $user->role_id,
+                'account_status' => $user->account_status,
+            ]
+        );
 
 
         return redirect()
@@ -365,7 +372,32 @@ class AdminController extends Controller
         }
 
 
-        $user->save();
+                    $oldValues = [
+                'role_id' => $user->getOriginal('role_id'),
+                'first_name' => $user->getOriginal('first_name'),
+                'last_name' => $user->getOriginal('last_name'),
+                'email' => $user->getOriginal('email'),
+                'phone' => $user->getOriginal('phone'),
+                'account_status' => $user->getOriginal('account_status'),
+            ];
+
+            $user->save();
+
+            AuditLogService::log(
+                'Admin Updated User',
+                'users',
+                (int) $user->user_id,
+                $oldValues,
+                [
+                    'role_id' => $user->role_id,
+                    'first_name' => $user->first_name,
+                    'last_name' => $user->last_name,
+                    'email' => $user->email,
+                    'phone' => $user->phone,
+                    'account_status' => $user->account_status,
+                    'password_changed' => !empty($validated['password']),
+                ]
+            );
 
 
         return redirect()
@@ -402,6 +434,24 @@ class AdminController extends Controller
                 );
         }
 
+
+      $userId = (int) $user->user_id;
+
+        $oldValues = [
+            'first_name' => $user->first_name,
+            'last_name' => $user->last_name,
+            'email' => $user->email,
+            'role_id' => $user->role_id,
+            'account_status' => $user->account_status,
+        ];
+
+        AuditLogService::log(
+            'Admin Deleted User',
+            'users',
+            $userId,
+            $oldValues,
+            null
+        );
 
         $user->delete();
 
@@ -452,10 +502,23 @@ class AdminController extends Controller
         }
 
 
-        $user->account_status =
-            $validated['account_status'];
+            $oldStatus = $user->account_status;
 
-        $user->save();
+            $user->account_status = $validated['account_status'];
+
+            $user->save();
+
+            AuditLogService::log(
+                'Admin Updated User Status',
+                'users',
+                (int) $user->user_id,
+                [
+                    'account_status' => $oldStatus,
+                ],
+                [
+                    'account_status' => $user->account_status,
+                ]
+            );
 
 
         return redirect()
@@ -652,10 +715,26 @@ class AdminController extends Controller
             abort(404);
         }
 
-        $student->user->account_status =
-            $validated['account_status'];
+            $oldStatus = $student->user->account_status;
 
-        $student->user->save();
+            $student->user->account_status =
+                $validated['account_status'];
+
+            $student->user->save();
+
+            AuditLogService::log(
+                'Admin Updated Student Status',
+                'users',
+                (int) $student->user->user_id,
+                [
+                    'account_status' => $oldStatus,
+                    'student_id' => $student->student_id,
+                ],
+                [
+                    'account_status' => $student->user->account_status,
+                    'student_id' => $student->student_id,
+                ]
+            );
 
         return redirect()
             ->route('admin.students')
@@ -749,6 +828,20 @@ class AdminController extends Controller
             'country' => $validated['country'] ?? null,
         ]);
 
+                AuditLogService::log(
+            'Admin Created Student',
+            'students',
+            (int) $student->student_id,
+            null,
+            [
+                'student_id' => $student->student_id,
+                'user_id' => $user->user_id,
+                'email' => $user->email,
+                'nationality' => $student->nationality,
+                'country' => $student->country,
+            ]
+        );
+
         return redirect()
             ->route('admin.students.show', $student)
             ->with('success', 'Student created successfully.');
@@ -833,7 +926,54 @@ class AdminController extends Controller
             $student->user->password_hash = Hash::make($validated['password']);
         }
 
+                $oldUserValues = [
+            'first_name' => $student->user->getOriginal('first_name'),
+            'last_name' => $student->user->getOriginal('last_name'),
+            'email' => $student->user->getOriginal('email'),
+            'phone' => $student->user->getOriginal('phone'),
+            'account_status' => $student->user->getOriginal('account_status'),
+        ];
+
+        $oldStudentValues = [
+            'nationality' => $student->getOriginal('nationality'),
+            'country' => $student->getOriginal('country'),
+        ];
+
         $student->user->save();
+
+        $student->update([
+            'date_of_birth' => $validated['date_of_birth'] ?? null,
+            'gender' => $validated['gender'] ?? null,
+            'nationality' => $validated['nationality'] ?? null,
+            'passport_number' => $validated['passport_number'] ?? null,
+            'current_address' => $validated['current_address'] ?? null,
+            'city' => $validated['city'] ?? null,
+            'country' => $validated['country'] ?? null,
+        ]);
+
+        AuditLogService::log(
+            'Admin Updated Student',
+            'students',
+            (int) $student->student_id,
+            [
+                'user' => $oldUserValues,
+                'student' => $oldStudentValues,
+            ],
+            [
+                'user' => [
+                    'first_name' => $student->user->first_name,
+                    'last_name' => $student->user->last_name,
+                    'email' => $student->user->email,
+                    'phone' => $student->user->phone,
+                    'account_status' => $student->user->account_status,
+                ],
+                'student' => [
+                    'nationality' => $student->nationality,
+                    'country' => $student->country,
+                ],
+                'password_changed' => !empty($validated['password']),
+            ]
+        );
 
         $student->update([
             'date_of_birth' => $validated['date_of_birth'] ?? null,
@@ -871,19 +1011,37 @@ class AdminController extends Controller
                 );
         }
 
-        if ($student->user) {
-            // Deleting the user cascades to the student row (and their
-            // documents, qualifications, preferences, appointments, etc.).
-            $student->user->delete();
-        } else {
-            $student->delete();
-        }
+            $student->loadMissing('user');
 
-        return redirect()
-            ->route('admin.students')
-            ->with('success', 'Student deleted successfully.');
+            $studentId = (int) $student->student_id;
+
+            $userId = $student->user
+                ? (int) $student->user->user_id
+                : null;
+
+            $oldValues = [
+                'student_id' => $studentId,
+                'user_id' => $userId,
+                'email' => $student->user?->email,
+                'nationality' => $student->nationality,
+                'country' => $student->country,
+            ];
+
+            AuditLogService::log(
+                'Admin Deleted Student',
+                'students',
+                $studentId,
+                $oldValues,
+                null
+            );
+
+            if ($student->user) {
+                $student->user->delete();
+            } else {
+                $student->delete();
+            }
+
     }
-
 
     /**
      * Export the (filtered) student list as a CSV download.

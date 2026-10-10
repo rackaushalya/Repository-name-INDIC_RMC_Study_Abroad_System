@@ -9,6 +9,9 @@ use App\Models\FundRequirementDetail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Barryvdh\DomPDF\Facade\Pdf;
+use App\Models\FundRequirementPdf;
+use App\Services\AuditLogService;
 
 class FundRequirementController extends Controller
 {
@@ -199,6 +202,21 @@ class FundRequirementController extends Controller
             return $fundRequirement;
         });
 
+
+            AuditLogService::log(
+                        'Fund Requirement Generated',
+                        'fund_requirements',
+                        (int) $fundRequirement->fund_requirement_id,
+                        null,
+                        [
+                            'total_required_amount' =>
+                                $fundRequirement->total_required_amount,
+                            'currency' => $fundRequirement->currency,
+                            'student_id' => $student->student_id,
+                        ]
+                    );
+
+
         return redirect()
             ->route(
                 'student.fund-requirements.show',
@@ -240,6 +258,76 @@ class FundRequirementController extends Controller
             compact('fundRequirement')
         );
     }
+
+
+/**
+ * Generate and download a fund requirement PDF.
+ */
+public function downloadPdf(FundRequirement $fundRequirement)
+{
+    $student = Auth::user()?->student;
+
+    if (!$student) {
+        abort(403, 'Student profile not found.');
+    }
+
+    if (
+        (int) $fundRequirement->student_id !==
+        (int) $student->student_id
+    ) {
+        abort(403, 'You cannot access this report.');
+    }
+
+    $fundRequirement->load([
+        'selectedCountry',
+        'selectedCourse.university',
+        'details',
+    ]);
+
+    $fileName = 'fund-requirement-'
+        . $fundRequirement->fund_requirement_id
+        . '.pdf';
+
+    $filePath = 'fund-requirements/' . $fileName;
+
+    $pdf = Pdf::loadView(
+        'student.fund-requirements.pdf',
+        compact('fundRequirement')
+    )->setPaper('a4', 'portrait');
+
+    Storage::disk('local')->put($filePath, $pdf->output());
+
+    FundRequirementPdf::updateOrCreate(
+        [
+            'fund_requirement_id' =>
+                $fundRequirement->fund_requirement_id,
+        ],
+        [
+            'file_name' => $fileName,
+            'file_path' => $filePath,
+            'generated_by' => Auth::id(),
+            'generated_at' => now(),
+        ]
+    );
+
+            AuditLogService::log(
+            'Fund Requirement PDF Downloaded',
+            'fund_requirement_pdf',
+            (int) $fundRequirement->fund_requirement_id,
+            null,
+            [
+                'file_name' => $fileName,
+                'fund_requirement_id' =>
+                    $fundRequirement->fund_requirement_id,
+            ]
+        );
+
+    return response()->download(
+        Storage::disk('local')->path($filePath),
+        $fileName
+    );
+}
+
 
     /**
      * Delete a fund requirement.
