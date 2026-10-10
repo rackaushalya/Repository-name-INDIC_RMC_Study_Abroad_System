@@ -305,9 +305,14 @@
         }
 
     </style>
+@include('components.sidebar-style')
 </head>
 
 <body>
+
+@include('components.student-sidebar')
+
+<div class="main">
 
 <div class="container">
 
@@ -699,6 +704,8 @@
         @endif
 
     </div>
+
+</div>
 
 </div>
 

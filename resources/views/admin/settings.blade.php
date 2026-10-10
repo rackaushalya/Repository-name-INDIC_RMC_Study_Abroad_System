@@ -335,10 +335,15 @@
 
     </style>
 
+@include('components.sidebar-style')
 </head>
 
 
 <body>
+
+@include('components.admin-sidebar')
+
+<div class="main">
 
 
 <div class="page">
@@ -1044,6 +1049,8 @@
 
 </script>
 
+
+</div>
 
 </body>
 

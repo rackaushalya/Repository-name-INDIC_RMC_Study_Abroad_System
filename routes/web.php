@@ -118,7 +118,7 @@ Route::get('/auth/google/callback', [GoogleController::class, 'callback'])
 |--------------------------------------------------------------------------
 */
 
-Route::middleware('auth')
+Route::middleware(['auth', 'role:Student'])
     ->prefix('student')
     ->name('student.')
     ->group(function () {
@@ -357,7 +357,7 @@ Route::middleware('auth')
 |--------------------------------------------------------------------------
 */
 
-Route::middleware('auth')
+Route::middleware(['auth', 'role:Consultant'])
     ->prefix('consultant')
     ->name('consultant.')
     ->group(function () {
@@ -401,7 +401,8 @@ Route::middleware('auth')
 |--------------------------------------------------------------------------
 */
 
-Route::prefix('admin')
+Route::middleware(['auth', 'role:Admin,SuperAdmin'])
+    ->prefix('admin')
     ->name('admin.')
     ->group(function () {
 
@@ -773,23 +774,11 @@ Route::prefix('admin')
 
 /*
 |--------------------------------------------------------------------------
-| Temporary Test Route
-|--------------------------------------------------------------------------
-*/
-
-Route::get(
-    '/test-applications',
-    [AdminController::class, 'applications']
-)->name('test.applications');
-
-
-/*
-|--------------------------------------------------------------------------
 | Super Admin
 |--------------------------------------------------------------------------
 */
 
-Route::middleware('auth')
+Route::middleware(['auth', 'role:SuperAdmin'])
     ->prefix('super-admin')
     ->name('superadmin.')
     ->group(function () {
@@ -800,38 +789,3 @@ Route::middleware('auth')
         )->name('dashboard');
 
     });
-
-
-/*
-|--------------------------------------------------------------------------
-| Temporary Test Routes
-|--------------------------------------------------------------------------
-*/
-
-Route::get(
-    '/test-univ',
-    [UniversityController::class, 'index']
-);
-
-Route::get(
-    '/test-countries',
-    [CountryController::class, 'index']
-);
-
-Route::get(
-    '/test-courses',
-    [CourseController::class, 'index']
-);
-
-Route::get(
-    '/test-scholarships',
-    [ScholarshipController::class, 'index']
-);
-
-Route::get('/test-consultants', function () {
-    return view('admin.consultants');
-});
-
-Route::get('/test-dashboard', function () {
-    return view('admin.dashboard');
-});

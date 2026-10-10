@@ -15,7 +15,7 @@ class AuthController extends Controller
 {
     public function showLogin()
     {
-        return view('auth.login');
+        return view('auth.login', ['mode' => 'login']);
     }
 
     public function login(Request $request)
@@ -23,6 +23,10 @@ class AuthController extends Controller
         $credentials = $request->validate([
             'email' => ['required', 'email'],
             'password' => ['required'],
+        ], [
+            'email.required' => 'Please enter your email address.',
+            'email.email' => 'Please enter a valid email address.',
+            'password.required' => 'Please enter your password.',
         ]);
 
         $user = User::where('email', $credentials['email'])
@@ -32,7 +36,7 @@ class AuthController extends Controller
         if (!$user || !Hash::check($credentials['password'], $user->password_hash)) {
             return back()
                 ->withErrors([
-                    'email' => 'Invalid email or password.',
+                    'email' => 'The sign-in details could not be verified.',
                 ])
                 ->withInput();
         }
@@ -50,7 +54,7 @@ class AuthController extends Controller
 
     public function showRegister()
     {
-        return view('auth.register');
+        return view('auth.login', ['mode' => 'register']);
     }
 
     public function register(Request $request)

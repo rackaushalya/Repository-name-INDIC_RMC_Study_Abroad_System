@@ -27,88 +27,6 @@
         }
 
         /* =====================================
-           SIDEBAR
-        ====================================== */
-
-        .sidebar {
-            position: fixed;
-            left: 0;
-            top: 0;
-            width: 245px;
-            height: 100vh;
-            background: #101a2b;
-            color: white;
-            padding: 25px 15px;
-            overflow-y: auto;
-        }
-
-        .logo {
-            padding: 0 12px;
-            margin-bottom: 35px;
-        }
-
-        .logo-main {
-            font-size: 25px;
-            font-weight: 700;
-            color: #f97316;
-        }
-
-        .logo-main span {
-            color: white;
-        }
-
-        .logo-subtitle {
-            font-size: 8px;
-            letter-spacing: 0.8px;
-            color: #aeb7c7;
-            margin-top: 4px;
-        }
-
-        .menu-section {
-            margin-bottom: 25px;
-        }
-
-        .menu-title {
-            color: #7e8ba1;
-            font-size: 10px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin: 0 12px 10px;
-        }
-
-        .menu-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 11px 12px;
-            margin-bottom: 4px;
-            border-radius: 7px;
-            color: #cbd3df;
-            font-size: 13px;
-            transition: 0.2s;
-        }
-
-        .menu-item:hover {
-            background: #1d2a40;
-            color: white;
-        }
-
-        .menu-item.active {
-            background: #f97316;
-            color: white;
-        }
-
-        .menu-icon {
-            width: 19px;
-            height: 19px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
-            flex-shrink: 0;
-        }
-
-        /* =====================================
            MAIN
         ====================================== */
 
@@ -372,29 +290,6 @@
         ====================================== */
 
         @media (max-width: 750px) {
-            .sidebar {
-                width: 70px;
-            }
-
-            .logo-subtitle,
-            .logo-main span,
-            .menu-title,
-            .menu-item span:not(.menu-icon) {
-                display: none;
-            }
-
-            .logo {
-                text-align: center;
-                padding: 0;
-            }
-
-            .logo-main {
-                font-size: 17px;
-            }
-
-            .menu-item {
-                justify-content: center;
-            }
 
             .main {
                 margin-left: 70px;
@@ -423,6 +318,7 @@
             }
         }
     </style>
+@include('components.sidebar-style')
 </head>
 
 <body>
@@ -431,80 +327,7 @@
      SIDEBAR
 ====================================== -->
 
-<aside class="sidebar">
-
-    <div class="logo">
-        <div class="logo-main">INDIC <span>RMC</span></div>
-        <div class="logo-subtitle">ADMINISTRATION PORTAL</div>
-    </div>
-
-    <div class="menu-section">
-        <div class="menu-title">OVERVIEW</div>
-
-        <a href="{{ route('admin.dashboard') }}" class="menu-item">
-            <span class="menu-icon"><i class="bi bi-grid-1x2-fill"></i></span>
-            <span>Dashboard</span>
-        </a>
-    </div>
-
-    <div class="menu-section">
-        <div class="menu-title">MANAGEMENT</div>
-
-        <a href="{{ route('admin.users') }}" class="menu-item">
-            <span class="menu-icon"><i class="bi bi-people-fill"></i></span>
-            <span>Users</span>
-        </a>
-
-        <a href="{{ route('admin.students') }}" class="menu-item active">
-            <span class="menu-icon"><i class="bi bi-person-fill"></i></span>
-            <span>Students</span>
-        </a>
-
-        <a href="{{ route('admin.consultants') }}" class="menu-item">
-            <span class="menu-icon"><i class="bi bi-person-badge-fill"></i></span>
-            <span>Consultants</span>
-        </a>
-
-        <a href="{{ route('admin.applications-list') }}" class="menu-item">
-            <span class="menu-icon"><i class="bi bi-file-earmark-text-fill"></i></span>
-            <span>Applications</span>
-        </a>
-
-        <a href="{{ route('admin.appointments-list') }}" class="menu-item">
-            <span class="menu-icon"><i class="bi bi-calendar2-check-fill"></i></span>
-            <span>Appointments</span>
-        </a>
-    </div>
-
-    <div class="menu-section">
-        <div class="menu-title">STUDY ABROAD</div>
-
-        <a href="{{ route('admin.countries-list') }}" class="menu-item">
-            <span class="menu-icon"><i class="bi bi-globe-americas"></i></span>
-            <span>Countries</span>
-        </a>
-
-        <a href="{{ route('admin.universities-list') }}" class="menu-item">
-            <span class="menu-icon"><i class="bi bi-bank"></i></span>
-            <span>Universities</span>
-        </a>
-
-        <a href="{{ route('admin.courses-list') }}" class="menu-item">
-            <span class="menu-icon"><i class="bi bi-mortarboard-fill"></i></span>
-            <span>Courses</span>
-        </a>
-    </div>
-
-    <div class="menu-section">
-        <div class="menu-title">SYSTEM</div>
-
-        <a href="{{ route('admin.users') }}" class="menu-item">
-            <span class="menu-icon"><i class="bi bi-gear-fill"></i></span>
-            <span>User Management</span>
-        </a>
-    </div>
-
-</aside>
+@include('components.admin-sidebar')
 
 <!-- =====================================
      MAIN
