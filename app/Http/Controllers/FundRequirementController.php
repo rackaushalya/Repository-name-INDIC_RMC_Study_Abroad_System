@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Application;
 use App\Models\Course;
 use App\Models\Country;
 use App\Models\FundRequirement;
@@ -9,6 +10,7 @@ use App\Models\FundRequirementDetail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Storage;
 use App\Models\FundRequirementPdf;
@@ -48,6 +50,20 @@ class FundRequirementController extends Controller
      */
     public function create()
     {
+        $student = Auth::user()?->student;
+
+        if (!$student) {
+            abort(403, 'Student profile not found.');
+        }
+
+        $applications = Application::with([
+            'preferredCountry',
+            'preferredCourse',
+        ])
+            ->where('student_id', $student->student_id)
+            ->latest('application_id')
+            ->get();
+
         $countries = Country::where('is_active', true)
             ->orderBy('country_name')
             ->get();
@@ -61,7 +77,8 @@ class FundRequirementController extends Controller
             'student.fund-requirements.create',
             compact(
                 'countries',
-                'courses'
+                'courses',
+                'applications'
             )
         );
     }
@@ -92,7 +109,8 @@ class FundRequirementController extends Controller
             'application_id' => [
                 'nullable',
                 'integer',
-                'exists:applications,application_id'
+                Rule::exists('applications', 'application_id')
+                    ->where('student_id', $student->student_id),
             ],
             'total_tuition' => [
                 'required',
@@ -242,8 +260,8 @@ class FundRequirementController extends Controller
         }
 
         if (
-            $fundRequirement->student_id !==
-            $student->student_id
+            (int) $fundRequirement->student_id !==
+            (int) $student->student_id
         ) {
             abort(403);
         }
@@ -344,8 +362,8 @@ public function downloadPdf(FundRequirement $fundRequirement)
         }
 
         if (
-            $fundRequirement->student_id !==
-            $student->student_id
+            (int) $fundRequirement->student_id !==
+            (int) $student->student_id
         ) {
             abort(403);
         }

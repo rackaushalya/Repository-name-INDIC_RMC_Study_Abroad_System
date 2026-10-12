@@ -6,6 +6,8 @@ use App\Models\Application;
 use App\Models\Country;
 use App\Models\Course;
 use App\Models\CourseIntake;
+use App\Services\ApplicationJourney;
+use App\Services\DeadlineAlerts;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -14,7 +16,7 @@ class ApplicationController extends Controller
     /**
      * Display student's applications.
      */
-    public function index()
+    public function index(ApplicationJourney $journeys, DeadlineAlerts $alerts)
     {
         $user = Auth::user();
 
@@ -27,15 +29,21 @@ class ApplicationController extends Controller
         $applications = Application::with([
             'preferredCountry',
             'preferredCourse',
-            'preferredIntake'
+            'preferredIntake',
+            'statusHistory'
         ])
             ->where('student_id', $student->student_id)
             ->latest('submitted_at')
             ->paginate(10);
 
+        $alerts->sync($student);
+
+        // Status summary, next action and deadline for every application.
+        $overview = $journeys->overview($student);
+
         return view(
             'student.applications.index',
-            compact('applications')
+            compact('applications', 'overview')
         );
     }
 

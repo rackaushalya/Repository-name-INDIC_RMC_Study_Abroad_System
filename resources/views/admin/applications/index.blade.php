@@ -1,766 +1,211 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
     <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>Applications | INDIC RMC</title>
 
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-
-    <style>
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-
-        body {
-            font-family: Arial, Helvetica, sans-serif;
-            background: #f5f7fb;
-            color: #172033;
-        }
-
-
-        a {
-            text-decoration: none;
-            color: inherit;
-        }
-
-        /* =====================================
-           MAIN
-        ====================================== */
-
-        .main {
-            margin-left: 245px;
-            min-height: 100vh;
-        }
-
-        /* =====================================
-           TOPBAR
-        ====================================== */
-
-        .topbar {
-            height: 72px;
-            background: white;
-            border-bottom: 1px solid #e6e9ef;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 28px;
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
-
-        .search-box {
-            width: 330px;
-            position: relative;
-        }
-
-        .search-box input {
-            width: 100%;
-            padding: 11px 15px 11px 40px;
-            border: 1px solid #dce1e8;
-            border-radius: 7px;
-            outline: none;
-            font-size: 13px;
-            background: #f8fafc;
-        }
-
-        .search-box input:focus {
-            border-color: #f97316;
-            background: white;
-        }
-
-        .search-icon {
-            position: absolute;
-            left: 14px;
-            top: 11px;
-            color: #8a94a6;
-        }
-
-        .admin-profile {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .profile-circle {
-            width: 38px;
-            height: 38px;
-            border-radius: 50%;
-            background: #f97316;
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 13px;
-        }
-
-        .profile-info strong {
-            display: block;
-            font-size: 13px;
-        }
-
-        .profile-info span {
-            display: block;
-            font-size: 11px;
-            color: #8a94a6;
-            margin-top: 3px;
-        }
-
-        /* =====================================
-           CONTENT
-        ====================================== */
-
-        .content {
-            padding: 28px;
-        }
-
-        .container {
-            padding: 30px;
-        }
-
-
-        .page-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 25px;
-        }
-
-
-        .page-header h1 {
-            font-size: 28px;
-            margin-bottom: 7px;
-        }
-
-
-        .page-header p {
-            color: #718096;
-            font-size: 14px;
-        }
-
-
-        .back-btn {
-            background: #172033;
-            color: white;
-            padding: 10px 16px;
-            border-radius: 7px;
-            font-size: 13px;
-        }
-
-
-        .back-btn:hover {
-            background: #263550;
-        }
-
-
-        .card {
-            background: white;
-            border: 1px solid #e2e6ec;
-            border-radius: 10px;
-            overflow: hidden;
-        }
-
-
-        .card-header {
-            padding: 18px 20px;
-            border-bottom: 1px solid #edf0f4;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-
-        .card-header h2 {
-            font-size: 17px;
-        }
-
-
-        .total {
-            color: #718096;
-            font-size: 13px;
-        }
-
-
-        .table-wrapper {
-            overflow-x: auto;
-        }
-
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-
-        th {
-            text-align: left;
-            padding: 14px 18px;
-            background: #f8fafc;
-            color: #68758a;
-            font-size: 11px;
-            text-transform: uppercase;
-            white-space: nowrap;
-        }
-
-
-        td {
-            padding: 15px 18px;
-            border-top: 1px solid #edf0f4;
-            font-size: 13px;
-            vertical-align: middle;
-        }
-
-
-        tr:hover td {
-            background: #fafafa;
-        }
-
-
-        .reference {
-            font-weight: bold;
-            color: #172033;
-        }
-
-
-        .student-name {
-            font-weight: 600;
-        }
-
-
-        .email {
-            display: block;
-            margin-top: 4px;
-            color: #8a94a6;
-            font-size: 11px;
-        }
-
-
-        .status {
-            display: inline-block;
-            padding: 5px 10px;
-            border-radius: 15px;
-            font-size: 11px;
-            font-weight: bold;
-        }
-
-
-        .status-submitted {
-            background: #e8f1ff;
-            color: #2767b1;
-        }
-
-
-        .status-review {
-            background: #fff3df;
-            color: #c46b00;
-        }
-
-
-        .status-approved {
-            background: #e7f7ed;
-            color: #198754;
-        }
-
-
-        .status-rejected {
-            background: #fde8e8;
-            color: #c62828;
-        }
-
-
-        .status-cancelled {
-            background: #eeeeee;
-            color: #666666;
-        }
-
-
-        .status-default {
-            background: #f0f2f5;
-            color: #596579;
-        }
-
-
-        .view-btn {
-            display: inline-block;
-            padding: 7px 11px;
-            border: 1px solid #f97316;
-            color: #f97316;
-            border-radius: 6px;
-            font-size: 11px;
-            font-weight: bold;
-        }
-
-
-        .view-btn:hover {
-            background: #f97316;
-            color: white;
-        }
-
-
-        .empty {
-            text-align: center;
-            padding: 50px 20px;
-            color: #8a94a6;
-        }
-
-
-        .pagination {
-            padding: 18px 20px;
-            border-top: 1px solid #edf0f4;
-        }
-
-
-        @media (max-width: 900px) {
-
-            .container {
-                padding: 18px;
-            }
-
-
-            .page-header {
-                align-items: flex-start;
-                gap: 15px;
-                flex-direction: column;
-            }
-
-
-            th,
-            td {
-                padding: 12px;
-            }
-
-        }
-
-        @media (max-width: 750px) {
-
-            .main {
-                margin-left: 70px;
-            }
-
-            .content {
-                padding: 15px;
-            }
-
-            .topbar {
-                padding: 0 15px;
-            }
-
-            .search-box {
-                width: 200px;
-            }
-        }
-
-    </style>
-
-@include('components.sidebar-style')
+    @include('components.page-style')
+    @include('components.sidebar-style')
 </head>
-
-
 <body>
-
-<!-- =====================================
-     SIDEBAR
-====================================== -->
 
 @include('components.admin-sidebar')
 
-<!-- =====================================
-     MAIN
-====================================== -->
+@php
+    $statusBadge = fn (string $status): string => match ($status) {
+        'Submitted', 'Consultation Completed' => 'blue',
+        'Under Review' => 'amber',
+        'Consultant Assigned', 'Consultation Scheduled' => 'purple',
+        'Recommendation Provided', 'Completed' => 'green',
+        'Follow-up Required' => 'orange',
+        'Rejected' => 'red',
+        'Cancelled' => 'grey',
+        default => '',
+    };
+
+    $totalAll = (int) $statusCounts->sum();
+    $filtering = request()->hasAny(['search', 'status']);
+    $activeStatus = request('status');
+@endphp
 
 <main class="main">
 
-    <header class="topbar">
+    <x-admin-topbar current="Applications" />
 
-        <div class="search-box">
-            <span class="search-icon"><i class="bi bi-search"></i></span>
-            <input type="text" placeholder="Search students, applications...">
-        </div>
+    <section class="pg">
 
-        <div class="admin-profile">
-            <div class="profile-circle">
-                {{ strtoupper(substr(auth()->user()->first_name ?? 'A', 0, 1)) }}
-            </div>
-            <div class="profile-info">
-                <strong>{{ auth()->user()->first_name ?? 'Admin' }} {{ auth()->user()->last_name ?? 'User' }}</strong>
-                <span>Administrator</span>
-            </div>
-        </div>
-
-    </header>
-
-    <section class="content">
-
-<div class="container">
-
-
-    <!-- ==============================
-         PAGE HEADER
-    =============================== -->
-
-    <div class="page-header">
-
-        <div>
-
-            <h1>
-                Application Management
-            </h1>
-
-            <p>
-                View and manage student consultancy applications.
-            </p>
-
-        </div>
-
-
-        <a
-            href="{{ route('admin.dashboard') }}"
-            class="back-btn"
-        >
-            ← Dashboard
-        </a>
-
-    </div>
-
-
-
-    <!-- ==============================
-         APPLICATIONS CARD
-    =============================== -->
-
-    <div class="card">
-
-
-        <div class="card-header">
-
-            <h2>
-                All Applications
-            </h2>
-
-
-            <span class="total">
-
-                Total:
-                {{ $applications->total() }}
-
-            </span>
-
-        </div>
-
-
-
-        <div class="table-wrapper">
-
-            <table>
-
-                <thead>
-
-                    <tr>
-
-                        <th>
-                            Reference
-                        </th>
-
-                        <th>
-                            Student
-                        </th>
-
-                        <th>
-                            Type
-                        </th>
-
-                        <th>
-                            Country
-                        </th>
-
-                        <th>
-                            Course
-                        </th>
-
-                        <th>
-                            Intake
-                        </th>
-
-                        <th>
-                            Status
-                        </th>
-
-                        <th>
-                            Submitted
-                        </th>
-
-                        <th>
-                            Action
-                        </th>
-
-                    </tr>
-
-                </thead>
-
-
-                <tbody>
-
-
-                    @forelse($applications as $application)
-
-
-                        <tr>
-
-
-                            <!-- REFERENCE -->
-
-                            <td>
-
-                                <span class="reference">
-
-                                    {{ $application->application_reference ?? '-' }}
-
-                                </span>
-
-                            </td>
-
-
-
-                            <!-- STUDENT -->
-
-                            <td>
-
-                                @if(
-                                    $application->student &&
-                                    $application->student->user
-                                )
-
-                                    <span class="student-name">
-
-                                        {{ $application->student->user->first_name }}
-
-                                        {{ $application->student->user->last_name }}
-
-                                    </span>
-
-
-                                    <span class="email">
-
-                                        {{ $application->student->user->email }}
-
-                                    </span>
-
-                                @else
-
-                                    <span class="student-name">
-                                        Unknown Student
-                                    </span>
-
-                                @endif
-
-                            </td>
-
-
-
-                            <!-- APPLICATION TYPE -->
-
-                            <td>
-
-                                {{ $application->application_type ?? '-' }}
-
-                            </td>
-
-
-
-                            <!-- COUNTRY -->
-
-                            <td>
-
-                                {{ $application->preferredCountry->country_name ?? '-' }}
-
-                            </td>
-
-
-
-                            <!-- COURSE -->
-
-                            <td>
-
-                                {{ $application->preferredCourse->course_name ?? '-' }}
-
-                            </td>
-
-
-
-                            <!-- INTAKE -->
-
-                            <td>
-
-                                @if($application->preferredIntake)
-
-                                    {{ $application->preferredIntake->intake_name ?? '-' }}
-
-                                @else
-
-                                    -
-
-                                @endif
-
-                            </td>
-
-
-
-                            <!-- STATUS -->
-
-                            <td>
-
-
-                                @php
-
-                                    $status =
-                                        $application->application_status
-                                        ?? 'Unknown';
-
-
-                                    $statusClass =
-                                        match(
-                                            strtolower($status)
-                                        ) {
-
-                                            'submitted'
-                                                => 'status-submitted',
-
-                                            'under review',
-                                            'in review'
-                                                => 'status-review',
-
-                                            'approved',
-                                            'accepted',
-                                            'completed',
-                                            'enrolled'
-                                                => 'status-approved',
-
-                                            'rejected'
-                                                => 'status-rejected',
-
-                                            'cancelled',
-                                            'canceled'
-                                                => 'status-cancelled',
-
-                                            default
-                                                => 'status-default',
-
-                                        };
-
-                                @endphp
-
-
-                                <span
-                                    class="status {{ $statusClass }}"
-                                >
-
-                                    {{ $status }}
-
-                                </span>
-
-
-                            </td>
-
-
-
-                            <!-- SUBMITTED -->
-
-                            <td>
-
-                                @if($application->submitted_at)
-
-                                    {{ $application->submitted_at->format('d M Y') }}
-
-                                @else
-
-                                    -
-
-                                @endif
-
-                            </td>
-
-
-
-                            <!-- VIEW -->
-
-                            <td>
-
-                                <a
-                                    href="{{ route('admin.applications-show', $application) }}"
-                                    class="view-btn"
-                                >
-                                    View
-                                </a>
-
-                            </td>
-
-
-                        </tr>
-
-
-                    @empty
-
-
-                        <tr>
-
-                            <td
-                                colspan="9"
-                                class="empty"
-                            >
-
-                                No applications found.
-
-                            </td>
-
-                        </tr>
-
-
-                    @endforelse
-
-
-                </tbody>
-
-            </table>
-
-        </div>
-
-
-
-        <!-- PAGINATION -->
-
-        @if($applications->hasPages())
-
-            <div class="pagination">
-
-                {{ $applications->links() }}
-
+        <div class="pg-head">
+            <div>
+                <h1>Application Management</h1>
+                <p>View and manage student consultancy applications.</p>
             </div>
 
+            <div class="pg-actions">
+                <a href="{{ route('admin.dashboard') }}" class="pg-btn">
+                    <i class="bi bi-arrow-left"></i> Dashboard
+                </a>
+            </div>
+        </div>
+
+        @if (session('success'))
+            <div class="pg-alert success">
+                <i class="bi bi-check-circle-fill"></i> {{ session('success') }}
+            </div>
         @endif
 
+        <div class="pg-stats">
+            <div class="pg-stat">
+                <div class="pg-stat-icon"><i class="bi bi-file-earmark-text"></i></div>
+                <div><span>Total Applications</span><strong>{{ $totalAll }}</strong></div>
+            </div>
 
-    </div>
+            <div class="pg-stat">
+                <div class="pg-stat-icon blue"><i class="bi bi-send"></i></div>
+                <div><span>Newly Submitted</span><strong>{{ $statusCounts['Submitted'] ?? 0 }}</strong></div>
+            </div>
 
+            <div class="pg-stat">
+                <div class="pg-stat-icon navy"><i class="bi bi-hourglass-split"></i></div>
+                <div><span>Under Review</span><strong>{{ $statusCounts['Under Review'] ?? 0 }}</strong></div>
+            </div>
 
-</div>
+            <div class="pg-stat">
+                <div class="pg-stat-icon green"><i class="bi bi-check2-circle"></i></div>
+                <div><span>Completed</span><strong>{{ $statusCounts['Completed'] ?? 0 }}</strong></div>
+            </div>
+        </div>
+
+        <div class="pg-card">
+
+            <form method="GET" action="{{ route('admin.applications-list') }}" class="pg-toolbar">
+
+                <div class="pg-search">
+                    <i class="bi bi-search"></i>
+                    <input type="text"
+                           name="search"
+                           placeholder="Search reference, student, course or country..."
+                           value="{{ request('search') }}">
+                </div>
+
+                @if ($activeStatus)
+                    <input type="hidden" name="status" value="{{ $activeStatus }}">
+                @endif
+
+                <button type="submit" class="pg-btn pg-btn-dark">
+                    <i class="bi bi-search"></i> Search
+                </button>
+
+                @if ($filtering)
+                    <a href="{{ route('admin.applications-list') }}" class="pg-btn">Clear</a>
+                @endif
+            </form>
+
+            <div class="pg-chips">
+                <a href="{{ route('admin.applications-list', array_filter(['search' => request('search')])) }}"
+                   class="pg-chip {{ $activeStatus ? '' : 'active' }}">
+                    All <b>{{ $totalAll }}</b>
+                </a>
+
+                @foreach (\App\Models\Application::STATUSES as $statusName)
+                    <a href="{{ route('admin.applications-list', array_filter(['search' => request('search'), 'status' => $statusName])) }}"
+                       class="pg-chip {{ $activeStatus === $statusName ? 'active' : '' }}">
+                        {{ $statusName }} <b>{{ $statusCounts[$statusName] ?? 0 }}</b>
+                    </a>
+                @endforeach
+            </div>
+
+            <div class="pg-table-wrap">
+                <table class="pg-table" style="min-width:980px;">
+                    <thead>
+                        <tr>
+                            <th>Reference</th>
+                            <th>Student</th>
+                            <th>Type</th>
+                            <th>Destination</th>
+                            <th>Intake</th>
+                            <th>Status</th>
+                            <th>Submitted</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @forelse ($applications as $application)
+                            @php
+                                $user = $application->student?->user;
+                                $name = $user ? trim($user->first_name . ' ' . $user->last_name) : '';
+                                $status = $application->application_status ?? 'Unknown';
+                            @endphp
+
+                            <tr>
+                                <td>
+                                    <a href="{{ route('admin.applications-show', $application) }}"
+                                       class="pg-strong" style="color:#f97316;">
+                                        {{ $application->application_reference ?? '#' . $application->application_id }}
+                                    </a>
+                                </td>
+
+                                <td>
+                                    @if ($user)
+                                        <div class="pg-person">
+                                            <div class="pg-person-avatar">{{ strtoupper(substr($name ?: $user->email, 0, 1)) }}</div>
+                                            <div>
+                                                <div class="pg-strong">{{ $name }}</div>
+                                                <span class="pg-sub">{{ $user->email }}</span>
+                                            </div>
+                                        </div>
+                                    @else
+                                        <span class="pg-muted">Unknown student</span>
+                                    @endif
+                                </td>
+
+                                <td>{{ $application->application_type ?? '—' }}</td>
+
+                                <td>
+                                    <div class="pg-strong">{{ $application->preferredCountry->country_name ?? '—' }}</div>
+                                    <span class="pg-sub">{{ $application->preferredCourse->course_name ?? '—' }}</span>
+                                </td>
+
+                                <td>{{ $application->preferredIntake->intake_name ?? '—' }}</td>
+
+                                <td><span class="pg-badge {{ $statusBadge($status) }}">{{ $status }}</span></td>
+
+                                <td>{{ $application->submitted_at?->format('d M Y') ?? '—' }}</td>
+
+                                <td>
+                                    <a href="{{ route('admin.applications-show', $application) }}"
+                                       class="pg-btn pg-btn-sm">
+                                        <i class="bi bi-eye"></i> View
+                                    </a>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="8">
+                                    <div class="pg-empty">
+                                        <div class="pg-empty-icon"><i class="bi bi-file-earmark-text"></i></div>
+                                        <h3>No applications found</h3>
+                                        <p>{{ $filtering ? 'No applications match your search or filter.' : 'Student applications will appear here.' }}</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+
+            @if ($applications->hasPages())
+                <div class="pg-pagination">
+                    {{ $applications->links('pagination.portal') }}
+                </div>
+            @endif
+
+        </div>
 
     </section>
-
 </main>
 
 </body>
-
 </html>

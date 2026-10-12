@@ -14,6 +14,12 @@ class FundRequirement extends Model
 
     protected $keyType = 'int';
 
+    /**
+     * The fund_requirements table has updated_at but no created_at
+     * (generated_at records when the estimate was made).
+     */
+    public const CREATED_AT = null;
+
     protected $fillable = [
         'student_id',
         'application_id',

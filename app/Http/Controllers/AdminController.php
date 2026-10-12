@@ -76,9 +76,9 @@ class AdminController extends Controller
 
 
     /**
-     * Display all users.
+     * Apply the users page search/filters.
      */
-    public function users(Request $request)
+    private function filteredUsersQuery(Request $request)
     {
         $query = User::with('role');
 
@@ -142,6 +142,69 @@ class AdminController extends Controller
                 $request->input('account_status')
             );
         }
+
+        return $query;
+    }
+
+
+    /**
+     * Download the filtered users as CSV.
+     */
+    public function exportUsers(Request $request)
+    {
+        $users = $this->filteredUsersQuery($request)
+            ->latest('user_id')
+            ->get();
+
+        $filename = 'users-' . now()->format('Y-m-d-His') . '.csv';
+
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+        ];
+
+        $columns = [
+            'User ID',
+            'First Name',
+            'Last Name',
+            'Email',
+            'Phone',
+            'Role',
+            'Status',
+            'Joined',
+        ];
+
+        $callback = function () use ($users, $columns) {
+            $handle = fopen('php://output', 'w');
+
+            fputcsv($handle, $columns);
+
+            foreach ($users as $user) {
+                fputcsv($handle, [
+                    $user->user_id,
+                    $user->first_name,
+                    $user->last_name,
+                    $user->email,
+                    $user->phone ?? '',
+                    $user->role->role_name ?? '',
+                    ucfirst($user->account_status ?? ''),
+                    optional($user->created_at)->format('Y-m-d'),
+                ]);
+            }
+
+            fclose($handle);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+
+    /**
+     * Display all users.
+     */
+    public function users(Request $request)
+    {
+        $query = $this->filteredUsersQuery($request);
 
 
         $users = $query
@@ -1165,20 +1228,52 @@ class AdminController extends Controller
     /**
      * View Applications
      */
-    public function applications()
+    public function applications(Request $request)
     {
-        $applications = Application::with([
+        $query = Application::with([
             'student.user',
             'preferredCountry',
             'preferredCourse',
             'preferredIntake'
         ])
-            ->latest('submitted_at')
-            ->paginate(20);
+            ->latest('submitted_at');
+
+        if ($request->filled('search')) {
+            $search = trim($request->input('search'));
+
+            $query->where(function ($q) use ($search) {
+                $q->where('application_reference', 'like', "%{$search}%")
+                    ->orWhereHas('student.user', function ($u) use ($search) {
+                        $u->where('first_name', 'like', "%{$search}%")
+                            ->orWhere('last_name', 'like', "%{$search}%")
+                            ->orWhere('email', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('preferredCourse', function ($c) use ($search) {
+                        $c->where('course_name', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('preferredCountry', function ($c) use ($search) {
+                        $c->where('country_name', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        if (
+            $request->filled('status')
+            && in_array($request->input('status'), Application::STATUSES, true)
+        ) {
+            $query->where('application_status', $request->input('status'));
+        }
+
+        $applications = $query->paginate(20)->withQueryString();
+
+        $statusCounts = Application::query()
+            ->selectRaw('application_status, COUNT(*) as total')
+            ->groupBy('application_status')
+            ->pluck('total', 'application_status');
 
         return view(
             'admin.applications.index',
-            compact('applications')
+            compact('applications', 'statusCounts')
         );
     }
 

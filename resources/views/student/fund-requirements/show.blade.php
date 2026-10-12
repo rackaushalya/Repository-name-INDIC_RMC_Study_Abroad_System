@@ -1,4 +1,3 @@
-```blade
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,199 +7,65 @@
 
     <title>Fund Requirement Details | INDIC RMC</title>
 
-    <link rel="stylesheet"
-          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    @include('components.page-style')
 
     <style>
-        * { box-sizing: border-box; }
-
-        body {
-            margin: 0;
-            font-family: Arial, Helvetica, sans-serif;
-            background: #f5f7fb;
-            color: #172033;
-        }
-
-        .main { margin-left: 245px; min-height: 100vh; }
-
-        .topbar {
-            height: 72px;
-            padding: 0 30px;
-            background: white;
-            border-bottom: 1px solid #e6e9ef;
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-        }
-
-        .user {
+        .pg-hero {
+            background: linear-gradient(135deg, #101a2b 0%, #1d2a40 100%);
+            color: #fff;
+            border-radius: 14px;
+            padding: 26px 28px;
+            margin-bottom: 20px;
             display: flex;
             align-items: center;
-            gap: 10px;
-            font-size: 13px;
-            font-weight: 600;
-            text-decoration: none;
-            color: inherit;
-        }
-
-        .avatar {
-            width: 38px;
-            height: 38px;
-            border-radius: 50%;
-            background: #f97316;
-            color: white;
-            display: grid;
-            place-items: center;
-        }
-
-        .content { max-width: 1200px; margin: auto; padding: 30px; }
-
-        .heading {
-            display: flex;
             justify-content: space-between;
-            align-items: flex-start;
-            gap: 15px;
-            margin-bottom: 25px;
+            gap: 20px;
+            flex-wrap: wrap;
         }
 
-        h1 { font-size: 25px; margin: 0 0 8px; }
+        .pg-hero span { font-size: 12px; color: #aeb7c7; }
 
-        .subtitle { font-size: 13px; color: #727c8d; margin: 0; }
-
-        .actions { display: flex; gap: 10px; flex-wrap: wrap; }
-
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            padding: 11px 15px;
-            border: 1px solid #e1e5ed;
-            border-radius: 7px;
-            font-size: 12px;
-            font-weight: 600;
-            text-decoration: none;
-            cursor: pointer;
-        }
-
-        .btn-primary { background: #f97316; border-color: #f97316; color: white; }
-        .btn-primary:hover { background: #ea580c; }
-        .btn-light { background: white; color: #374151; }
-
-        .alert {
-            padding: 14px 16px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            font-size: 13px;
-        }
-
-        .success { background: #ecfdf3; color: #166534; border: 1px solid #bbf7d0; }
-
-        .card {
-            background: white;
-            border: 1px solid #e7eaf0;
-            border-radius: 12px;
-            padding: 25px;
-            margin-bottom: 20px;
-        }
-
-        .card h2 { font-size: 16px; margin: 0 0 20px; }
-
-        .study-grid {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 22px;
-        }
-
-        .detail-label {
+        .pg-hero strong {
             display: block;
-            color: #7b8494;
-            font-size: 11px;
-            margin-bottom: 7px;
-        }
-
-        .detail-value {
-            font-size: 13px;
-            font-weight: 600;
+            margin-top: 6px;
+            font-size: 34px;
+            color: #fb923c;
             overflow-wrap: anywhere;
         }
 
-        .table-wrap { overflow-x: auto; }
+        .pg-hero small { display: block; margin-top: 8px; font-size: 12px; color: #8a94a6; }
+        .pg-hero .pg-badge { background: rgba(255, 255, 255, .1); color: #fff; }
 
-        table { width: 100%; border-collapse: collapse; min-width: 400px; }
-
-        th, td {
-            text-align: left;
-            padding: 15px 12px;
-            border-bottom: 1px solid #eef0f4;
-            font-size: 12px;
-        }
-
-        th {
-            background: #fafbfc;
-            color: #727c8d;
-            text-transform: uppercase;
-            font-size: 10px;
-            letter-spacing: .4px;
-        }
-
-        td:last-child, th:last-child { text-align: right; }
-        .amount { white-space: nowrap; font-weight: 600; }
-
-        .deduction { color: #16803d; }
-
-        .total-box {
-            background: #fff7f1;
-            border: 1px solid #fed7aa;
+        .pg-breakdown-bar {
+            display: flex;
+            height: 10px;
             border-radius: 10px;
-            padding: 24px;
-            margin-top: 22px;
+            overflow: hidden;
+            background: #eef0f4;
+            margin: 4px 0 20px;
         }
 
-        .total-label { color: #9a5a2b; font-size: 12px; }
+        .pg-breakdown-bar i { display: block; height: 100%; }
 
-        .total-value {
-            color: #ea580c;
-            font-size: 30px;
+        .pg-dot {
+            display: inline-block;
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .pg-deduction { color: #16803d; }
+
+        .pg-total-row td {
+            background: #fff7f1;
+            border-top: 2px solid #fed7aa;
             font-weight: 700;
-            margin-top: 8px;
-            overflow-wrap: anywhere;
+            font-size: 14px;
         }
 
-        .total-note {
-            color: #8a6b58;
-            font-size: 11px;
-            margin-top: 8px;
-        }
-
-        .notes {
-            color: #4b5563;
-            font-size: 13px;
-            line-height: 1.7;
-            white-space: pre-line;
-            overflow-wrap: anywhere;
-        }
-
-        .footer-note {
-            font-size: 11px;
-            color: #8791a1;
-            line-height: 1.6;
-            margin-top: 20px;
-        }
-
-        @media (max-width: 900px) {
-            .main { margin-left: 70px; }
-        }
-
-        @media (max-width: 650px) {
-            .main { margin-left: 0; }
-            .content { padding: 20px 15px; }
-            .topbar { padding: 0 15px; }
-            .heading { flex-direction: column; }
-            .study-grid { grid-template-columns: 1fr; }
-            .card { padding: 18px; }
-            .total-value { font-size: 23px; }
-        }
+        .pg-notes { font-size: 13px; line-height: 1.7; color: #4b5563; white-space: pre-line; overflow-wrap: anywhere; }
+        .pg-disclaimer { font-size: 11px; color: #8791a1; line-height: 1.6; }
     </style>
 
     @include('components.sidebar-style')
@@ -209,150 +74,188 @@
 
 @include('components.student-sidebar')
 
+@php
+    $fr = $fundRequirement;
+
+    $palette = [
+        'tuition' => '#f97316',
+        'living' => '#2767b1',
+        'travel' => '#198754',
+        'other' => '#8b5cf6',
+        'scholarship' => '#16a34a',
+    ];
+
+    $costs = $fr->details->filter(fn ($d) => strtolower($d->expense_category) !== 'scholarship' && (float) $d->amount > 0);
+    $costTotal = (float) $costs->sum('amount');
+@endphp
+
 <main class="main">
-    <header class="topbar">
-        <a href="{{ route('student.account.edit') }}" class="user">
-            <div class="avatar">
-                {{ strtoupper(substr(auth()->user()->first_name ?? 'S', 0, 1)) }}
-            </div>
-            {{ trim((auth()->user()->first_name ?? '') . ' ' .
-                (auth()->user()->last_name ?? '')) ?: 'Student' }}
-        </a>
-    </header>
 
-    <section class="content">
+    <x-student-topbar
+        :crumbs="['Fund Requirements' => route('student.fund-requirements.index')]"
+        current="FR-{{ $fr->fund_requirement_id }}" />
 
-        <div class="heading">
+    <section class="pg">
+
+        <div class="pg-head">
             <div>
                 <h1>Fund Requirement Details</h1>
-                <p class="subtitle">
-                    Review the financial estimate for your study abroad plan.
-                </p>
+                <p>Review the financial estimate for your study abroad plan.</p>
             </div>
 
-            <div class="actions">
-                <a href="{{ route('student.fund-requirements.index') }}"
-                   class="btn btn-light">
+            <div class="pg-actions">
+                <a href="{{ route('student.fund-requirements.index') }}" class="pg-btn">
                     <i class="bi bi-arrow-left"></i> Back to My Estimates
                 </a>
 
-                <button type="button" onclick="window.print()" class="btn btn-primary">
+                <button type="button" onclick="window.print()" class="pg-btn">
                     <i class="bi bi-printer"></i> Print
                 </button>
 
-                <a href="{{ route('student.fund-requirements.pdf', $fundRequirement) }}"
-                class="btn-download"
-                style="display:inline-block; padding:10px 18px; background:#f97316; color:white; text-decoration:none; border-radius:6px; margin-right:8px;">
-                    <i class="bi bi-file-earmark-pdf"></i>Download PDF
+                <a href="{{ route('student.fund-requirements.pdf', $fr) }}" class="pg-btn pg-btn-primary">
+                    <i class="bi bi-file-earmark-pdf"></i> Download PDF
                 </a>
-
             </div>
         </div>
 
         @if (session('success'))
-            <div class="alert success">{{ session('success') }}</div>
+            <div class="pg-alert success">
+                <i class="bi bi-check-circle-fill"></i> {{ session('success') }}
+            </div>
         @endif
 
-        <div class="card">
-            <h2><i class="bi bi-mortarboard"></i> Study Information</h2>
+        <div class="pg-hero">
+            <div>
+                <span>Total funds required after scholarship</span>
+                <strong>{{ $fr->currency }} {{ number_format((float) $fr->total_required_amount, 2) }}</strong>
+                <small>
+                    Reference FR-{{ $fr->fund_requirement_id }} ·
+                    Generated {{ $fr->generated_at?->format('d M Y') ?? $fr->created_at?->format('d M Y') ?? '—' }}
+                </small>
+            </div>
 
-            <div class="study-grid">
-                <div>
-                    <span class="detail-label">Destination Country</span>
-                    <div class="detail-value">
-                        {{ $fundRequirement->selectedCountry?->country_name ?? 'Not selected' }}
+            <span class="pg-badge">{{ $fr->selectedCountry?->country_name ?? 'No destination selected' }}</span>
+        </div>
+
+        <div class="pg-card">
+            <div class="pg-card-head">
+                <h2><i class="bi bi-mortarboard"></i> Study Information</h2>
+            </div>
+
+            <div class="pg-card-body">
+                <div class="pg-detail-grid">
+                    <div>
+                        <span class="pg-detail-label">Destination Country</span>
+                        <div class="pg-detail-value">{{ $fr->selectedCountry?->country_name ?? 'Not selected' }}</div>
                     </div>
-                </div>
 
-                <div>
-                    <span class="detail-label">Selected Course</span>
-                    <div class="detail-value">
-                        {{ $fundRequirement->selectedCourse?->course_name ?? 'Not selected' }}
+                    <div>
+                        <span class="pg-detail-label">Selected Course</span>
+                        <div class="pg-detail-value">{{ $fr->selectedCourse?->course_name ?? 'Not selected' }}</div>
                     </div>
-                </div>
 
-                <div>
-                    <span class="detail-label">University</span>
-                    <div class="detail-value">
-                        {{ $fundRequirement->selectedCourse?->university?->university_name ?? 'Not specified' }}
+                    <div>
+                        <span class="pg-detail-label">University</span>
+                        <div class="pg-detail-value">{{ $fr->selectedCourse?->university?->university_name ?? 'Not specified' }}</div>
                     </div>
-                </div>
 
-                <div>
-                    <span class="detail-label">Related Application ID</span>
-                    <div class="detail-value">
-                        {{ $fundRequirement->application_id ?? 'Not linked' }}
+                    <div>
+                        <span class="pg-detail-label">Related Application</span>
+                        <div class="pg-detail-value">
+                            @if ($fr->application_id)
+                                <a href="{{ route('student.applications.show', $fr->application_id) }}" style="color:#f97316;">
+                                    {{ $fr->application?->application_reference ?? 'Application #' . $fr->application_id }}
+                                </a>
+                            @else
+                                Not linked
+                            @endif
+                        </div>
                     </div>
-                </div>
 
-                <div>
-                    <span class="detail-label">Generated Date</span>
-                    <div class="detail-value">
-                        {{ $fundRequirement->generated_at?->format('d F Y, h:i A') ?? $fundRequirement->created_at?->format('d F Y, h:i A') ?? '—' }}
+                    <div>
+                        <span class="pg-detail-label">Generated</span>
+                        <div class="pg-detail-value">
+                            {{ $fr->generated_at?->format('d F Y, h:i A') ?? $fr->created_at?->format('d F Y, h:i A') ?? '—' }}
+                        </div>
                     </div>
-                </div>
 
-                <div>
-                    <span class="detail-label">Currency</span>
-                    <div class="detail-value">{{ $fundRequirement->currency }}</div>
+                    <div>
+                        <span class="pg-detail-label">Currency</span>
+                        <div class="pg-detail-value">{{ $fr->currency }}</div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="card">
-            <h2><i class="bi bi-receipt"></i> Expense Breakdown</h2>
+        <div class="pg-card">
+            <div class="pg-card-head">
+                <h2><i class="bi bi-receipt"></i> Expense Breakdown</h2>
+            </div>
 
-            <div class="table-wrap">
-                <table>
+            <div class="pg-card-body" style="padding-bottom:6px;">
+                @if ($costTotal > 0)
+                    <div class="pg-breakdown-bar" title="Share of each cost">
+                        @foreach ($costs as $detail)
+                            <i style="width: {{ round(((float) $detail->amount / $costTotal) * 100, 2) }}%; background: {{ $palette[strtolower($detail->expense_category)] ?? '#94a3b8' }};"></i>
+                        @endforeach
+                    </div>
+                @endif
+            </div>
+
+            <div class="pg-table-wrap">
+                <table class="pg-table" style="min-width:480px;">
                     <thead>
                         <tr>
                             <th>Expense Category</th>
                             <th>Description</th>
-                            <th>Amount</th>
+                            <th style="text-align:right;">Amount</th>
                         </tr>
                     </thead>
 
                     <tbody>
-                        @forelse ($fundRequirement->details as $detail)
+                        @forelse ($fr->details as $detail)
+                            @php($isScholarship = strtolower($detail->expense_category) === 'scholarship')
+
                             <tr>
-                                <td>{{ $detail->expense_category }}</td>
+                                <td class="pg-strong">
+                                    <span class="pg-dot" style="background: {{ $palette[strtolower($detail->expense_category)] ?? '#94a3b8' }};"></span>{{ $detail->expense_category }}
+                                </td>
                                 <td>{{ $detail->description ?? '—' }}</td>
-                                <td class="amount {{ strtolower($detail->expense_category) === 'scholarship' ? 'deduction' : '' }}">
-                                    @if (strtolower($detail->expense_category) === 'scholarship')
-                                        −
-                                    @endif
+                                <td class="pg-amount {{ $isScholarship ? 'pg-deduction' : '' }}" style="text-align:right;">
+                                    {{ $isScholarship ? '−' : '' }}
                                     {{ $detail->currency }} {{ number_format((float) $detail->amount, 2) }}
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="3">No expense details are available.</td>
+                                <td colspan="3" class="pg-muted" style="text-align:center;">No expense details are available.</td>
                             </tr>
                         @endforelse
+
+                        <tr class="pg-total-row">
+                            <td colspan="2">Total funds required</td>
+                            <td style="text-align:right;color:#ea580c;">
+                                {{ $fr->currency }} {{ number_format((float) $fr->total_required_amount, 2) }}
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
-
-            <div class="total-box">
-                <div class="total-label">Total Funds Required After Scholarship</div>
-                <div class="total-value">
-                    {{ $fundRequirement->currency }}
-                    {{ number_format((float) $fundRequirement->total_required_amount, 2) }}
-                </div>
-                <div class="total-note">
-                    This is an estimate based on the costs entered. Actual expenses may vary.
-                </div>
-            </div>
         </div>
 
-        @if ($fundRequirement->notes)
-            <div class="card">
-                <h2><i class="bi bi-sticky"></i> Additional Notes</h2>
-                <div class="notes">{{ $fundRequirement->notes }}</div>
+        @if ($fr->notes)
+            <div class="pg-card">
+                <div class="pg-card-head">
+                    <h2><i class="bi bi-sticky"></i> Additional Notes</h2>
+                </div>
+
+                <div class="pg-card-body">
+                    <div class="pg-notes">{{ $fr->notes }}</div>
+                </div>
             </div>
         @endif
 
-        <p class="footer-note">
+        <p class="pg-disclaimer">
             This report is an estimate for planning purposes only. Confirm tuition,
             living costs, travel expenses, scholarship eligibility, and any financial
             evidence requirements with the relevant university and immigration authority.

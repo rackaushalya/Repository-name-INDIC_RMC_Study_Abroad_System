@@ -26,6 +26,9 @@
     .em-open { font-size: 12.5px; color: #7c8493; background: #f8fafc; border-radius: 8px; padding: 10px 12px; }
     .em-empty { font-size: 13px; color: #9aa2b0; padding: 14px 0; }
     .em-note { font-size: 11.5px; color: #9aa2b0; margin-top: 14px; }
+    .em-roadmap { margin-top: auto; padding-top: 14px; }
+    .em-roadmap a { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 700; color: #f97316; }
+    .em-roadmap a:hover { text-decoration: underline; }
 </style>
 
 <div class="em-card">
@@ -75,6 +78,12 @@
                     @else
                         <div class="em-open">This course has not published entry requirements yet, so there is nothing to check against.</div>
                     @endif
+
+                    <div class="em-roadmap">
+                        <a href="{{ route('student.roadmap.show', $course) }}">
+                            View Admission Roadmap <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </div>
                 </div>
             @endforeach
         </div>

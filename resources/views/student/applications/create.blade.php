@@ -311,7 +311,7 @@
 
                             <option
                                 value="{{ $country->country_id }}"
-                                {{ old('preferred_country_id') == $country->country_id ? 'selected' : '' }}
+                                {{ old('preferred_country_id', request('country')) == $country->country_id ? 'selected' : '' }}
                             >
 
                                 {{ $country->country_name }}
@@ -356,7 +356,7 @@
 
                             <option
                                 value="{{ $course->course_id }}"
-                                {{ old('preferred_course_id') == $course->course_id ? 'selected' : '' }}
+                                {{ old('preferred_course_id', request('course')) == $course->course_id ? 'selected' : '' }}
                             >
 
                                 {{ $course->course_name }}

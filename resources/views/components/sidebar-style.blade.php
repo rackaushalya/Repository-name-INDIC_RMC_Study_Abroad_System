@@ -111,6 +111,22 @@
         transition: 0.2s;
     }
 
+    .sidebar .menu-count {
+        margin-left: auto;
+        min-width: 20px;
+        height: 20px;
+        padding: 0 6px;
+        border-radius: 10px;
+        background: #f97316;
+        color: #fff;
+        font-size: 11px;
+        font-weight: 700;
+        display: grid;
+        place-items: center;
+    }
+
+    .sidebar-collapsed .sidebar .menu-count { display: none; }
+
     .sidebar .menu-item:hover {
         background: #1d2a40;
         color: white;

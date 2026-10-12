@@ -432,6 +432,15 @@
                 {{ $course?->course_name ?? 'Course not available' }}
             </h1>
 
+            @if($course)
+                <a
+                    href="{{ route('student.roadmap.show', $course) }}"
+                    style="display:inline-flex; align-items:center; gap:8px; margin:6px 0 12px; padding:10px 16px; border-radius:8px; background:#ff7417; color:#fff; font-size:13px; font-weight:700; text-decoration:none;"
+                >
+                    View Admission Roadmap &rarr;
+                </a>
+            @endif
+
             <div class="location">
 
                 {{ $university?->city ?? 'Location unavailable' }}

@@ -78,6 +78,11 @@
 
         <div class="menu-title">SYSTEM</div>
 
+        <a href="{{ route('admin.audit-logs.index') }}" class="menu-item {{ request()->is('admin/audit-logs*') ? 'active' : '' }}">
+            <div class="menu-icon"><i class="bi bi-shield-check"></i></div>
+            <span class="menu-label">Audit Logs</span>
+        </a>
+
         <form method="POST" action="{{ route('logout') }}">
             @csrf
             <button type="submit" class="menu-item menu-button">

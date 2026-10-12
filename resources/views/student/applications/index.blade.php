@@ -6,708 +6,224 @@
 
     <title>My Applications | INDIC RMC</title>
 
+    @include('components.page-style')
+
     <style>
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            font-family: Arial, Helvetica, sans-serif;
-            background: #f4f6fa;
-            color: #17233c;
-        }
-
-        a {
-            text-decoration: none;
-        }
-
-        .container {
-            padding: 30px;
-        }
-
-        .page-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 25px;
-            gap: 20px;
-        }
-
-        .page-header h1 {
-            font-size: 28px;
-            margin-bottom: 7px;
-        }
-
-        .page-header p {
-            color: #718096;
-            font-size: 14px;
-        }
-
-        .actions {
-            display: flex;
-            gap: 10px;
-        }
-
-        .btn {
-            display: inline-block;
-            padding: 10px 16px;
-            border-radius: 7px;
-            font-size: 13px;
-            font-weight: bold;
-        }
-
-        .btn-primary {
-            background: #ff7a18;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #e96b0d;
-        }
-
-        .btn-secondary {
-            background: #17233c;
-            color: white;
-        }
-
-        .btn-secondary:hover {
-            background: #263550;
-        }
-
-        .card {
-            background: white;
-            border: 1px solid #e2e6ec;
-            border-radius: 10px;
-            overflow: hidden;
-        }
-
-        .card-header {
-            padding: 18px 20px;
-            border-bottom: 1px solid #edf0f4;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .card-header h2 {
-            font-size: 17px;
-        }
-
-        .total {
-            color: #718096;
-            font-size: 13px;
-        }
-
-        .table-wrapper {
-            overflow-x: auto;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        th {
-            text-align: left;
-            padding: 14px 18px;
-            background: #f8fafc;
-            color: #68758a;
-            font-size: 11px;
-            text-transform: uppercase;
-            white-space: nowrap;
-        }
-
-        td {
-            padding: 15px 18px;
-            border-top: 1px solid #edf0f4;
-            font-size: 13px;
-            vertical-align: middle;
-        }
-
-        tr:hover td {
-            background: #fafafa;
-        }
-
-        .reference {
-            font-weight: bold;
-            color: #17233c;
-        }
-
-        .status {
-            display: inline-block;
-            padding: 5px 10px;
-            border-radius: 15px;
-            font-size: 11px;
-            font-weight: bold;
-        }
-
-        .status-submitted {
-            background: #e8f1ff;
-            color: #2767b1;
-        }
-
-        .status-review {
-            background: #fff3df;
-            color: #c46b00;
-        }
-
-        .status-approved {
-            background: #e7f7ed;
-            color: #198754;
-        }
-
-        .status-rejected {
-            background: #fde8e8;
-            color: #c62828;
-        }
-
-        .status-cancelled {
-            background: #eeeeee;
-            color: #666666;
-        }
-
-        .status-default {
-            background: #f0f2f5;
-            color: #596579;
-        }
-
-        .progress-info {
-            min-width: 170px;
-        }
-
-        .progress-status {
-            display: block;
-            font-size: 12px;
-            font-weight: bold;
-            color: #17233c;
-            margin-bottom: 4px;
-        }
-
-        .progress-remark {
-            display: block;
-            color: #718096;
-            font-size: 11px;
-            line-height: 1.4;
-            max-width: 230px;
-        }
-
-        .progress-date {
-            display: block;
-            color: #9aa3b2;
-            font-size: 10px;
-            margin-top: 5px;
-        }
-
-        .no-progress {
-            color: #8a94a6;
-            font-size: 11px;
-            font-style: italic;
-        }
-
-        .action-btn {
-            display: inline-block;
-            padding: 7px 11px;
-            border: 1px solid #17233c;
-            color: #17233c;
-            border-radius: 6px;
-            font-size: 11px;
-            font-weight: bold;
-            margin-right: 5px;
-        }
-
-        .action-btn:hover {
-            background: #17233c;
-            color: white;
-        }
-
-        .edit-btn {
-            border-color: #ff7a18;
-            color: #ff7a18;
-        }
-
-        .edit-btn:hover {
-            background: #ff7a18;
-            color: white;
-        }
-
-        .empty {
-            text-align: center;
-            padding: 60px 20px;
-            color: #8a94a6;
-        }
-
-        .empty h3 {
-            color: #17233c;
-            margin-bottom: 8px;
-            font-size: 18px;
-        }
-
-        .empty p {
-            margin-bottom: 20px;
-            font-size: 13px;
-        }
-
-        .pagination {
-            padding: 18px 20px;
-            border-top: 1px solid #edf0f4;
-        }
-
-        .success-message {
-            background: #e7f7ed;
-            color: #198754;
-            border: 1px solid #b9e4c8;
-            padding: 12px 15px;
-            border-radius: 7px;
-            margin-bottom: 20px;
-            font-size: 13px;
-        }
-
-        @media (max-width: 1100px) {
-
-            .container {
-                padding: 20px;
-            }
-
-            th,
-            td {
-                padding: 12px;
-            }
-
-        }
-
-        @media (max-width: 900px) {
-
-            .container {
-                padding: 18px;
-            }
-
-            .page-header {
-                align-items: flex-start;
-                flex-direction: column;
-            }
-
-            .actions {
-                width: 100%;
-            }
-
-            .btn {
-                text-align: center;
-            }
-
-            th,
-            td {
-                padding: 12px;
-            }
-
-        }
-
+        .ap-progress { min-width: 190px; max-width: 260px; }
+        .ap-progress strong { display: block; font-size: 12px; }
+        .ap-progress p { margin: 3px 0 0; font-size: 11px; line-height: 1.5; color: #727c8d; }
+        .ap-progress small { display: block; margin-top: 4px; font-size: 10px; color: #9aa3b2; }
     </style>
-@include('components.sidebar-style')
-</head>
 
+    @include('components.sidebar-style')
+</head>
 <body>
 
 @include('components.student-sidebar')
 
-<div class="main">
-
-<div class="container">
-
-
-    <!-- PAGE HEADER -->
-
-    <div class="page-header">
-
-        <div>
-
-            <h1>My Applications</h1>
-
-            <p>
-                View and manage your study abroad applications.
-            </p>
-
-        </div>
-
-
-        <div class="actions">
-
-            <a
-                href="{{ route('student.applications.create') }}"
-                class="btn btn-primary"
-            >
-                + New Application
-            </a>
-
-            <a
-                href="{{ route('student.dashboard') }}"
-                class="btn btn-secondary"
-            >
-                ← Dashboard
-            </a>
-
-        </div>
-
-    </div>
-
-
-    <!-- SUCCESS MESSAGE -->
-
-    @if(session('success'))
-
-        <div class="success-message">
-            {{ session('success') }}
-        </div>
-
-    @endif
-
-
-    <!-- APPLICATION CARD -->
-
-    <div class="card">
-
-        <div class="card-header">
-
-            <h2>My Applications</h2>
-
-            <span class="total">
-                Total: {{ $applications->total() }}
-            </span>
-
-        </div>
-
-
-        <div class="table-wrapper">
-
-            <table>
-
-                <thead>
-
-                    <tr>
-
-                        <th>
-                            Reference
-                        </th>
-
-                        <th>
-                            Type
-                        </th>
-
-                        <th>
-                            Country
-                        </th>
-
-                        <th>
-                            Course
-                        </th>
-
-                        <th>
-                            Intake
-                        </th>
-
-                        <th>
-                            Status
-                        </th>
-
-                        <th>
-                            Progress
-                        </th>
-
-                        <th>
-                            Submitted
-                        </th>
-
-                        <th>
-                            Action
-                        </th>
-
-                    </tr>
-
-                </thead>
-
-
-                <tbody>
-
-                    @forelse($applications as $application)
-
-                        <tr>
-
-
-                            <!-- REFERENCE -->
-
-                            <td>
-
-                                <span class="reference">
-
-                                    {{ $application->application_reference ?? '-' }}
-
-                                </span>
-
-                            </td>
-
-
-                            <!-- TYPE -->
-
-                            <td>
-
-                                {{ $application->application_type ?? '-' }}
-
-                            </td>
-
-
-                            <!-- COUNTRY -->
-
-                            <td>
-
-                                {{ $application->preferredCountry->country_name ?? '-' }}
-
-                            </td>
-
-
-                            <!-- COURSE -->
-
-                            <td>
-
-                                {{ $application->preferredCourse->course_name ?? '-' }}
-
-                            </td>
-
-
-                            <!-- INTAKE -->
-
-                            <td>
-
-                                @if($application->preferredIntake)
-
-                                    {{ $application->preferredIntake->intake_name ?? '-' }}
-
-                                @else
-
-                                    -
-
-                                @endif
-
-                            </td>
-
-
-                            <!-- STATUS -->
-
-                            <td>
-
-                                @php
-
-                                    $status =
-                                        $application->application_status
-                                        ?? 'Unknown';
-
-                                    $statusClass = match(
-                                        strtolower($status)
-                                    ) {
-
-                                        'submitted'
-                                            => 'status-submitted',
-
-                                        'under review',
-                                        'in review'
-                                            => 'status-review',
-
-                                        'approved',
-                                        'accepted',
-                                        'completed',
-                                        'enrolled'
-                                            => 'status-approved',
-
-                                        'rejected'
-                                            => 'status-rejected',
-
-                                        'cancelled',
-                                        'canceled'
-                                            => 'status-cancelled',
-
-                                        default
-                                            => 'status-default',
-                                    };
-
-                                @endphp
-
-
-                                <span class="status {{ $statusClass }}">
-
-                                    {{ $status }}
-
-                                </span>
-
-                            </td>
-
-
-                            <!-- PROGRESS -->
-
-                            <td>
-
-                                @if($application->statusHistory->count() > 0)
-
-                                    @php
-                                        $latestProgress =
-                                            $application->statusHistory->last();
-                                    @endphp
-
-                                    <div class="progress-info">
-
-                                        <span class="progress-status">
-
-                                            {{ $latestProgress->new_status }}
-
-                                        </span>
-
-
-                                        @if($latestProgress->remarks)
-
-                                            <span class="progress-remark">
-
-                                                {{ $latestProgress->remarks }}
-
-                                            </span>
-
-                                        @else
-
-                                            <span class="progress-remark">
-
-                                                Status updated without remarks.
-
-                                            </span>
-
-                                        @endif
-
-
-                                        @if($latestProgress->changed_at)
-
-                                            <span class="progress-date">
-
-                                                {{ $latestProgress->changed_at->format('d M Y, h:i A') }}
-
-                                            </span>
-
-                                        @endif
-
-                                    </div>
-
-                                @else
-
-                                    <span class="no-progress">
-
-                                        No status updates yet.
-
-                                    </span>
-
-                                @endif
-
-                            </td>
-
-
-                            <!-- SUBMITTED DATE -->
-
-                            <td>
-
-                                @if($application->submitted_at)
-
-                                    {{ $application->submitted_at->format('d M Y') }}
-
-                                @else
-
-                                    -
-
-                                @endif
-
-                            </td>
-
-
-                            <!-- ACTIONS -->
-
-                            <td>
-
-                                <a
-                                    href="{{ route('student.applications.show', $application) }}"
-                                    class="action-btn"
-                                >
-                                    View
-                                </a>
-
-
-                                @if(
-                                    in_array(
-                                        $application->application_status,
-                                        ['Submitted', 'Under Review']
-                                    )
-                                )
-
-                                    <a
-                                        href="{{ route('student.applications.edit', $application) }}"
-                                        class="action-btn edit-btn"
-                                    >
-                                        Edit
-                                    </a>
-
-                                @endif
-
-                            </td>
-
-                        </tr>
-
-
-                    @empty
-
-                        <tr>
-
-                            <td
-                                colspan="9"
-                                class="empty"
-                            >
-
-                                <h3>No applications yet</h3>
-
-                                <p>
-                                    You have not submitted any applications yet.
-                                </p>
-
-                                <a
-                                    href="{{ route('student.applications.create') }}"
-                                    class="btn btn-primary"
-                                >
-                                    + Create Your First Application
-                                </a>
-
-                            </td>
-
-                        </tr>
-
-                    @endforelse
-
-                </tbody>
-
-            </table>
-
-        </div>
-
-
-        <!-- PAGINATION -->
-
-        @if($applications->hasPages())
-
-            <div class="pagination">
-
-                {{ $applications->links() }}
-
+@php
+    $statusBadge = fn (string $status): string => match ($status) {
+        'Submitted', 'Consultation Completed' => 'blue',
+        'Under Review' => 'amber',
+        'Consultant Assigned', 'Consultation Scheduled' => 'purple',
+        'Recommendation Provided', 'Completed' => 'green',
+        'Follow-up Required' => 'orange',
+        'Rejected' => 'red',
+        'Cancelled' => 'grey',
+        default => '',
+    };
+@endphp
+
+<main class="main">
+
+    <x-student-topbar current="Consultancy Applications" />
+
+    <section class="pg">
+
+        <div class="pg-head">
+            <div>
+                <h1>My Applications</h1>
+                <p>Track your study abroad consultancy applications and their progress.</p>
             </div>
 
+            <div class="pg-actions">
+                <a href="{{ route('student.applications.create') }}" class="pg-btn pg-btn-primary">
+                    <i class="bi bi-plus-lg"></i> New Application
+                </a>
+            </div>
+        </div>
+
+        @if (session('success'))
+            <div class="pg-alert success">
+                <i class="bi bi-check-circle-fill"></i> {{ session('success') }}
+            </div>
         @endif
 
-    </div>
+        {{-- Status summary --}}
+        <div class="pg-stats">
+            <div class="pg-stat">
+                <div class="pg-stat-icon blue"><i class="bi bi-hourglass-split"></i></div>
+                <div><span>In progress</span><strong>{{ $overview['counts']['active'] }}</strong></div>
+            </div>
+            <div class="pg-stat">
+                <div class="pg-stat-icon"><i class="bi bi-lightning-charge"></i></div>
+                <div><span>Need your action</span><strong>{{ $overview['counts']['needs_action'] }}</strong></div>
+            </div>
+            <div class="pg-stat">
+                <div class="pg-stat-icon navy"><i class="bi bi-alarm"></i></div>
+                <div>
+                    <span>Deadlines due soon</span>
+                    <strong>{{ $overview['due_soon'] }}@if ($overview['overdue']) <small style="color:#dc2626; font-size:12px;">+{{ $overview['overdue'] }} overdue</small>@endif</strong>
+                </div>
+            </div>
+            <div class="pg-stat">
+                <div class="pg-stat-icon green"><i class="bi bi-check2-circle"></i></div>
+                <div><span>Completed</span><strong>{{ $overview['counts']['completed'] }}</strong></div>
+            </div>
+        </div>
 
-</div>
+        <div class="pg-card">
 
-</div>
+            <div class="pg-card-head">
+                <h2><i class="bi bi-file-earmark-text"></i> Applications</h2>
+                <small>{{ $applications->total() }} total</small>
+            </div>
+
+            @if ($applications->count())
+
+                <div class="pg-table-wrap">
+                    <table class="pg-table" style="min-width:1100px;">
+                        <thead>
+                            <tr>
+                                <th>Reference</th>
+                                <th>Destination / Course</th>
+                                <th>Intake</th>
+                                <th>Status</th>
+                                <th>Next Step</th>
+                                <th>Latest Update</th>
+                                <th>Submitted</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @foreach ($applications as $application)
+                                @php
+                                    $status = $application->application_status ?? 'Unknown';
+                                    $latest = $application->statusHistory->last();
+                                    $journey = $overview['journeys'][$application->application_id] ?? null;
+                                    $nextDeadline = $journey['next_deadline'] ?? null;
+                                @endphp
+
+                                <tr>
+                                    <td>
+                                        <a href="{{ route('student.applications.show', $application) }}"
+                                           class="pg-strong" style="color:#f97316;">
+                                            {{ $application->application_reference ?? '#' . $application->application_id }}
+                                        </a>
+                                        <span class="pg-sub">{{ $application->application_type ?? '' }}</span>
+                                    </td>
+
+                                    <td>
+                                        <div class="pg-strong">{{ $application->preferredCountry->country_name ?? '—' }}</div>
+                                        <span class="pg-sub">{{ $application->preferredCourse->course_name ?? '—' }}</span>
+                                    </td>
+
+                                    <td>{{ $application->preferredIntake->intake_name ?? '—' }}</td>
+
+                                    <td><span class="pg-badge {{ $statusBadge($status) }}">{{ $status }}</span></td>
+
+                                    <td>
+                                        @if ($journey)
+                                            <div class="ap-progress">
+                                                <strong style="{{ $journey['next_action']['needs_action'] ? 'color:#d9560a;' : '' }}">{{ $journey['next_action']['label'] }}</strong>
+
+                                                @if ($nextDeadline)
+                                                    <p>
+                                                        <span class="pg-badge {{ ['overdue' => 'red', 'urgent' => 'red', 'soon' => 'amber', 'ok' => 'grey'][$nextDeadline['urgency']] }}">
+                                                            {{ $nextDeadline['days'] < 0 ? 'Overdue' : ($nextDeadline['days'] === 0 ? 'Due today' : $nextDeadline['days'] . ' ' . \Illuminate\Support\Str::plural('day', $nextDeadline['days']) . ' left') }}
+                                                        </span>
+                                                    </p>
+                                                    <small>{{ $nextDeadline['title'] }}</small>
+                                                @endif
+                                            </div>
+                                        @else
+                                            <span class="pg-muted">—</span>
+                                        @endif
+                                    </td>
+
+                                    <td>
+                                        @if ($latest)
+                                            <div class="ap-progress">
+                                                <strong>{{ $latest->new_status }}</strong>
+                                                <p>{{ $latest->remarks ?: 'Status updated without remarks.' }}</p>
+
+                                                @if ($latest->changed_at)
+                                                    <small>{{ $latest->changed_at->format('d M Y, h:i A') }}</small>
+                                                @endif
+                                            </div>
+                                        @else
+                                            <span class="pg-muted" style="font-style:italic;">No status updates yet</span>
+                                        @endif
+                                    </td>
+
+                                    <td>{{ $application->submitted_at?->format('d M Y') ?? '—' }}</td>
+
+                                    <td>
+                                        <div class="pg-row-actions">
+                                            <a href="{{ route('student.applications.journey', $application) }}"
+                                               class="pg-icon-btn" title="View journey and deadlines">
+                                                <i class="bi bi-signpost-split"></i>
+                                            </a>
+
+                                            <a href="{{ route('student.applications.show', $application) }}"
+                                               class="pg-icon-btn" title="View application">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+
+                                            @if (in_array($application->application_status, ['Submitted', 'Under Review']))
+                                                <a href="{{ route('student.applications.edit', $application) }}"
+                                                   class="pg-icon-btn" title="Edit application">
+                                                    <i class="bi bi-pencil"></i>
+                                                </a>
+                                            @endif
+
+                                            <a href="{{ route('student.fund-requirements.create', ['application' => $application->application_id]) }}"
+                                               class="pg-icon-btn" title="Estimate funds for this application">
+                                                <i class="bi bi-cash-coin"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+
+                @if ($applications->hasPages())
+                    <div class="pg-pagination">
+                        {{ $applications->links('pagination.portal') }}
+                    </div>
+                @endif
+
+            @else
+
+                <div class="pg-empty">
+                    <div class="pg-empty-icon"><i class="bi bi-file-earmark-text"></i></div>
+                    <h3>No applications yet</h3>
+                    <p>You have not submitted any applications yet.</p>
+
+                    <a href="{{ route('student.applications.create') }}" class="pg-btn pg-btn-primary">
+                        <i class="bi bi-plus-lg"></i> Create Your First Application
+                    </a>
+                </div>
+
+            @endif
+
+        </div>
+
+    </section>
+</main>
 
 </body>
 </html>
