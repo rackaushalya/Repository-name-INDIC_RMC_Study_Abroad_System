@@ -616,9 +616,15 @@
 
             </div>
 
-          <a href="{{ route('admin.dashboard') }}" class="add-btn">
-                 ← Dashboard
-            </a>
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                <a href="{{ route('admin.users.export', request()->query()) }}" class="add-btn">
+                    <i class="bi bi-download"></i> Download CSV
+                </a>
+
+                <a href="{{ route('admin.dashboard') }}" class="add-btn">
+                    ← Dashboard
+                </a>
+            </div>
              </div>
 
 

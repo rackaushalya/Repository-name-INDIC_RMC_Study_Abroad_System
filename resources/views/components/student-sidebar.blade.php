@@ -39,6 +39,16 @@
 
         <div class="menu-title">Study Abroad</div>
 
+        <a href="{{ route('student.destinations.index') }}" class="menu-item {{ request()->routeIs('student.destinations.*') ? 'active' : '' }}">
+            <div class="menu-icon"><i class="bi bi-globe-europe-africa"></i></div>
+            <span class="menu-label">Explore Destinations</span>
+        </a>
+
+        <a href="{{ route('student.roadmap.index') }}" class="menu-item {{ request()->routeIs('student.roadmap.*') ? 'active' : '' }}">
+            <div class="menu-icon"><i class="bi bi-signpost-split-fill"></i></div>
+            <span class="menu-label">Admission Roadmap</span>
+        </a>
+
         <a href="{{ route('student.applications.index') }}" class="menu-item {{ request()->routeIs('student.applications.*') ? 'active' : '' }}">
             <div class="menu-icon"><i class="bi bi-file-earmark-text-fill"></i></div>
             <span class="menu-label">Consultancy Application</span>
@@ -49,7 +59,7 @@
             <span class="menu-label">Recommendations</span>
         </a>
 
-        <a href="#" class="menu-item">
+        <a href="{{ route('student.appointments') }}" class="menu-item {{ request()->routeIs('student.appointments*') ? 'active' : '' }}">
             <div class="menu-icon"><i class="bi bi-calendar2-check-fill"></i></div>
             <span class="menu-label">Appointments</span>
         </a>
@@ -64,7 +74,7 @@
             <span class="menu-label">Follow-ups</span>
         </a>
 
-        <a href="#" class="menu-item">
+        <a href="{{ route('student.fund-requirements.index') }}" class="menu-item {{ request()->routeIs('student.fund-requirements.*') ? 'active' : '' }}">
             <div class="menu-icon"><i class="bi bi-cash-coin"></i></div>
             <span class="menu-label">Fund Requirement</span>
         </a>
@@ -80,6 +90,18 @@
     <div class="menu-section">
 
         <div class="menu-title">Account</div>
+
+        @php
+            $sidebarUnread = auth()->user()?->notifications()->unread()->count() ?? 0;
+        @endphp
+
+        <a href="{{ route('student.notifications.index') }}" class="menu-item {{ request()->routeIs('student.notifications.*') ? 'active' : '' }}">
+            <div class="menu-icon"><i class="bi bi-bell-fill"></i></div>
+            <span class="menu-label">Notifications</span>
+            @if ($sidebarUnread > 0)
+                <span class="menu-count">{{ $sidebarUnread > 9 ? '9+' : $sidebarUnread }}</span>
+            @endif
+        </a>
 
         <a href="{{ route('student.account.edit') }}" class="menu-item {{ request()->routeIs('student.account.*') ? 'active' : '' }}">
             <div class="menu-icon"><i class="bi bi-gear-fill"></i></div>

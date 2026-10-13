@@ -1032,6 +1032,8 @@
 
         @include('student.partials.eligibility-matcher')
 
+        @include('student.partials.application-overview')
+
         <!-- =================================================
              APPLICATION + CONSULTANT
         ================================================== -->
@@ -1161,7 +1163,7 @@
                                 @endif
                             </div>
 
-                            <a href="#" class="appointment-button">
+                            <a href="{{ route('student.appointments') }}" class="appointment-button">
                                 View Appointment
                             </a>
 
@@ -1201,7 +1203,7 @@
                     </h2>
 
                     @if($recommendations->isNotEmpty())
-                        <a href="#" class="view-link">
+                        <a href="{{ route('student.recommendations.index') }}" class="view-link">
                             View All
                         </a>
                     @endif
@@ -1259,7 +1261,7 @@
                         Recent Notifications
                     </h2>
 
-                    <a href="#" class="view-link" id="viewAllNotifications" @if($notifications->isEmpty()) style="display:none" @endif>
+                    <a href="{{ route('student.notifications.index') }}" class="view-link" id="viewAllNotifications" @if($notifications->isEmpty()) style="display:none" @endif>
                         View All
                     </a>
 
@@ -1288,8 +1290,12 @@
                 </h2>
 
                 @if($fundRequirement)
-                    <a href="#" class="view-link">
+                    <a href="{{ route('student.fund-requirements.show', $fundRequirement) }}" class="view-link">
                         View Details
+                    </a>
+                @else
+                    <a href="{{ route('student.fund-requirements.create') }}" class="view-link">
+                        Generate
                     </a>
                 @endif
 
@@ -1345,6 +1351,9 @@
 
                 <div class="empty-card-state">
                     <p>No fund requirement has been generated yet.</p>
+                    <a href="{{ route('student.fund-requirements.create') }}" class="view-link">
+                        Generate Fund Requirement
+                    </a>
                 </div>
 
             @endif
@@ -1405,15 +1414,6 @@ document.querySelectorAll('.timeline-progress[data-progress]').forEach(function 
         event.stopPropagation();
         setOpen(!popup.classList.contains('open'));
     });
-
-    if (viewAll) {
-        viewAll.addEventListener('click', function (event) {
-            event.preventDefault();
-            event.stopPropagation();
-            setOpen(true);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        });
-    }
 
     document.addEventListener('click', function (event) {
         if (!popup.contains(event.target)) setOpen(false);

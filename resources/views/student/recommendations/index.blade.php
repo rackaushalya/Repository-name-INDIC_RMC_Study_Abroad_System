@@ -816,12 +816,24 @@
                                 {{ $recommendation->recommendation_status ?? 'Under Review' }}
                             </span>
 
-                            <a
-                                href="{{ route('student.recommendations.show', $recommendation) }}"
-                                class="view-button"
-                            >
-                                View Details
-                            </a>
+                            <span style="display:flex; gap:8px; flex-wrap:wrap;">
+                                @if($recommendation->course)
+                                    <a
+                                        href="{{ route('student.roadmap.show', $recommendation->course) }}"
+                                        class="view-button"
+                                        style="background:#fff; color:#ff7417; border:1px solid #ffc89c;"
+                                    >
+                                        View Admission Roadmap
+                                    </a>
+                                @endif
+
+                                <a
+                                    href="{{ route('student.recommendations.show', $recommendation) }}"
+                                    class="view-button"
+                                >
+                                    View Details
+                                </a>
+                            </span>
 
                         </div>
 

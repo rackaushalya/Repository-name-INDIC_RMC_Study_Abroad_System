@@ -52,6 +52,18 @@ class Course extends Model
         );
     }
 
+    /**
+     * The course's intake rows. Use this instead of $course->intakes: the
+     * courses table has an old text column called "intakes" that hides the
+     * relationship when accessed as a property.
+     */
+    public function intakeList()
+    {
+        return $this->relationLoaded('intakes')
+            ? $this->getRelation('intakes')
+            : $this->intakes()->get();
+    }
+
     public function tuitionFees()
     {
         return $this->hasMany(

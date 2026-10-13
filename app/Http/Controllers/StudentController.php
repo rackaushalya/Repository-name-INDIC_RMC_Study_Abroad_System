@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Student;
 use App\Models\User;
+use App\Services\ApplicationJourney;
+use App\Services\DeadlineAlerts;
 use App\Services\EligibilityMatcher;
 use App\Services\StudentReadiness;
 use App\Services\StudentTips;
@@ -49,6 +51,11 @@ class StudentController extends Controller
                 ->first()
             : null;
 
+        // Create any deadline reminders that are due before the notifications are read.
+        if ($student) {
+            app(DeadlineAlerts::class)->sync($student);
+        }
+
         $notifications = $user
             ? $user->notifications()
                 ->latest('created_at')
@@ -66,6 +73,8 @@ class StudentController extends Controller
         $readiness = app(StudentReadiness::class)->evaluate($student);
 
         $eligibleCourses = app(EligibilityMatcher::class)->topMatches($student);
+
+        $journeyOverview = $student ? app(ApplicationJourney::class)->overview($student) : null;
 
         $latestApplication = $applications->first();
 
@@ -100,6 +109,7 @@ class StudentController extends Controller
             'profileCompletion',
             'readiness',
             'eligibleCourses',
+            'journeyOverview',
             'latestApplication',
             'applicationTimeline',
             'timelineProgressPercent',

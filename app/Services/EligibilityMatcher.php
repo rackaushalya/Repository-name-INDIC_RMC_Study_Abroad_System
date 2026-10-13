@@ -71,6 +71,18 @@ class EligibilityMatcher
     }
 
     /**
+     * Check one specific course against the student (used by the admission roadmap).
+     * Same rules as topMatches(), so the two can never disagree.
+     */
+    public function assess(Student $student, Course $course): array
+    {
+        $student->loadMissing('preferences');
+        $course->loadMissing(['university.country', 'requirements', 'englishRequirements', 'tuitionFees']);
+
+        return $this->evaluate($course, $this->profile($student), $student);
+    }
+
+    /**
      * What we know about the student, gathered once for all courses.
      */
     private function profile(Student $student): array

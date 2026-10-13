@@ -25,6 +25,9 @@ use App\Http\Controllers\FundRequirementController;
 use App\Http\Controllers\LeadController;
 use App\Http\Controllers\InquiryController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\DestinationController;
+use App\Http\Controllers\AdmissionRoadmapController;
+use App\Http\Controllers\ApplicationJourneyController;
 
 
 /*
@@ -149,6 +152,33 @@ Route::middleware(['auth', 'role:Student'])
 
         /*
         |--------------------------------------------------------------------------
+        | Study Destination Explorer
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get('/destinations', [DestinationController::class, 'index'])
+            ->name('destinations.index');
+
+        Route::get('/destinations/compare', [DestinationController::class, 'compare'])
+            ->name('destinations.compare');
+
+        Route::get('/destinations/{country}', [DestinationController::class, 'show'])
+            ->name('destinations.show');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Admission Roadmap
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get('/roadmap', [AdmissionRoadmapController::class, 'index'])
+            ->name('roadmap.index');
+
+        Route::get('/roadmap/{course}', [AdmissionRoadmapController::class, 'show'])
+            ->name('roadmap.show');
+
+        /*
+        |--------------------------------------------------------------------------
         | Student Notifications
         |--------------------------------------------------------------------------
         */
@@ -243,6 +273,12 @@ Route::middleware(['auth', 'role:Student'])
         | Applications
         |--------------------------------------------------------------------------
         */
+
+        // Application journey: status timeline, deadlines, outstanding requirements.
+        Route::get(
+            '/applications/{application}/journey',
+            [ApplicationJourneyController::class, 'show']
+        )->name('applications.journey');
 
         Route::resource(
             'applications',
@@ -443,6 +479,12 @@ Route::middleware(['auth', 'role:Admin,SuperAdmin'])
             '/users',
             [AdminController::class, 'users']
         )->name('users');
+
+        // User Management - Export CSV
+        Route::get(
+            '/users/export',
+            [AdminController::class, 'exportUsers']
+        )->name('users.export');
 
         // User Management - Create
         Route::get(

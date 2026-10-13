@@ -926,6 +926,13 @@
                         ← Back
                     </a>
 
+                    <a
+                        href="{{ route('student.applications.journey', $application) }}"
+                        class="btn btn-secondary"
+                    >
+                        View journey &amp; deadlines
+                    </a>
+
                 </div>
 
 
