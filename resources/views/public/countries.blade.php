@@ -452,241 +452,73 @@
 
         <div class="countries-grid">
 
-            <!-- UK -->
+            @php
+                // Country name / code -> 2-letter code, used to show a flag picture.
+                $flagCodes = [
+                    'argentina' => 'ar', 'australia' => 'au', 'austria' => 'at', 'bangladesh' => 'bd',
+                    'belgium' => 'be', 'brazil' => 'br', 'canada' => 'ca', 'china' => 'cn',
+                    'cyprus' => 'cy', 'czech republic' => 'cz', 'czechia' => 'cz', 'denmark' => 'dk',
+                    'estonia' => 'ee', 'finland' => 'fi', 'france' => 'fr', 'georgia' => 'ge',
+                    'germany' => 'de', 'greece' => 'gr', 'hong kong' => 'hk', 'hungary' => 'hu',
+                    'iceland' => 'is', 'india' => 'in', 'indonesia' => 'id', 'ireland' => 'ie',
+                    'italy' => 'it', 'japan' => 'jp', 'latvia' => 'lv', 'lithuania' => 'lt',
+                    'luxembourg' => 'lu', 'malaysia' => 'my', 'maldives' => 'mv', 'malta' => 'mt',
+                    'mauritius' => 'mu', 'netherlands' => 'nl', 'new zealand' => 'nz', 'norway' => 'no',
+                    'poland' => 'pl', 'portugal' => 'pt', 'qatar' => 'qa', 'romania' => 'ro',
+                    'russia' => 'ru', 'saudi arabia' => 'sa', 'singapore' => 'sg', 'slovakia' => 'sk',
+                    'slovenia' => 'si', 'south africa' => 'za', 'south korea' => 'kr', 'korea' => 'kr',
+                    'spain' => 'es', 'sri lanka' => 'lk', 'sweden' => 'se', 'switzerland' => 'ch',
+                    'taiwan' => 'tw', 'thailand' => 'th', 'turkey' => 'tr', 'ukraine' => 'ua',
+                    'united arab emirates' => 'ae', 'uae' => 'ae', 'united kingdom' => 'gb', 'uk' => 'gb',
+                    'united states' => 'us', 'usa' => 'us', 'vietnam' => 'vn',
+                ];
+            @endphp
 
-            <div class="country-card">
+            @forelse ($countries as $country)
+                @php
+                    $nameKey = strtolower(trim($country->country_name));
+                    $codeKey = strtolower(trim((string) $country->country_code));
+                    $flag = $flagCodes[$nameKey] ?? (strlen($codeKey) === 2 ? $codeKey : null);
+                    $flagSrc = $country->flag_url
+                        ?: ($flag ? 'https://flagcdn.com/w320/' . $flag . '.png' : null);
+                @endphp
 
-                <div class="country-image">
-                    🇬🇧
-                </div>
+                <div class="country-card">
 
-                <div class="country-content">
+                    <div class="country-image">
+                        @if ($flagSrc)
+                            <img src="{{ $flagSrc }}"
+                                 alt="Flag of {{ $country->country_name }}"
+                                 style="width: 150px; height: 100px; object-fit: cover; border-radius: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.18); font-size: 14px; color: #fff;">
+                        @else
+                            <span style="color: #fff; font-weight: 700; font-size: 44px; letter-spacing: 2px;">
+                                {{ strtoupper($country->country_code ?: substr($country->country_name, 0, 2)) }}
+                            </span>
+                        @endif
+                    </div>
 
-                    <h2>United Kingdom</h2>
+                    <div class="country-content">
 
-                    <p>
-                        Explore a wide range of undergraduate and postgraduate
-                        study opportunities at universities across the UK.
-                    </p>
+                        <h2>{{ $country->country_name }}</h2>
 
-                    <a href="{{ url('/universities') }}" class="country-link">
-                        Explore Universities →
-                    </a>
+                        <p>
+                            {{ $country->description
+                                ? Str::limit($country->description, 170)
+                                : 'Explore study opportunities at universities in ' . $country->country_name . '.' }}
+                        </p>
 
-                </div>
+                        <a href="{{ url('/universities') }}" class="country-link">
+                            Explore Universities →
+                        </a>
 
-            </div>
-
-
-            <!-- Australia -->
-
-            <div class="country-card">
-
-                <div class="country-image">
-                    🇦🇺
-                </div>
-
-                <div class="country-content">
-
-                    <h2>Australia</h2>
-
-                    <p>
-                        Discover internationally recognised universities,
-                        diverse courses and a welcoming environment for
-                        international students.
-                    </p>
-
-                    <a href="{{ url('/universities') }}" class="country-link">
-                        Explore Universities →
-                    </a>
-
-                </div>
-
-            </div>
-
-
-            <!-- Canada -->
-
-            <div class="country-card">
-
-                <div class="country-image">
-                    🇨🇦
-                </div>
-
-                <div class="country-content">
-
-                    <h2>Canada</h2>
-
-                    <p>
-                        Find education opportunities across Canadian
-                        universities and colleges with a variety of study
-                        programs.
-                    </p>
-
-                    <a href="{{ url('/universities') }}" class="country-link">
-                        Explore Universities →
-                    </a>
+                    </div>
 
                 </div>
-
-            </div>
-
-
-            <!-- New Zealand -->
-
-            <div class="country-card">
-
-                <div class="country-image">
-                    🇳🇿
-                </div>
-
-                <div class="country-content">
-
-                    <h2>New Zealand</h2>
-
-                    <p>
-                        Explore quality education opportunities in a country
-                        known for its student-friendly environment.
-                    </p>
-
-                    <a href="{{ url('/universities') }}" class="country-link">
-                        Explore Universities →
-                    </a>
-
-                </div>
-
-            </div>
-
-
-            <!-- Finland -->
-
-            <div class="country-card">
-
-                <div class="country-image">
-                    🇫🇮
-                </div>
-
-                <div class="country-content">
-
-                    <h2>Finland</h2>
-
-                    <p>
-                        Discover modern education opportunities and innovative
-                        study programs offered by Finnish institutions.
-                    </p>
-
-                    <a href="{{ url('/universities') }}" class="country-link">
-                        Explore Universities →
-                    </a>
-
-                </div>
-
-            </div>
-
-
-            <!-- France -->
-
-            <div class="country-card">
-
-                <div class="country-image">
-                    🇫🇷
-                </div>
-
-                <div class="country-content">
-
-                    <h2>France</h2>
-
-                    <p>
-                        Explore higher education opportunities across France,
-                        including a variety of academic disciplines.
-                    </p>
-
-                    <a href="{{ url('/universities') }}" class="country-link">
-                        Explore Universities →
-                    </a>
-
-                </div>
-
-            </div>
-
-
-            <!-- Singapore -->
-
-            <div class="country-card">
-
-                <div class="country-image">
-                    🇸🇬
-                </div>
-
-                <div class="country-content">
-
-                    <h2>Singapore</h2>
-
-                    <p>
-                        Discover internationally connected institutions and
-                        study opportunities in one of Asia's major education
-                        destinations.
-                    </p>
-
-                    <a href="{{ url('/universities') }}" class="country-link">
-                        Explore Universities →
-                    </a>
-
-                </div>
-
-            </div>
-
-
-            <!-- USA -->
-
-            <div class="country-card">
-
-                <div class="country-image">
-                    🇺🇸
-                </div>
-
-                <div class="country-content">
-
-                    <h2>United States</h2>
-
-                    <p>
-                        Explore a broad range of academic programs and
-                        institutions across the United States.
-                    </p>
-
-                    <a href="{{ url('/universities') }}" class="country-link">
-                        Explore Universities →
-                    </a>
-
-                </div>
-
-            </div>
-
-
-            <!-- Germany -->
-
-            <div class="country-card">
-
-                <div class="country-image">
-                    🇩🇪
-                </div>
-
-                <div class="country-content">
-
-                    <h2>Germany</h2>
-
-                    <p>
-                        Discover study opportunities across German
-                        universities and higher education institutions.
-                    </p>
-
-                    <a href="{{ url('/universities') }}" class="country-link">
-                        Explore Universities →
-                    </a>
-
-                </div>
-
-            </div>
+            @empty
+                <p style="grid-column: 1 / -1; text-align: center; color: #6b6d7c; padding: 40px 0;">
+                    New study destinations are coming soon.
+                </p>
+            @endforelse
 
         </div>
 

@@ -18,8 +18,19 @@ class Country extends Model
         'country_name',
         'country_code',
         'description',
+        'flag_image',
         'is_active',
     ];
+
+    /**
+     * Public URL of the uploaded flag, or null when none was uploaded.
+     */
+    public function getFlagUrlAttribute(): ?string
+    {
+        return $this->flag_image
+            ? asset('storage/' . $this->flag_image)
+            : null;
+    }
 
     protected function casts(): array
     {
