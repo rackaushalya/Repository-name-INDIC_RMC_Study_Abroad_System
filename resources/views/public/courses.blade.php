@@ -1140,7 +1140,9 @@
 
             @forelse ($courses as $course)
                 @php
-                    $photo = $course->university?->logo_url
+                    // Course image first, then the university's image, then a stock photo.
+                    $photo = $course->image_url
+                        ?: $course->university?->logo_url
                         ?: $coursePhotos[$course->course_id % count($coursePhotos)];
 
                     $fee = $course->tuitionFees->sortByDesc('tuition_fee_id')->first();

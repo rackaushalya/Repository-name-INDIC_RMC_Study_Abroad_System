@@ -892,6 +892,7 @@
 
 @php
     $allUniversities = $universities->getCollection();
+    $allUniversities->loadCount('scholarships');
     $totalUniversities = $universities->total();
 
     // Every country for the dropdown (inactive ones are marked).
@@ -912,6 +913,7 @@
         'description' => $u->description,
         'active' => (bool) $u->is_active,
         'logo' => $u->logo_url,
+        'scholarshipCount' => (int) $u->scholarships_count,
         'courses' => $u->courses->map(fn ($c) => [
             'name' => $c->course_name,
             'level' => $c->course_level,
@@ -1004,6 +1006,12 @@
                 </div>
             </div>
 
+            @if (session('error'))
+                <div class="form-errors" style="margin-bottom: 16px;">
+                    {{ session('error') }}
+                </div>
+            @endif
+
             @if ($countryOptions->isEmpty())
                 <div class="form-errors" style="margin-bottom: 16px;">
                     You need at least one country before adding a university.
@@ -1088,11 +1096,9 @@
                                             <button type="button" class="btn-icon-action" onclick="openEditModal({{ $uni->university_id }})" title="Edit university">
                                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                                             </button>
-                                            @if ($uni->is_active)
-                                                <button type="button" class="btn-icon-action delete" onclick="openDeleteModal({{ $uni->university_id }})" title="Deactivate university">
-                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                                                </button>
-                                            @endif
+                                            <button type="button" class="btn-icon-action delete" onclick="openDeleteModal({{ $uni->university_id }})" title="Delete university">
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                                            </button>
                                         </div>
                                     </td>
                                 </tr>
@@ -1142,9 +1148,7 @@
                                 <button type="button" class="btn-view-courses" onclick="viewCourses({{ $uni->university_id }})">View Courses</button>
                                 <div style="display: flex; gap: 6px;">
                                     <button type="button" class="btn-icon-action" onclick="openEditModal({{ $uni->university_id }})" title="Edit university"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
-                                    @if ($uni->is_active)
-                                        <button type="button" class="btn-icon-action delete" onclick="openDeleteModal({{ $uni->university_id }})" title="Deactivate university"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
-                                    @endif
+                                    <button type="button" class="btn-icon-action delete" onclick="openDeleteModal({{ $uni->university_id }})" title="Delete university"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
                                 </div>
                             </div>
                         </div>
@@ -1324,12 +1328,12 @@
             @method('DELETE')
             <div class="modal-body" style="padding-top: 28px;">
                 <div style="width: 50px; height: 50px; border-radius: 50%; background: #fef2f2; color: #dc2626; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; font-size: 24px;">⚠</div>
-                <h3 class="modal-title" style="margin-bottom: 8px;">Deactivate University</h3>
-                <p style="font-size: 12px; color: #697386;" id="deleteConfirmText"></p>
+                <h3 class="modal-title" style="margin-bottom: 8px;">Delete University</h3>
+                <p style="font-size: 12px; color: #697386; white-space: pre-line; line-height: 1.5;" id="deleteConfirmText"></p>
             </div>
             <div class="modal-footer" style="justify-content: center;">
                 <button type="button" class="btn-secondary" onclick="closeModal('deleteModal')">Cancel</button>
-                <button type="submit" class="btn-danger">Deactivate</button>
+                <button type="submit" class="btn-danger">Delete Permanently</button>
             </div>
         </form>
     </div>
@@ -1539,8 +1543,14 @@
         if (!uni) return;
 
         document.getElementById('deleteForm').action = universitiesBaseUrl + '/' + id;
+        const parts = [];
+        if (uni.courses.length) parts.push(`${uni.courses.length} ${uni.courses.length === 1 ? 'course' : 'courses'} (with their fees and intakes)`);
+        if (uni.scholarshipCount) parts.push(`${uni.scholarshipCount} ${uni.scholarshipCount === 1 ? 'scholarship' : 'scholarships'}`);
+
         document.getElementById('deleteConfirmText').innerText =
-            `"${uni.name}" will be marked as inactive and hidden from the public website. You can switch it back to Active later with Edit.`;
+            `"${uni.name}" will be deleted permanently`
+            + (parts.length ? `, together with its ${parts.join(' and ')}` : '')
+            + '. This cannot be undone.\n\nTo hide it from the website without deleting, use Edit and set the status to Inactive.';
         openModal('deleteModal');
     }
 

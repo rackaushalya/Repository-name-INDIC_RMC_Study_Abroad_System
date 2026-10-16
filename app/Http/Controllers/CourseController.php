@@ -6,6 +6,7 @@ use App\Models\Course;
 use App\Models\TuitionFee;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class CourseController extends Controller
 {
@@ -20,6 +21,10 @@ class CourseController extends Controller
         'university_id.exists' => 'Please choose a university from the list.',
         'tuition_amount.numeric' => 'The tuition fee must be a number, for example 38500.',
         'tuition_currency.required_with' => 'Please enter a currency for the tuition fee, for example USD.',
+        'tuition_currency.regex' => 'The tuition currency must be a 3-letter code, for example USD, LKR or GBP.',
+        'course_image.image' => 'The course image must be an image file.',
+        'course_image.mimes' => 'The course image must be a JPG, PNG, WEBP or GIF image.',
+        'course_image.max' => 'The course image must not be larger than 2 MB.',
     ];
 
     public function index()
@@ -50,8 +55,15 @@ class CourseController extends Controller
             self::MESSAGES
         );
 
-        DB::transaction(function () use ($request, $validated) {
-            $course = Course::create($this->courseFields($request, $validated));
+        $fields = $this->courseFields($request, $validated);
+
+        if ($request->hasFile('course_image')) {
+            $fields['course_image'] = $request->file('course_image')
+                ->store('course-images', 'public');
+        }
+
+        DB::transaction(function () use ($fields, $validated) {
+            $course = Course::create($fields);
 
             $this->saveTuition($course, $validated);
         });
@@ -83,11 +95,30 @@ class CourseController extends Controller
             self::MESSAGES
         );
 
-        DB::transaction(function () use ($request, $validated, $course) {
-            $course->update($this->courseFields($request, $validated));
+        $fields = $this->courseFields($request, $validated);
+        $oldImage = $course->course_image;
+
+        if ($request->hasFile('course_image')) {
+            // New image uploaded: save it and replace the old one.
+            $fields['course_image'] = $request->file('course_image')
+                ->store('course-images', 'public');
+        } elseif ($request->boolean('remove_image')) {
+            $fields['course_image'] = null;
+        }
+
+        DB::transaction(function () use ($fields, $validated, $course) {
+            $course->update($fields);
 
             $this->saveTuition($course, $validated);
         });
+
+        if (
+            $oldImage &&
+            array_key_exists('course_image', $fields) &&
+            $fields['course_image'] !== $oldImage
+        ) {
+            Storage::disk('public')->delete($oldImage);
+        }
 
         return redirect()
             ->route('admin.courses.index')
@@ -97,17 +128,58 @@ class CourseController extends Controller
             );
     }
 
+    /**
+     * Delete a course permanently, together with its fees, intakes,
+     * requirements and the scholarships written for this course only.
+     * Refused when students already use the course, so their applications,
+     * recommendations and fund reports are never damaged.
+     * (To hide a course without deleting it, set its status to Inactive.)
+     */
     public function destroy(Course $course)
     {
-        $course->update([
-            'is_active' => false
-        ]);
+        $name = $course->course_name;
+        $courseId = $course->course_id;
+        $intakeIds = DB::table('course_intakes')->where('course_id', $courseId)->pluck('intake_id');
+
+        $studentLinks =
+            DB::table('applications')->where('preferred_course_id', $courseId)->count()
+            + DB::table('recommendations')->where('course_id', $courseId)->count()
+            + DB::table('fund_requirements')->where('selected_course_id', $courseId)->count()
+            + ($intakeIds->isNotEmpty()
+                ? DB::table('applications')->whereIn('preferred_intake_id', $intakeIds)->count()
+                : 0);
+
+        if ($studentLinks > 0) {
+            return redirect()
+                ->route('admin.courses.index')
+                ->with(
+                    'error',
+                    '"' . $name . '" can\'t be deleted because students have applications, '
+                    . 'recommendations or fund reports linked to it. '
+                    . 'Set it to Inactive instead to hide it from the website.'
+                );
+        }
+
+        $image = $course->course_image;
+
+        DB::transaction(function () use ($course, $courseId) {
+            // Scholarships and document requirements written for this course only.
+            DB::table('scholarships')->where('course_id', $courseId)->delete();
+            DB::table('required_documents')->where('course_id', $courseId)->delete();
+
+            // Deleting the course also removes its fees, intakes and requirements.
+            $course->delete();
+        });
+
+        if ($image) {
+            Storage::disk('public')->delete($image);
+        }
 
         return redirect()
             ->route('admin.courses.index')
             ->with(
                 'success',
-                'Course deactivated successfully.'
+                'Course "' . $name . '" deleted.'
             );
     }
 
@@ -162,12 +234,19 @@ class CourseController extends Controller
             'tuition_currency' => [
                 'nullable',
                 'required_with:tuition_amount',
-                'string',
-                'max:10'
+                'regex:/^[A-Za-z]{3}$/'
             ],
             'tuition_period' => [
                 'nullable',
                 'in:' . implode(',', self::FEE_PERIODS)
+            ],
+
+            // Optional picture shown on the public course card. SVG is not allowed for safety.
+            'course_image' => [
+                'nullable',
+                'image',
+                'mimes:jpg,jpeg,png,webp,gif',
+                'max:2048'
             ],
         ];
     }

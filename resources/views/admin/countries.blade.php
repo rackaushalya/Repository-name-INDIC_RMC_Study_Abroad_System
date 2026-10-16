@@ -805,6 +805,7 @@
 
 @php
     $allCountries = $countries->getCollection();
+    $allCountries->loadCount(['universities', 'courses']);
     $totalCountries = $countries->total();
     $countriesForJs = $allCountries->map(fn ($c) => [
         'id' => $c->country_id,
@@ -813,6 +814,8 @@
         'description' => $c->description,
         'active' => (bool) $c->is_active,
         'flag' => $c->flag_url,
+        'universityCount' => (int) $c->universities_count,
+        'courseCount' => (int) $c->courses_count,
     ])->values();
 @endphp
 
@@ -853,6 +856,12 @@
                     <p>Manage the international study destinations stored in the system.</p>
                 </div>
             </div>
+
+            @if (session('error'))
+                <div class="form-errors" style="margin-bottom: 16px;">
+                    {{ session('error') }}
+                </div>
+            @endif
 
             <!-- CONTROLS CARD -->
             <div class="controls-card">
@@ -944,11 +953,9 @@
                                             <button type="button" class="btn-icon-action" onclick="openEditModal({{ $country->country_id }})" title="Edit country">
                                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                                             </button>
-                                            @if ($country->is_active)
-                                                <button type="button" class="btn-icon-action delete" onclick="openDeleteModal({{ $country->country_id }})" title="Deactivate country">
-                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                                                </button>
-                                            @endif
+                                            <button type="button" class="btn-icon-action delete" onclick="openDeleteModal({{ $country->country_id }})" title="Delete country">
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                                            </button>
                                         </div>
                                     </td>
                                 </tr>
@@ -988,11 +995,9 @@
                                 <button type="button" class="btn-icon-action" onclick="openEditModal({{ $country->country_id }})" title="Edit country">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                                 </button>
-                                @if ($country->is_active)
-                                    <button type="button" class="btn-icon-action delete" onclick="openDeleteModal({{ $country->country_id }})" title="Deactivate country">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                                    </button>
-                                @endif
+                                <button type="button" class="btn-icon-action delete" onclick="openDeleteModal({{ $country->country_id }})" title="Delete country">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                                </button>
                             </div>
                         </div>
                     @endforeach
@@ -1138,12 +1143,12 @@
             @method('DELETE')
             <div class="modal-body" style="padding-top: 28px;">
                 <div style="width: 48px; height: 48px; border-radius: 50%; background: #fef2f2; color: #dc2626; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; font-size: 22px;">⚠</div>
-                <h3 class="modal-title" style="margin-bottom: 8px;">Deactivate Country</h3>
-                <p style="font-size: 12px; color: #697386; line-height: 1.5;" id="deleteConfirmText"></p>
+                <h3 class="modal-title" style="margin-bottom: 8px;">Delete Country</h3>
+                <p style="font-size: 12px; color: #697386; line-height: 1.5; white-space: pre-line;" id="deleteConfirmText"></p>
             </div>
             <div class="modal-footer" style="justify-content: center;">
                 <button type="button" class="btn-secondary" onclick="closeModal('deleteModal')">Cancel</button>
-                <button type="submit" class="btn-danger">Deactivate</button>
+                <button type="submit" class="btn-danger">Delete Permanently</button>
             </div>
         </form>
     </div>
@@ -1216,7 +1221,6 @@
     }
 
     // ---- Flag upload in the form ----
-     // ---- Flag upload in the form ----
     let savedFlagUrl = null;   // flag already saved for the country being edited
     let pickedFlagUrl = null;  // preview of a newly chosen file
 
@@ -1274,7 +1278,7 @@
         return countries.find(c => c.id === id);
     }
 
-    // Search and status filter
+    // Search and status filter (applies to the countries shown on this page)
     function applyFilters() {
         const query = document.getElementById('countrySearchInput').value.toLowerCase().trim();
         const status = document.getElementById('statusFilterSelect').value;
@@ -1372,8 +1376,15 @@
         if (!c) return;
 
         document.getElementById('deleteForm').action = countriesBaseUrl + '/' + id;
+        const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
+        const parts = [];
+        if (c.universityCount) parts.push(plural(c.universityCount, 'university').replace('universitys', 'universities'));
+        if (c.courseCount) parts.push(plural(c.courseCount, 'course'));
+
         document.getElementById('deleteConfirmText').innerText =
-            `"${c.name}" will be marked as inactive. You can switch it back to Active later with Edit.`;
+            `"${c.name}" will be deleted permanently`
+            + (parts.length ? `, together with its ${parts.join(' and ')} (and their scholarships)` : '')
+            + '. This cannot be undone.\n\nTo hide it from the website without deleting, use Edit and set the status to Inactive.';
         openModal('deleteModal');
     }
 

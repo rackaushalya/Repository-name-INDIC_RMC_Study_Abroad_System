@@ -47,4 +47,17 @@ class Country extends Model
             'country_id'
         );
     }
+
+    /** All courses offered by universities in this country. */
+    public function courses()
+    {
+        return $this->hasManyThrough(
+            Course::class,
+            University::class,
+            'country_id',
+            'university_id',
+            'country_id',
+            'university_id'
+        );
+    }
 }

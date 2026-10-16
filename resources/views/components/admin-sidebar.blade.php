@@ -54,53 +54,6 @@
 
     <div class="menu-section">
 
-        <div class="menu-title">CRM</div>
-
-        <a href="{{ route('admin.crm-dashboard') }}" class="menu-item {{ request()->is('admin/crm-dashboard*') ? 'active' : '' }}">
-            <div class="menu-icon"><i class="bi bi-speedometer2"></i></div>
-            <span class="menu-label">CRM Dashboard</span>
-        </a>
-
-        <a href="{{ route('admin.leads.index') }}" class="menu-item {{ request()->is('admin/leads*') ? 'active' : '' }}">
-            <div class="menu-icon"><i class="bi bi-person-lines-fill"></i></div>
-            <span class="menu-label">Leads</span>
-        </a>
-
-        <a href="{{ route('admin.inquiries.index') }}" class="menu-item {{ request()->is('admin/inquiries*') ? 'active' : '' }}">
-            <div class="menu-icon"><i class="bi bi-question-circle-fill"></i></div>
-            <span class="menu-label">Inquiries</span>
-        </a>
-
-        <a href="{{ route('admin.communication-history.index') }}" class="menu-item {{ request()->is('admin/communication-history*') ? 'active' : '' }}">
-            <div class="menu-icon"><i class="bi bi-chat-dots-fill"></i></div>
-            <span class="menu-label">Communication History</span>
-        </a>
-
-        <a href="{{ route('admin.notifications.index') }}" class="menu-item {{ request()->is('admin/notifications*') ? 'active' : '' }}">
-            <div class="menu-icon"><i class="bi bi-bell-fill"></i></div>
-            <span class="menu-label">Email Notifications</span>
-        </a>
-
-        <a href="{{ route('admin.reports.index') }}" class="menu-item {{ request()->is('admin/reports*') ? 'active' : '' }}">
-            <div class="menu-icon"><i class="bi bi-file-earmark-bar-graph-fill"></i></div>
-            <span class="menu-label">Reports</span>
-        </a>
-
-        <a href="{{ route('admin.analytics') }}" class="menu-item {{ request()->is('admin/analytics*') ? 'active' : '' }}">
-            <div class="menu-icon"><i class="bi bi-bar-chart-line-fill"></i></div>
-            <span class="menu-label">Analytics Dashboard</span>
-        </a>
-
-        <a href="{{ route('admin.kpi-reports') }}" class="menu-item {{ request()->is('admin/kpi-reports*') ? 'active' : '' }}">
-            <div class="menu-icon"><i class="bi bi-trophy-fill"></i></div>
-            <span class="menu-label">KPI Reports</span>
-        </a>
-
-    </div>
-
-
-    <div class="menu-section">
-
         <div class="menu-title">STUDY ABROAD</div>
 
         <a href="{{ route('admin.countries-list') }}" class="menu-item {{ request()->is('admin/countries*') ? 'active' : '' }}">
@@ -116,6 +69,11 @@
         <a href="{{ route('admin.courses-list') }}" class="menu-item {{ request()->is('admin/courses*') ? 'active' : '' }}">
             <div class="menu-icon"><i class="bi bi-mortarboard-fill"></i></div>
             <span class="menu-label">Courses</span>
+        </a>
+
+        <a href="{{ route('admin.scholarships.index') }}" class="menu-item {{ request()->is('admin/scholarships*') ? 'active' : '' }}">
+            <div class="menu-icon"><i class="bi bi-award-fill"></i></div>
+            <span class="menu-label">Scholarships</span>
         </a>
 
     </div>

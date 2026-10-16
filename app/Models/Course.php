@@ -23,8 +23,19 @@ class Course extends Model
         'study_mode',
         'description',
         'application_deadline',
+        'course_image',
         'is_active',
     ];
+
+    /**
+     * Public URL of the uploaded course image, or null when none was uploaded.
+     */
+    public function getImageUrlAttribute(): ?string
+    {
+        return $this->course_image
+            ? asset('storage/' . $this->course_image)
+            : null;
+    }
 
     protected function casts(): array
     {

@@ -108,11 +108,24 @@ class HomeController extends Controller
     public function scholarships()
     {
         $scholarships = Scholarship::where('is_active', true)
+            // Hide scholarships whose deadline has passed.
+            ->where(fn ($query) => $query
+                ->whereNull('application_deadline')
+                ->orWhereDate('application_deadline', '>=', today()))
+            // Hide ones linked to an inactive university, country or course.
+            ->where(fn ($query) => $query
+                ->whereNull('university_id')
+                ->orWhereHas('university', fn ($query) => $query
+                    ->where('is_active', true)
+                    ->whereHas('country', fn ($query) => $query->where('is_active', true))))
+            ->where(fn ($query) => $query
+                ->whereNull('course_id')
+                ->orWhereHas('course', fn ($query) => $query->where('is_active', true)))
             ->with([
-                'university',
+                'university.country',
                 'course'
             ])
-            ->latest()
+            ->orderByRaw('application_deadline IS NULL, application_deadline')
             ->get();
 
         return view('public.scholarships', compact('scholarships'));

@@ -940,6 +940,12 @@
         .detail-row span:first-child { color: #6b7280; }
         .detail-row strong { color: #111827; text-align: right; }
         .table-footer .portal-pager { width: 100%; }
+        .course-thumb-img { width: 42px; height: 42px; border-radius: 8px; object-fit: cover; border: 1px solid #e5e7eb; flex-shrink: 0; }
+        .image-upload-box { display: flex; align-items: center; gap: 14px; border: 2px dashed #d0d5dd; border-radius: 8px; padding: 12px 14px; background: #fafbfc; cursor: pointer; }
+        .image-upload-box:hover { border-color: #f97316; }
+        .image-preview { width: 96px; height: 60px; border-radius: 6px; object-fit: cover; border: 1px solid #e1e5eb; background: #fff; flex-shrink: 0; }
+        .image-placeholder { width: 96px; height: 60px; border-radius: 6px; background: #f2f4f7; color: #98a2b3; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .btn-remove-image { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; border-radius: 6px; padding: 5px 10px; font-size: 11px; font-weight: 600; cursor: pointer; }
         .tuition-grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 10px; }
         @media (max-width: 750px) { .tuition-grid { grid-template-columns: 1fr; } }
     </style>
@@ -951,6 +957,7 @@
     $allCourses = $courses->getCollection();
     // Load related data (works whichever admin URL showed this page).
     $allCourses->loadMissing(['university.country', 'tuitionFees', 'intakes']);
+    $allCourses->loadCount('scholarships');
     $totalCourses = $courses->total();
 
     $universityOptions = \App\Models\University::with('country')->orderBy('university_name')->get();
@@ -983,6 +990,8 @@
             'mode' => $c->study_mode,
             'description' => $c->description,
             'active' => (bool) $c->is_active,
+            'image' => $c->image_url,
+            'scholarshipCount' => (int) $c->scholarships_count,
             'feeAmount' => $fee ? (float) $fee->amount : null,
             'feeCurrency' => $fee?->currency,
             'feePeriod' => $fee?->fee_period,
@@ -1049,6 +1058,12 @@
                     </button>
                 </div>
             </div>
+
+            @if (session('error'))
+                <div class="form-errors" style="margin-bottom: 16px;">
+                    {{ session('error') }}
+                </div>
+            @endif
 
             @if ($universityOptions->isEmpty())
                 <div class="form-errors" style="margin-bottom: 16px;">
@@ -1150,7 +1165,11 @@
                                     data-status="{{ $course->is_active ? 'Active' : 'Inactive' }}">
                                     <td>
                                         <div class="uni-identity">
-                                            <div class="course-icon-thumb">{{ strtoupper(substr($course->course_level ?? 'C', 0, 2)) }}</div>
+                                            @if ($course->image_url)
+                                                <img src="{{ $course->image_url }}" alt="{{ $course->course_name }}" class="course-thumb-img">
+                                            @else
+                                                <div class="course-icon-thumb">{{ strtoupper(substr($course->course_level ?? 'C', 0, 2)) }}</div>
+                                            @endif
                                             <div>
                                                 <div class="uni-name-text">{{ $course->course_name }}</div>
                                                 <div class="uni-meta-text">{{ $course->intakeList()->count() }} {{ Str::plural('intake', $course->intakeList()->count()) }}</div>
@@ -1194,14 +1213,12 @@
                                                     <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                                                 </svg>
                                             </button>
-                                            @if ($course->is_active)
-                                                <button type="button" class="btn-icon-action delete" onclick="openDeleteCourseModal({{ $course->course_id }})" title="Deactivate course">
+                                                <button type="button" class="btn-icon-action delete" onclick="openDeleteCourseModal({{ $course->course_id }})" title="Delete course">
                                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                                         <polyline points="3 6 5 6 21 6"/>
                                                         <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
                                                     </svg>
                                                 </button>
-                                            @endif
                                         </div>
                                     </td>
                                 </tr>
@@ -1268,14 +1285,12 @@
                                         <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                                     </svg>
                                 </button>
-                                @if ($course->is_active)
-                                    <button type="button" class="btn-icon-action delete" onclick="openDeleteCourseModal({{ $course->course_id }})" title="Deactivate course">
+                                    <button type="button" class="btn-icon-action delete" onclick="openDeleteCourseModal({{ $course->course_id }})" title="Delete course">
                                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                             <polyline points="3 6 5 6 21 6"/>
                                             <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
                                         </svg>
                                     </button>
-                                @endif
                             </div>
                         </div>
                     @endforeach
@@ -1320,10 +1335,11 @@
                 </svg>
             </button>
         </div>
-        <form id="courseForm" method="POST" action="{{ route('admin.courses.store') }}">
+        <form id="courseForm" method="POST" action="{{ route('admin.courses.store') }}" enctype="multipart/form-data">
             @csrf
             <input type="hidden" name="_method" id="formMethod" value="POST">
             <input type="hidden" name="edit_id" id="courseIdField" value="{{ old('edit_id') }}">
+            <input type="hidden" name="remove_image" id="removeImageInput" value="0">
             <div class="modal-body">
 
                 @if ($errors->any())
@@ -1336,6 +1352,32 @@
                         </ul>
                     </div>
                 @endif
+
+                <!-- COURSE IMAGE -->
+                <div class="form-group" style="margin-bottom: 14px;">
+                    <label class="form-label">Course Image (optional)</label>
+                    <div class="image-upload-box" onclick="document.getElementById('courseImageFile').click()" title="Choose an image">
+                        <img id="imagePreview" class="image-preview" src="" alt="Course image preview" style="display: none;">
+                        <div id="imagePlaceholder" class="image-placeholder">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                                <circle cx="8.5" cy="8.5" r="1.5"/>
+                                <polyline points="21 15 16 10 5 21"/>
+                            </svg>
+                        </div>
+                        <div style="flex: 1; min-width: 0;">
+                            <div style="font-size: 12px; font-weight: 600; color: #344054;">Click to choose an image</div>
+                            <div style="font-size: 11px; color: #697386; margin-top: 3px;">
+                                Shown on the public Courses page. JPG, PNG, WEBP or GIF, up to 2 MB. A wide picture works best.
+                            </div>
+                        </div>
+                        <button type="button" id="btnRemoveImage" class="btn-remove-image" style="display: none;"
+                                onclick="event.stopPropagation(); removeCourseImage();">Remove</button>
+                    </div>
+                    <input type="file" id="courseImageFile" name="course_image"
+                           accept=".jpg,.jpeg,.png,.webp,.gif,image/jpeg,image/png,image/webp,image/gif"
+                           style="display: none;" onchange="handleImageSelect(event)">
+                </div>
 
                 <div class="form-group" style="margin-bottom: 14px;">
                     <label class="form-label" for="courseNameInput">Course Name *</label>
@@ -1402,7 +1444,7 @@
                         <input type="number" class="form-input" id="courseTuitionInput" name="tuition_amount" placeholder="Amount, e.g. 38500"
                                min="0" step="0.01" value="{{ old('tuition_amount') }}">
                         <input type="text" class="form-input" id="courseCurrencyInput" name="tuition_currency" placeholder="USD"
-                               maxlength="10" value="{{ old('tuition_currency') }}" style="text-transform: uppercase;">
+                               maxlength="3" pattern="[A-Za-z]{3}" title="3-letter currency code, e.g. USD" value="{{ old('tuition_currency') }}" style="text-transform: uppercase;">
                         <select class="form-select" id="coursePeriodSelect" name="tuition_period">
                             @foreach ($feePeriods as $period)
                                 <option value="{{ $period }}" @selected(old('tuition_period', 'Year') === $period)>per {{ strtolower($period) }}</option>
@@ -1460,8 +1502,8 @@
             @method('DELETE')
             <div class="modal-header">
                 <div>
-                    <div class="modal-title" style="color: #dc2626;">Deactivate Course</div>
-                    <div class="modal-subtitle">The course will be hidden from the public website.</div>
+                    <div class="modal-title" style="color: #dc2626;">Delete Course</div>
+                    <div class="modal-subtitle">This cannot be undone.</div>
                 </div>
                 <button type="button" class="modal-close-btn" onclick="closeModal('deleteCourseModal')">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1472,13 +1514,15 @@
             </div>
             <div class="modal-body">
                 <p style="font-size: 13px; color: #4b5565; line-height: 1.5;">
-                    <strong id="deleteCourseName" style="color: #111827;"></strong> will be marked as inactive.
-                    You can switch it back to Active later with Edit.
+                    <strong id="deleteCourseName" style="color: #111827;"></strong> will be deleted permanently<span id="deleteCourseExtra"></span>.
+                </p>
+                <p style="font-size: 12px; color: #6b7280; line-height: 1.5; margin-top: 8px;">
+                    To hide it from the website without deleting, use Edit and set the status to Inactive.
                 </p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn-secondary" onclick="closeModal('deleteCourseModal')">Cancel</button>
-                <button type="submit" class="btn-danger">Deactivate Course</button>
+                <button type="submit" class="btn-danger">Delete Permanently</button>
             </div>
         </form>
     </div>
@@ -1590,6 +1634,51 @@
         openModal('courseDetailsModal');
     }
 
+    // ---- Course image in the form ----
+    let savedImageUrl = null;
+    let pickedImageUrl = null;
+
+    function refreshImagePreview() {
+        const removing = document.getElementById('removeImageInput').value === '1';
+        const shown = pickedImageUrl || (!removing && savedImageUrl);
+        const img = document.getElementById('imagePreview');
+
+        img.src = shown || '';
+        img.style.display = shown ? 'block' : 'none';
+        document.getElementById('imagePlaceholder').style.display = shown ? 'none' : 'flex';
+        document.getElementById('btnRemoveImage').style.display = shown ? 'inline-block' : 'none';
+    }
+
+    function resetImageInput(existingUrl) {
+        savedImageUrl = existingUrl || null;
+        pickedImageUrl = null;
+        document.getElementById('courseImageFile').value = '';
+        document.getElementById('removeImageInput').value = '0';
+        refreshImagePreview();
+    }
+
+    function handleImageSelect(event) {
+        const file = event.target.files && event.target.files[0];
+        if (!file) return;
+
+        if (file.size > 2 * 1024 * 1024) {
+            event.target.value = '';
+            showToast('The course image must be 2 MB or smaller.');
+            return;
+        }
+
+        pickedImageUrl = URL.createObjectURL(file);
+        document.getElementById('removeImageInput').value = '0';
+        refreshImagePreview();
+    }
+
+    function removeCourseImage() {
+        pickedImageUrl = null;
+        document.getElementById('courseImageFile').value = '';
+        document.getElementById('removeImageInput').value = savedImageUrl ? '1' : '0';
+        refreshImagePreview();
+    }
+
     // ---- Add / edit ----
     function clearFormErrors() {
         const box = document.querySelector('#courseForm .form-errors');
@@ -1612,6 +1701,7 @@
         document.getElementById('courseStatusSelect').value = '1';
         document.getElementById('coursePeriodSelect').value = 'Year';
 
+        resetImageInput(null);
         openModal('addEditCourseModal');
     }
 
@@ -1640,6 +1730,7 @@
         document.getElementById('coursePeriodSelect').value = c.feePeriod || 'Year';
         document.getElementById('courseDescInput').value = c.description || '';
 
+        resetImageInput(c.image);
         openModal('addEditCourseModal');
     }
 
@@ -1649,6 +1740,10 @@
 
         document.getElementById('deleteForm').action = coursesBaseUrl + '/' + id;
         document.getElementById('deleteCourseName').innerText = c.name;
+
+        const extras = ['its tuition fee and intakes'];
+        if (c.scholarshipCount) extras.push(`${c.scholarshipCount} ${c.scholarshipCount === 1 ? 'scholarship' : 'scholarships'} for this course`);
+        document.getElementById('deleteCourseExtra').innerText = ', together with ' + extras.join(' and ');
         openModal('deleteCourseModal');
     }
 
@@ -1681,6 +1776,9 @@
         @if ($errors->any())
             @if (old('edit_id'))
                 setFormForEdit({{ (int) old('edit_id') }});
+                resetImageInput((findCourse({{ (int) old('edit_id') }}) || {}).image);
+            @else
+                resetImageInput(null);
             @endif
             openModal('addEditCourseModal');
         @endif

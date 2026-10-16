@@ -1389,336 +1389,76 @@
 
         <div class="scholarships-grid">
 
+            @php
+                // Pictures for the top of each card when no course/university image exists.
+                $scholarshipPhotos = [
+                    'https://images.unsplash.com/photo-1523482580672-f109ba8cb9be?auto=format&fit=crop&w=1000&q=85',
+                    'https://images.unsplash.com/photo-1469521669194-babb45599def?auto=format&fit=crop&w=1000&q=85',
+                    'https://images.unsplash.com/photo-1485738422979-f5c462d49f74?auto=format&fit=crop&w=1000&q=85',
+                    'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=1000&q=85',
+                    'https://images.unsplash.com/photo-1503614472-8c93d56c8c5b?auto=format&fit=crop&w=1000&q=85',
+                    'https://images.unsplash.com/photo-1529655683826-aba9b3e77383?auto=format&fit=crop&w=1000&q=85',
+                ];
+            @endphp
 
-            <!-- AUSTRALIA -->
+            @forelse ($scholarships as $scholarship)
+                @php
+                    $photo = $scholarship->course?->image_url
+                        ?: $scholarship->university?->logo_url
+                        ?: $scholarshipPhotos[$scholarship->scholarship_id % count($scholarshipPhotos)];
 
-            <div class="scholarship-card">
+                    // The award type chosen in the admin portal, and the award value.
+                    $badge = strtoupper($scholarship->award_type_label);
+                    $award = $scholarship->award_text;
+                @endphp
 
-                <div
-                    class="card-image"
-                    style="
-                        background-image:
-                        url('https://images.unsplash.com/photo-1523482580672-f109ba8cb9be?auto=format&fit=crop&w=1000&q=85');
-                    "
-                >
+                <div class="scholarship-card">
 
-                    <div class="funding-badge">
-                        MERIT BASED
+                    <div class="card-image" style="background-image: url('{{ $photo }}');">
+                        <div class="funding-badge">
+                            {{ $badge }}
+                        </div>
                     </div>
 
-                </div>
+                    <div class="scholarship-content">
 
+                        <div class="destination">
+                            {{ $scholarship->university?->country?->country_name ?? 'Any destination' }}
+                        </div>
 
-                <div class="scholarship-content">
+                        <h3>
+                            {{ $scholarship->scholarship_name }}
+                        </h3>
 
-                    <div class="destination">
-                        Australia
-                    </div>
+                        <p>
+                            <strong>{{ $scholarship->university?->university_name ?? 'Open to all partner universities' }}</strong>{{ $scholarship->course ? ' – ' . $scholarship->course->course_name : '' }}.
+                            {{ Str::limit($scholarship->description ?: $scholarship->eligibility ?: '', 120) }}
+                        </p>
 
-                    <h3>
-                        Australian University Scholarships
-                    </h3>
+                        <div class="card-meta">
 
-                    <p>
-                        Explore university scholarship opportunities
-                        for international students across different
-                        academic fields.
-                    </p>
+                            @if ($award)
+                                <span class="meta-pill">{{ $award }}</span>
+                            @endif
 
-                    <div class="card-meta">
+                            @if ($scholarship->application_deadline)
+                                <span class="meta-pill">Apply by {{ $scholarship->application_deadline->format('d M Y') }}</span>
+                            @endif
 
-                        <span class="meta-pill">
-                            Undergraduate
-                        </span>
+                            @if ($scholarship->course?->course_level)
+                                <span class="meta-pill">{{ $scholarship->course->course_level }}</span>
+                            @endif
 
-                        <span class="meta-pill">
-                            Postgraduate
-                        </span>
-
-                        <span class="meta-pill">
-                            University Based
-                        </span>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <!-- UK -->
-
-            <div class="scholarship-card">
-
-                <div
-                    class="card-image"
-                    style="
-                        background-image:
-                        url('https://images.unsplash.com/photo-1529655683826-aba9b3e77383?auto=format&fit=crop&w=1000&q=85');
-                    "
-                >
-
-                    <div class="funding-badge">
-                        PARTIAL FUNDING
-                    </div>
-
-                </div>
-
-
-                <div class="scholarship-content">
-
-                    <div class="destination">
-                        United Kingdom
-                    </div>
-
-                    <h3>
-                        UK International Scholarships
-                    </h3>
-
-                    <p>
-                        Discover scholarship pathways offered by
-                        universities and institutions across the UK.
-                    </p>
-
-                    <div class="card-meta">
-
-                        <span class="meta-pill">
-                            Bachelor's
-                        </span>
-
-                        <span class="meta-pill">
-                            Master's
-                        </span>
-
-                        <span class="meta-pill">
-                            International
-                        </span>
+                        </div>
 
                     </div>
 
                 </div>
-
-            </div>
-
-
-            <!-- CANADA -->
-
-            <div class="scholarship-card">
-
-                <div
-                    class="card-image"
-                    style="
-                        background-image:
-                        url('https://images.unsplash.com/photo-1503614472-8c93d56c8c5b?auto=format&fit=crop&w=1000&q=85');
-                    "
-                >
-
-                    <div class="funding-badge">
-                        MERIT BASED
-                    </div>
-
-                </div>
-
-
-                <div class="scholarship-content">
-
-                    <div class="destination">
-                        Canada
-                    </div>
-
-                    <h3>
-                        Canadian University Awards
-                    </h3>
-
-                    <p>
-                        Find potential financial support options offered
-                        by Canadian universities for international students.
-                    </p>
-
-                    <div class="card-meta">
-
-                        <span class="meta-pill">
-                            Undergraduate
-                        </span>
-
-                        <span class="meta-pill">
-                            Postgraduate
-                        </span>
-
-                        <span class="meta-pill">
-                            Academic
-                        </span>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <!-- NEW ZEALAND -->
-
-            <div class="scholarship-card">
-
-                <div
-                    class="card-image"
-                    style="
-                        background-image:
-                        url('https://images.unsplash.com/photo-1469521669194-babb45599def?auto=format&fit=crop&w=1000&q=85');
-                    "
-                >
-
-                    <div class="funding-badge">
-                        TUITION SUPPORT
-                    </div>
-
-                </div>
-
-
-                <div class="scholarship-content">
-
-                    <div class="destination">
-                        New Zealand
-                    </div>
-
-                    <h3>
-                        New Zealand Study Awards
-                    </h3>
-
-                    <p>
-                        Explore funding opportunities for students
-                        planning to study at New Zealand institutions.
-                    </p>
-
-                    <div class="card-meta">
-
-                        <span class="meta-pill">
-                            Bachelor's
-                        </span>
-
-                        <span class="meta-pill">
-                            Master's
-                        </span>
-
-                        <span class="meta-pill">
-                            International
-                        </span>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <!-- FRANCE -->
-
-            <div class="scholarship-card">
-
-                <div
-                    class="card-image"
-                    style="
-                        background-image:
-                        url('https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=1000&q=85');
-                    "
-                >
-
-                    <div class="funding-badge">
-                        ACADEMIC
-                    </div>
-
-                </div>
-
-
-                <div class="scholarship-content">
-
-                    <div class="destination">
-                        France
-                    </div>
-
-                    <h3>
-                        French Higher Education Awards
-                    </h3>
-
-                    <p>
-                        Explore scholarship and financial support
-                        opportunities for international study in France.
-                    </p>
-
-                    <div class="card-meta">
-
-                        <span class="meta-pill">
-                            Undergraduate
-                        </span>
-
-                        <span class="meta-pill">
-                            Postgraduate
-                        </span>
-
-                        <span class="meta-pill">
-                            Academic
-                        </span>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <!-- USA -->
-
-            <div class="scholarship-card">
-
-                <div
-                    class="card-image"
-                    style="
-                        background-image:
-                        url('https://images.unsplash.com/photo-1485738422979-f5c462d49f74?auto=format&fit=crop&w=1000&q=85');
-                    "
-                >
-
-                    <div class="funding-badge">
-                        UNIVERSITY AWARD
-                    </div>
-
-                </div>
-
-
-                <div class="scholarship-content">
-
-                    <div class="destination">
-                        United States
-                    </div>
-
-                    <h3>
-                        US University Scholarships
-                    </h3>
-
-                    <p>
-                        Explore university-based scholarship opportunities
-                        for students looking at study options in the USA.
-                    </p>
-
-                    <div class="card-meta">
-
-                        <span class="meta-pill">
-                            Bachelor's
-                        </span>
-
-                        <span class="meta-pill">
-                            Master's
-                        </span>
-
-                        <span class="meta-pill">
-                            Merit
-                        </span>
-
-                    </div>
-
-                </div>
-
-            </div>
+            @empty
+                <p style="grid-column: 1 / -1; text-align: center; color: #6b6d7c; padding: 40px 0;">
+                    New scholarship opportunities are coming soon.
+                </p>
+            @endforelse
 
         </div>
 
