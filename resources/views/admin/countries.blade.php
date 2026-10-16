@@ -1216,6 +1216,7 @@
     }
 
     // ---- Flag upload in the form ----
+     // ---- Flag upload in the form ----
     let savedFlagUrl = null;   // flag already saved for the country being edited
     let pickedFlagUrl = null;  // preview of a newly chosen file
 
