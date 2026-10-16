@@ -931,26 +931,78 @@
             .content { padding: 16px; }
             .form-grid { grid-template-columns: 1fr; }
         }
+
+        /* Database-backed page additions */
+        .form-errors { background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; border-radius: 8px; padding: 10px 14px; font-size: 12px; margin-bottom: 14px; }
+        .form-errors ul { margin: 4px 0 0 16px; padding: 0; }
+        .empty-state { text-align: center; padding: 40px; color: #6b7280; font-size: 13px; }
+        .detail-row { display: flex; justify-content: space-between; gap: 16px; padding: 9px 0; border-bottom: 1px solid #f0f2f5; font-size: 12px; }
+        .detail-row span:first-child { color: #6b7280; }
+        .detail-row strong { color: #111827; text-align: right; }
+        .table-footer .portal-pager { width: 100%; }
+        .tuition-grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 10px; }
+        @media (max-width: 750px) { .tuition-grid { grid-template-columns: 1fr; } }
     </style>
 @include('components.sidebar-style')
 </head>
 <body>
 
+@php
+    $allCourses = $courses->getCollection();
+    // Load related data (works whichever admin URL showed this page).
+    $allCourses->loadMissing(['university.country', 'tuitionFees', 'intakes']);
+    $totalCourses = $courses->total();
+
+    $universityOptions = \App\Models\University::with('country')->orderBy('university_name')->get();
+
+    $levels = \App\Http\Controllers\CourseController::LEVELS;
+    $modes = \App\Http\Controllers\CourseController::MODES;
+    $feePeriods = \App\Http\Controllers\CourseController::FEE_PERIODS;
+
+    $mainFee = fn ($course) => $course->tuitionFees->sortByDesc('tuition_fee_id')->first();
+    $feeText = function ($fee) {
+        if (!$fee) return null;
+        $amount = (float) $fee->amount;
+        $formatted = number_format($amount, fmod($amount, 1) ? 2 : 0);
+        return trim($fee->currency . ' ' . $formatted) . ($fee->fee_period && $fee->fee_period !== 'Other' ? ' / ' . strtolower($fee->fee_period) : '');
+    };
+    $levelClass = fn ($level) => 'ranking-pill ' . strtolower((string) $level);
+    $modeClass = fn ($mode) => 'mode-pill ' . str_replace(' ', '-', strtolower((string) $mode));
+
+    $coursesForJs = $allCourses->map(function ($c) use ($mainFee, $feeText) {
+        $fee = $mainFee($c);
+        return [
+            'id' => $c->course_id,
+            'name' => $c->course_name,
+            'universityId' => $c->university_id,
+            'university' => $c->university?->university_name,
+            'country' => $c->university?->country?->country_name,
+            'level' => $c->course_level,
+            'field' => $c->field_of_study,
+            'duration' => $c->duration,
+            'mode' => $c->study_mode,
+            'description' => $c->description,
+            'active' => (bool) $c->is_active,
+            'feeAmount' => $fee ? (float) $fee->amount : null,
+            'feeCurrency' => $fee?->currency,
+            'feePeriod' => $fee?->fee_period,
+            'feeText' => $feeText($fee),
+            'intakes' => $c->intakeList()->map(fn ($i) => [
+                'name' => $i->intake_name,
+                'status' => $i->intake_status ?? null,
+            ])->values(),
+        ];
+    })->values();
+@endphp
+
 <div class="app">
 
-    <!-- =====================================================
-         SIDEBAR
-    ====================================================== -->
     @include('components.admin-sidebar')
 
-    <!-- =====================================================
-         MAIN CONTENT WRAPPER
-    ====================================================== -->
     <main class="main">
 
         <!-- TOPBAR -->
         <header class="topbar">
-
             <div class="search-box">
                 <span class="search-icon"><i class="bi bi-search"></i></span>
                 <input type="text" id="topbarSearchInput" placeholder="Search students, applications...">
@@ -961,11 +1013,10 @@
                     {{ strtoupper(substr(auth()->user()->first_name ?? 'A', 0, 1)) }}
                 </div>
                 <div class="profile-info">
-                    <strong>{{ auth()->user()->first_name ?? 'Admin' }} {{ auth()->user()->last_name ?? 'User' }}</strong>
+                    <strong>{{ auth()->user()->first_name ?? 'Admin' }} {{ auth()->user()->last_name ?? '' }}</strong>
                     <span>Administrator</span>
                 </div>
             </div>
-
         </header>
 
         <!-- PAGE CONTENT -->
@@ -976,12 +1027,12 @@
                 <div>
                     <h1>
                         Course Management
-                        <span class="title-badge" id="totalCoursesBadge">18 Total Courses</span>
+                        <span class="title-badge">{{ $totalCourses }} {{ Str::plural('Course', $totalCourses) }}</span>
                     </h1>
-                    <p>Configure accredited academic degree programs, entry requirements, tuition fees, and partner university affiliations.</p>
+                    <p>Manage the degree programs offered by your partner universities.</p>
                 </div>
                 <div style="display: flex; gap: 10px;">
-                    <button class="btn-secondary" onclick="exportCoursesCSV()">
+                    <button type="button" class="btn-secondary" onclick="exportCoursesCSV()">
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                             <polyline points="7 10 12 15 17 10"/>
@@ -989,7 +1040,7 @@
                         </svg>
                         Export CSV
                     </button>
-                    <button class="btn-orange" onclick="openAddCourseModal()">
+                    <button type="button" class="btn-orange" onclick="openAddCourseModal()">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
                             <line x1="12" y1="5" x2="12" y2="19"/>
                             <line x1="5" y1="12" x2="19" y2="12"/>
@@ -999,6 +1050,13 @@
                 </div>
             </div>
 
+            @if ($universityOptions->isEmpty())
+                <div class="form-errors" style="margin-bottom: 16px;">
+                    You need at least one university before adding a course.
+                    <a href="{{ route('admin.universities-list') }}" style="color: inherit; font-weight: 700;">Add a university first →</a>
+                </div>
+            @endif
+
             <!-- CONTROLS CARD -->
             <div class="controls-card">
                 <div class="controls-left">
@@ -1007,27 +1065,28 @@
                             <circle cx="11" cy="11" r="7"/>
                             <path d="m20 20-4-4"/>
                         </svg>
-                        <input type="text" id="courseSearchInput" placeholder="Search by course name, code, or field...">
+                        <input type="text" id="courseSearchInput" placeholder="Search by course name, field or university...">
                     </div>
 
                     <select class="filter-select" id="levelFilter">
                         <option value="ALL">All Degree Levels</option>
-                        <option value="Bachelor">Bachelor</option>
-                        <option value="Master">Master</option>
-                        <option value="MBA">MBA</option>
-                        <option value="PhD">PhD</option>
-                        <option value="Diploma">Diploma</option>
+                        @foreach ($levels as $level)
+                            <option value="{{ $level }}">{{ $level }}</option>
+                        @endforeach
                     </select>
 
                     <select class="filter-select" id="universityFilter">
                         <option value="ALL">All Universities</option>
+                        @foreach ($universityOptions as $option)
+                            <option value="{{ $option->university_id }}">{{ $option->university_name }}</option>
+                        @endforeach
                     </select>
 
                     <select class="filter-select" id="modeFilter">
                         <option value="ALL">All Study Modes</option>
-                        <option value="On Campus">On Campus</option>
-                        <option value="Online">Online</option>
-                        <option value="Hybrid">Hybrid</option>
+                        @foreach ($modes as $mode)
+                            <option value="{{ $mode }}">{{ $mode }}</option>
+                        @endforeach
                     </select>
 
                     <select class="filter-select" id="statusFilter">
@@ -1039,7 +1098,7 @@
 
                 <div class="controls-right">
                     <div class="view-switcher">
-                        <button class="view-btn active" id="tableViewBtn" onclick="switchView('table')">
+                        <button type="button" class="view-btn active" id="tableViewBtn" onclick="switchView('table')">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <line x1="8" y1="6" x2="21" y2="6"/>
                                 <line x1="8" y1="12" x2="21" y2="12"/>
@@ -1050,7 +1109,7 @@
                             </svg>
                             Table
                         </button>
-                        <button class="view-btn" id="gridViewBtn" onclick="switchView('grid')">
+                        <button type="button" class="view-btn" id="gridViewBtn" onclick="switchView('grid')">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <rect x="3" y="3" width="7" height="7"/>
                                 <rect x="14" y="3" width="7" height="7"/>
@@ -1065,49 +1124,171 @@
 
             <!-- CARD / TABLE CONTAINER -->
             <div class="card-container">
+
                 <!-- TABLE VIEW -->
                 <div class="table-responsive" id="tableViewSection">
                     <table class="uni-table">
                         <thead>
                             <tr>
-                                <th style="width: 40px;">
-                                    <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this)" style="cursor: pointer;">
-                                </th>
-                                <th class="sortable" onclick="sortTable('name')">Course & Code ↕</th>
-                                <th class="sortable" onclick="sortTable('university')">Partner University ↕</th>
-                                <th class="sortable" onclick="sortTable('level')">Level & Field ↕</th>
+                                <th>Course</th>
+                                <th>Partner University</th>
+                                <th>Level & Field</th>
                                 <th>Duration & Mode</th>
-                                <th class="sortable" onclick="sortTable('tuition')">Annual Tuition ↕</th>
+                                <th>Tuition</th>
                                 <th>Status</th>
                                 <th style="text-align: right; width: 170px;">Actions</th>
                             </tr>
                         </thead>
-                        <tbody id="courseTableBody">
-                            <!-- Populated dynamically via JS -->
+                        <tbody>
+                            @forelse ($allCourses as $course)
+                                @php $fee = $feeText($mainFee($course)); @endphp
+                                <tr class="course-item"
+                                    data-search="{{ strtolower($course->course_name . ' ' . $course->field_of_study . ' ' . $course->university?->university_name . ' ' . $course->university?->country?->country_name) }}"
+                                    data-level="{{ $course->course_level }}"
+                                    data-university="{{ $course->university_id }}"
+                                    data-mode="{{ $course->study_mode }}"
+                                    data-status="{{ $course->is_active ? 'Active' : 'Inactive' }}">
+                                    <td>
+                                        <div class="uni-identity">
+                                            <div class="course-icon-thumb">{{ strtoupper(substr($course->course_level ?? 'C', 0, 2)) }}</div>
+                                            <div>
+                                                <div class="uni-name-text">{{ $course->course_name }}</div>
+                                                <div class="uni-meta-text">{{ $course->intakeList()->count() }} {{ Str::plural('intake', $course->intakeList()->count()) }}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="country-pill">
+                                            <span>{{ $course->university?->university_name ?? 'Unknown university' }}</span>
+                                        </div>
+                                        <div style="font-size: 10px; color: #8c96a8; margin-top: 2px;">{{ $course->university?->country?->country_name }}</div>
+                                    </td>
+                                    <td>
+                                        <span class="{{ $levelClass($course->course_level) }}">{{ $course->course_level }}</span>
+                                        <div style="font-size: 11px; color: #6b7280; margin-top: 3px;">{{ $course->field_of_study ?: '—' }}</div>
+                                    </td>
+                                    <td>
+                                        <span class="{{ $modeClass($course->study_mode) }}">{{ $course->study_mode ?: '—' }}</span>
+                                        <div style="font-size: 11px; color: #8c96a8; margin-top: 3px;">{{ $course->duration ?: '—' }}</div>
+                                    </td>
+                                    <td>
+                                        <strong style="color: #111827; font-size: 12px;">{{ $fee ?? 'Not set' }}</strong>
+                                    </td>
+                                    <td>
+                                        <span class="status-badge {{ $course->is_active ? 'active' : 'inactive' }}">
+                                            {{ $course->is_active ? 'Active' : 'Inactive' }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="actions-cell">
+                                            <button type="button" class="btn-view-courses" onclick="viewCourseDetails({{ $course->course_id }})" title="View details">
+                                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+                                                    <circle cx="12" cy="12" r="3"/>
+                                                </svg>
+                                                Details
+                                            </button>
+                                            <button type="button" class="btn-icon-action" onclick="openEditCourseModal({{ $course->course_id }})" title="Edit course">
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                                                </svg>
+                                            </button>
+                                            @if ($course->is_active)
+                                                <button type="button" class="btn-icon-action delete" onclick="openDeleteCourseModal({{ $course->course_id }})" title="Deactivate course">
+                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                        <polyline points="3 6 5 6 21 6"/>
+                                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                                                    </svg>
+                                                </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr><td colspan="7" class="empty-state">No courses yet. Click <strong>Add New Course</strong> to create the first one.</td></tr>
+                            @endforelse
+                            <tr id="noMatchRow" style="display: none;"><td colspan="7" class="empty-state">No courses match your search or filters.</td></tr>
                         </tbody>
                     </table>
                 </div>
 
                 <!-- GRID CARDS VIEW -->
                 <div class="cards-grid" id="gridViewSection" style="display: none;">
-                    <!-- Populated dynamically via JS -->
+                    @foreach ($allCourses as $course)
+                        @php $fee = $feeText($mainFee($course)); @endphp
+                        <div class="uni-grid-card course-item"
+                             data-search="{{ strtolower($course->course_name . ' ' . $course->field_of_study . ' ' . $course->university?->university_name . ' ' . $course->university?->country?->country_name) }}"
+                             data-level="{{ $course->course_level }}"
+                             data-university="{{ $course->university_id }}"
+                             data-mode="{{ $course->study_mode }}"
+                             data-status="{{ $course->is_active ? 'Active' : 'Inactive' }}">
+                            <div class="card-top">
+                                <span class="{{ $levelClass($course->course_level) }}">{{ $course->course_level }}</span>
+                                <span class="status-badge {{ $course->is_active ? 'active' : 'inactive' }}">{{ $course->is_active ? 'Active' : 'Inactive' }}</span>
+                            </div>
+
+                            <div style="font-size: 14px; font-weight: 700; color: #111827; line-height: 1.4;">{{ $course->course_name }}</div>
+
+                            <div class="country-pill">
+                                <div>
+                                    <div style="font-weight: 600; color: #172033; font-size: 12px;">{{ $course->university?->university_name }}</div>
+                                    <div style="font-size: 10px; color: #8a93a3;">{{ $course->university?->country?->country_name }}</div>
+                                </div>
+                            </div>
+
+                            <div class="card-metric-grid">
+                                <div>
+                                    <div class="card-metric-label">Tuition</div>
+                                    <div class="card-metric-val">{{ $fee ?? 'Not set' }}</div>
+                                </div>
+                                <div>
+                                    <div class="card-metric-label">Duration</div>
+                                    <div class="card-metric-val">{{ $course->duration ?: '—' }}</div>
+                                </div>
+                                <div>
+                                    <div class="card-metric-label">Study Mode</div>
+                                    <div class="card-metric-val">{{ $course->study_mode ?: '—' }}</div>
+                                </div>
+                                <div>
+                                    <div class="card-metric-label">Field</div>
+                                    <div class="card-metric-val">{{ $course->field_of_study ?: '—' }}</div>
+                                </div>
+                            </div>
+
+                            <div style="font-size: 11px; color: #6b7280; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                                {{ $course->description ?: 'No description yet.' }}
+                            </div>
+
+                            <div class="card-actions">
+                                <button type="button" class="btn-view-courses" onclick="viewCourseDetails({{ $course->course_id }})" style="margin-right: auto;">Details</button>
+                                <button type="button" class="btn-icon-action" onclick="openEditCourseModal({{ $course->course_id }})" title="Edit course">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                                    </svg>
+                                </button>
+                                @if ($course->is_active)
+                                    <button type="button" class="btn-icon-action delete" onclick="openDeleteCourseModal({{ $course->course_id }})" title="Deactivate course">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <polyline points="3 6 5 6 21 6"/>
+                                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                                        </svg>
+                                    </button>
+                                @endif
+                            </div>
+                        </div>
+                    @endforeach
                 </div>
 
                 <!-- TABLE FOOTER -->
                 <div class="table-footer">
-                    <div id="paginationInfo">Showing 1 to 18 of 18 programs</div>
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <span>Rows per page:</span>
-                        <select id="perPageSelect" class="filter-select" style="height: 30px; padding: 0 8px; font-size: 11px;" onchange="changePerPage(this.value)">
-                            <option value="10">10</option>
-                            <option value="20" selected>20</option>
-                            <option value="50">50</option>
-                            <option value="ALL">All</option>
-                        </select>
-                        <div style="display: flex; gap: 4px; margin-left: 10px;" id="paginationControls">
-                            <!-- Generated dynamically -->
-                        </div>
-                    </div>
+                    @if ($courses->hasPages())
+                        {{ $courses->links('pagination.portal') }}
+                    @else
+                        <div>Showing {{ $totalCourses }} {{ Str::plural('course', $totalCourses) }}</div>
+                        <div>Click <strong>Details</strong> to see a course's description and intakes.</div>
+                    @endif
                 </div>
             </div>
 
@@ -1116,11 +1297,6 @@
         <!-- FOOTER -->
         <footer class="footer">
             <div>&copy; 2026 INDIC RMC Study Abroad Platform. All rights reserved.</div>
-            <div style="display: flex; gap: 16px;">
-                <a href="#" style="color: inherit;">Privacy Policy</a>
-                <a href="#" style="color: inherit;">Terms of Service</a>
-                <a href="#" style="color: inherit;">Support</a>
-            </div>
         </footer>
 
     </main>
@@ -1128,187 +1304,183 @@
 </div>
 
 <!-- =====================================================
-     MODAL 1: ADD / EDIT COURSE PROGRAM
+     MODAL 1: ADD / EDIT COURSE (saves to the database)
 ====================================================== -->
 <div class="modal-backdrop" id="addEditCourseModal">
     <div class="modal-window">
         <div class="modal-header">
             <div>
-                <div class="modal-title" id="addEditModalTitle">Add New Degree Program</div>
-                <div class="modal-subtitle">Define program curriculum, entry requirements, tuition, and university affiliation.</div>
+                <div class="modal-title" id="addEditModalTitle">Add New Course</div>
+                <div class="modal-subtitle">Add a degree program offered by a partner university.</div>
             </div>
-            <button class="modal-close-btn" onclick="closeModal('addEditCourseModal')">
+            <button type="button" class="modal-close-btn" onclick="closeModal('addEditCourseModal')">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <line x1="18" y1="6" x2="6" y2="18"/>
                     <line x1="6" y1="6" x2="18" y2="18"/>
                 </svg>
             </button>
         </div>
-        <form id="courseForm" onsubmit="handleSaveCourse(event)">
-            <input type="hidden" id="courseIdField" value="">
+        <form id="courseForm" method="POST" action="{{ route('admin.courses.store') }}">
+            @csrf
+            <input type="hidden" name="_method" id="formMethod" value="POST">
+            <input type="hidden" name="edit_id" id="courseIdField" value="{{ old('edit_id') }}">
             <div class="modal-body">
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label class="form-label">Course Code <span class="req">*</span></label>
-                        <input type="text" class="form-input" id="courseCodeInput" placeholder="e.g. CS-201" required>
+
+                @if ($errors->any())
+                    <div class="form-errors">
+                        Please fix the following:
+                        <ul>
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">Course Name <span class="req">*</span></label>
-                        <input type="text" class="form-input" id="courseNameInput" placeholder="e.g. B.Sc. in Computer Science" required>
-                    </div>
+                @endif
+
+                <div class="form-group" style="margin-bottom: 14px;">
+                    <label class="form-label" for="courseNameInput">Course Name *</label>
+                    <input type="text" class="form-input" id="courseNameInput" name="course_name" placeholder="e.g. BSc in Computer Science"
+                           maxlength="255" required value="{{ old('course_name') }}">
                 </div>
 
                 <div class="form-grid">
                     <div class="form-group">
-                        <label class="form-label">Partner University <span class="req">*</span></label>
-                        <select class="form-select" id="courseUniversitySelect" onchange="syncCountryFromUniversity(this.value)" required>
-                            <option value="">Select University...</option>
+                        <label class="form-label" for="courseUniversitySelect">University *</label>
+                        <select class="form-select" id="courseUniversitySelect" name="university_id" required>
+                            <option value="">Choose a university...</option>
+                            @foreach ($universityOptions as $option)
+                                <option value="{{ $option->university_id }}" @selected(old('university_id') == $option->university_id)>
+                                    {{ $option->university_name }}{{ $option->country ? ' (' . $option->country->country_name . ')' : '' }}{{ $option->is_active ? '' : ' – inactive' }}
+                                </option>
+                            @endforeach
                         </select>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Host Country <span class="req">*</span></label>
-                        <input type="text" class="form-input" id="courseCountryInput" placeholder="Country" readonly style="background: #f9fafb;">
+                        <label class="form-label" for="courseLevelSelect">Degree Level *</label>
+                        <select class="form-select" id="courseLevelSelect" name="course_level" required>
+                            @foreach ($levels as $level)
+                                <option value="{{ $level }}" @selected(old('course_level', 'Bachelor') === $level)>{{ $level }}</option>
+                            @endforeach
+                        </select>
                     </div>
                 </div>
 
                 <div class="form-grid">
                     <div class="form-group">
-                        <label class="form-label">Degree Level <span class="req">*</span></label>
-                        <select class="form-select" id="courseLevelSelect" required>
-                            <option value="Bachelor">Bachelor</option>
-                            <option value="Master">Master</option>
-                            <option value="MBA">MBA</option>
-                            <option value="PhD">PhD</option>
-                            <option value="Diploma">Diploma</option>
+                        <label class="form-label" for="courseFieldInput">Field of Study</label>
+                        <input type="text" class="form-input" id="courseFieldInput" name="field_of_study" placeholder="e.g. Computer Science"
+                               maxlength="150" value="{{ old('field_of_study') }}">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="courseDurationInput">Duration</label>
+                        <input type="text" class="form-input" id="courseDurationInput" name="duration" placeholder="e.g. 4 years"
+                               maxlength="100" value="{{ old('duration') }}">
+                    </div>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label" for="courseModeSelect">Study Mode *</label>
+                        <select class="form-select" id="courseModeSelect" name="study_mode" required>
+                            @foreach ($modes as $mode)
+                                <option value="{{ $mode }}" @selected(old('study_mode', 'On Campus') === $mode)>{{ $mode }}</option>
+                            @endforeach
                         </select>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Field of Study <span class="req">*</span></label>
-                        <input type="text" class="form-input" id="courseFieldInput" placeholder="e.g. Computer Science & AI" required>
-                    </div>
-                </div>
-
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label class="form-label">Study Mode <span class="req">*</span></label>
-                        <select class="form-select" id="courseModeSelect" required>
-                            <option value="On Campus">On Campus</option>
-                            <option value="Online">Online</option>
-                            <option value="Hybrid">Hybrid</option>
+                        <label class="form-label" for="courseStatusSelect">Status *</label>
+                        <select class="form-select" id="courseStatusSelect" name="is_active" required>
+                            <option value="1" @selected(old('is_active', '1') == '1')>Active</option>
+                            <option value="0" @selected(old('is_active') === '0')>Inactive</option>
                         </select>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">Program Duration <span class="req">*</span></label>
-                        <input type="text" class="form-input" id="courseDurationInput" placeholder="e.g. 4 Years or 2 Years" required>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 14px;">
+                    <label class="form-label">Tuition Fee (optional)</label>
+                    <div class="tuition-grid">
+                        <input type="number" class="form-input" id="courseTuitionInput" name="tuition_amount" placeholder="Amount, e.g. 38500"
+                               min="0" step="0.01" value="{{ old('tuition_amount') }}">
+                        <input type="text" class="form-input" id="courseCurrencyInput" name="tuition_currency" placeholder="USD"
+                               maxlength="10" value="{{ old('tuition_currency') }}" style="text-transform: uppercase;">
+                        <select class="form-select" id="coursePeriodSelect" name="tuition_period">
+                            @foreach ($feePeriods as $period)
+                                <option value="{{ $period }}" @selected(old('tuition_period', 'Year') === $period)>per {{ strtolower($period) }}</option>
+                            @endforeach
+                        </select>
                     </div>
                 </div>
 
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label class="form-label">Annual Tuition Fee <span class="req">*</span></label>
-                        <input type="text" class="form-input" id="courseTuitionInput" placeholder="e.g. $38,500 / year" required>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Total Credits</label>
-                        <input type="text" class="form-input" id="courseCreditsInput" placeholder="e.g. 120 ECTS or 180 Credits">
-                    </div>
-                </div>
-
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label class="form-label">Semester Intakes</label>
-                        <input type="text" class="form-input" id="courseIntakesInput" placeholder="e.g. September, January">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Minimum GPA / Score</label>
-                        <input type="text" class="form-input" id="courseMinGpaInput" placeholder="e.g. 3.2 / 4.0 (80%)">
-                    </div>
-                </div>
-
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label class="form-label">English Requirements (IELTS/TOEFL)</label>
-                        <input type="text" class="form-input" id="courseEnglishReqInput" placeholder="e.g. IELTS 6.5 (min 6.0) or TOEFL 90">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Academic Prerequisites</label>
-                        <input type="text" class="form-input" id="coursePrereqInput" placeholder="e.g. High school math & physics">
-                    </div>
-                </div>
-
-                <div class="form-group full-width">
-                    <label class="form-label">Program Overview & Syllabus</label>
-                    <textarea class="form-textarea" id="courseDescInput" placeholder="Provide course description, major modules, and career progression pathways..."></textarea>
-                </div>
-
-                <div class="form-group full-width">
-                    <label class="form-checkbox-label">
-                        <input type="checkbox" id="courseActiveCheckbox" checked>
-                        <span>Active Course Program (visible to student applicants and consultants)</span>
-                    </label>
+                <div class="form-group">
+                    <label class="form-label" for="courseDescInput">Description</label>
+                    <textarea class="form-textarea" id="courseDescInput" name="description"
+                              placeholder="What students will study and where it can lead...">{{ old('description') }}</textarea>
                 </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn-secondary" onclick="closeModal('addEditCourseModal')">Cancel</button>
-                <button type="submit" class="btn-orange">Save Program</button>
+                <button type="submit" class="btn-orange">Save Course</button>
             </div>
         </form>
     </div>
 </div>
 
 <!-- =====================================================
-     MODAL 2: ENTRY REQUIREMENTS & OVERVIEW MODAL
+     MODAL 2: COURSE DETAILS
 ====================================================== -->
 <div class="modal-backdrop" id="courseDetailsModal">
     <div class="modal-window">
         <div class="modal-header">
             <div>
-                <div class="modal-title" id="detailCourseName">Course Title</div>
-                <div class="modal-subtitle" id="detailCourseSubtitle">Code & University</div>
+                <div class="modal-title" id="detailCourseName"></div>
+                <div class="modal-subtitle" id="detailCourseSubtitle"></div>
             </div>
-            <button class="modal-close-btn" onclick="closeModal('courseDetailsModal')">
+            <button type="button" class="modal-close-btn" onclick="closeModal('courseDetailsModal')">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <line x1="18" y1="6" x2="6" y2="18"/>
                     <line x1="6" y1="6" x2="18" y2="18"/>
                 </svg>
             </button>
         </div>
-        <div class="modal-body" id="detailModalBodyContent">
-            <!-- Dynamic Content -->
-        </div>
+        <div class="modal-body" id="detailModalBodyContent"></div>
         <div class="modal-footer">
-            <button type="button" class="btn-secondary" id="detailEditBtn">Edit Program</button>
+            <button type="button" class="btn-secondary" id="detailEditBtn">Edit Course</button>
             <button type="button" class="btn-orange" onclick="closeModal('courseDetailsModal')">Close</button>
         </div>
     </div>
 </div>
 
 <!-- =====================================================
-     MODAL 3: DELETE / DEACTIVATE CONFIRMATION
+     MODAL 3: DEACTIVATE CONFIRMATION
 ====================================================== -->
 <div class="modal-backdrop" id="deleteCourseModal">
     <div class="modal-window" style="max-width: 440px;">
-        <div class="modal-header">
-            <div>
-                <div class="modal-title" style="color: #dc2626;">Deactivate Course Program</div>
-                <div class="modal-subtitle">Are you sure you want to deactivate this accredited course?</div>
+        <form id="deleteForm" method="POST" action="">
+            @csrf
+            @method('DELETE')
+            <div class="modal-header">
+                <div>
+                    <div class="modal-title" style="color: #dc2626;">Deactivate Course</div>
+                    <div class="modal-subtitle">The course will be hidden from the public website.</div>
+                </div>
+                <button type="button" class="modal-close-btn" onclick="closeModal('deleteCourseModal')">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </button>
             </div>
-            <button class="modal-close-btn" onclick="closeModal('deleteCourseModal')">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <line x1="18" y1="6" x2="6" y2="18"/>
-                    <line x1="6" y1="6" x2="18" y2="18"/>
-                </svg>
-            </button>
-        </div>
-        <div class="modal-body">
-            <p style="font-size: 13px; color: #4b5565; line-height: 1.5;">
-                Deactivating <strong id="deleteCourseName" style="color: #111827;"></strong> will unpublish it from student portal recommendations and active applications.
-            </p>
-        </div>
-        <div class="modal-footer">
-            <button type="button" class="btn-secondary" onclick="closeModal('deleteCourseModal')">Cancel</button>
-            <button type="button" class="btn-danger" id="confirmDeleteBtn">Deactivate Program</button>
-        </div>
+            <div class="modal-body">
+                <p style="font-size: 13px; color: #4b5565; line-height: 1.5;">
+                    <strong id="deleteCourseName" style="color: #111827;"></strong> will be marked as inactive.
+                    You can switch it back to Active later with Edit.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" onclick="closeModal('deleteCourseModal')">Cancel</button>
+                <button type="submit" class="btn-danger">Deactivate Course</button>
+            </div>
+        </form>
     </div>
 </div>
 
@@ -1317,863 +1489,170 @@
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2">
         <polyline points="20 6 9 17 4 12"/>
     </svg>
-    <span id="toastMessage">Action completed successfully!</span>
+    <span id="toastMessage"></span>
 </div>
 
-<!-- =====================================================
-     SCRIPTS & STATE MANAGEMENT
-====================================================== -->
 <script>
-    // Initial Universities List with Country Mapping
-    const universityDirectory = [
-        { name: "University of Toronto", country: "Canada", flag: "https://flagcdn.com/w40/ca.png" },
-        { name: "McGill University", country: "Canada", flag: "https://flagcdn.com/w40/ca.png" },
-        { name: "University of British Columbia", country: "Canada", flag: "https://flagcdn.com/w40/ca.png" },
-        { name: "University of Oxford", country: "United Kingdom", flag: "https://flagcdn.com/w40/gb.png" },
-        { name: "University of Cambridge", country: "United Kingdom", flag: "https://flagcdn.com/w40/gb.png" },
-        { name: "Imperial College London", country: "United Kingdom", flag: "https://flagcdn.com/w40/gb.png" },
-        { name: "Harvard University", country: "United States", flag: "https://flagcdn.com/w40/us.png" },
-        { name: "MIT", country: "United States", flag: "https://flagcdn.com/w40/us.png" },
-        { name: "Stanford University", country: "United States", flag: "https://flagcdn.com/w40/us.png" },
-        { name: "National University of Singapore", country: "Singapore", flag: "https://flagcdn.com/w40/sg.png" },
-        { name: "Nanyang Technological University", country: "Singapore", flag: "https://flagcdn.com/w40/sg.png" },
-        { name: "Technical University of Munich", country: "Germany", flag: "https://flagcdn.com/w40/de.png" },
-        { name: "Heidelberg University", country: "Germany", flag: "https://flagcdn.com/w40/de.png" },
-        { name: "University of Melbourne", country: "Australia", flag: "https://flagcdn.com/w40/au.png" },
-        { name: "University of Sydney", country: "Australia", flag: "https://flagcdn.com/w40/au.png" },
-        { name: "Trinity College Dublin", country: "Ireland", flag: "https://flagcdn.com/w40/ie.png" }
-    ];
+    // Courses on this page, straight from the database.
+    const courses = @json($coursesForJs);
 
-    // Initial Accredited Courses Dataset (18 Programs across 7 Countries)
-    let coursesData = [
-        {
-            id: 1,
-            code: "CS-101",
-            name: "B.Sc. in Computer Science & Artificial Intelligence",
-            university: "University of Toronto",
-            country: "Canada",
-            flag: "https://flagcdn.com/w40/ca.png",
-            level: "Bachelor",
-            field: "Computer Science & IT",
-            duration: "4 Years",
-            mode: "On Campus",
-            tuition: "$42,500 / year",
-            credits: "120 Credits",
-            intakes: "September, January",
-            minGpa: "3.5 / 4.0 (85%)",
-            englishReq: "IELTS 6.5 (min 6.0 in bands) or TOEFL 92",
-            prerequisites: "High school mathematics and computing fundamentals with Grade A/B.",
-            description: "A premier honors program delivering rigorous instruction in machine learning, distributed software systems, algorithms, and applied robotics.",
-            active: true
-        },
-        {
-            id: 2,
-            code: "DS-501",
-            name: "Master of Science in Data Science & Big Data Analytics",
-            university: "University of British Columbia",
-            country: "Canada",
-            flag: "https://flagcdn.com/w40/ca.png",
-            level: "Master",
-            field: "Data Science & Analytics",
-            duration: "2 Years",
-            mode: "Hybrid",
-            tuition: "$34,000 / year",
-            credits: "60 ECTS",
-            intakes: "September, May",
-            minGpa: "3.3 / 4.0 (82%)",
-            englishReq: "IELTS 7.0 (min 6.5) or TOEFL 96",
-            prerequisites: "Undergraduate degree in STEM field with proven linear algebra and Python fluency.",
-            description: "Designed for industry leaders handling high-throughput big data pipelines, neural network architecture, and statistical inference.",
-            active: true
-        },
-        {
-            id: 3,
-            code: "MBA-701",
-            name: "Global Executive MBA in Strategic Innovation",
-            university: "University of Oxford",
-            country: "United Kingdom",
-            flag: "https://flagcdn.com/w40/gb.png",
-            level: "MBA",
-            field: "Business & Management",
-            duration: "1 Year",
-            mode: "On Campus",
-            tuition: "£58,000 / year",
-            credits: "180 Credits",
-            intakes: "September, January",
-            minGpa: "3.4 / 4.0 or 1st Class Honors",
-            englishReq: "IELTS 7.5 (min 7.0) or TOEFL 105",
-            prerequisites: "At least 3 years of executive or management professional work experience.",
-            description: "World-class business education focusing on disruptive enterprise leadership, global economics, and venture incubation.",
-            active: true
-        },
-        {
-            id: 4,
-            code: "AI-602",
-            name: "M.Sc. in Machine Learning & Robotics Engineering",
-            university: "Imperial College London",
-            country: "United Kingdom",
-            flag: "https://flagcdn.com/w40/gb.png",
-            level: "Master",
-            field: "Artificial Intelligence",
-            duration: "1 Year",
-            mode: "On Campus",
-            tuition: "£38,500 / year",
-            credits: "90 ECTS",
-            intakes: "October",
-            minGpa: "3.6 / 4.0 (87%)",
-            englishReq: "IELTS 7.0 (min 6.5) or TOEFL 100",
-            prerequisites: "Bachelors in Computer Engineering, Electrical Engineering or Mathematics.",
-            description: "Hands-on research degree combining perception, kinematics, deep reinforcement learning, and autonomous drone systems.",
-            active: true
-        },
-        {
-            id: 5,
-            code: "ENG-104",
-            name: "Bachelor of Science in Electrical Engineering & Computing",
-            university: "MIT",
-            country: "United States",
-            flag: "https://flagcdn.com/w40/us.png",
-            level: "Bachelor",
-            field: "Engineering & Tech",
-            duration: "4 Years",
-            mode: "On Campus",
-            tuition: "$57,500 / year",
-            credits: "132 Credits",
-            intakes: "September",
-            minGpa: "3.8 / 4.0 (92%)",
-            englishReq: "TOEFL 100 or IELTS 7.5",
-            prerequisites: "SAT / ACT with advanced calculus and physics score.",
-            description: "The gold standard undergraduate engineering degree encompassing microelectronics, computer architecture, and wireless systems.",
-            active: true
-        },
-        {
-            id: 6,
-            code: "MED-801",
-            name: "Master of Public Health & Global Epidemiology",
-            university: "Harvard University",
-            country: "United States",
-            flag: "https://flagcdn.com/w40/us.png",
-            level: "Master",
-            field: "Medicine & Health",
-            duration: "2 Years",
-            mode: "Hybrid",
-            tuition: "$49,800 / year",
-            credits: "80 Credits",
-            intakes: "September",
-            minGpa: "3.5 / 4.0",
-            englishReq: "IELTS 7.5 or TOEFL 102",
-            prerequisites: "Undergraduate degree in biological sciences, medicine, or allied health professions.",
-            description: "Prepares world healthcare analysts to monitor biosecurity, disease prevention mechanisms, and cross-border clinical trials.",
-            active: true
-        },
-        {
-            id: 7,
-            code: "PHD-901",
-            name: "Ph.D. in Quantum Computing & Applied Physics",
-            university: "Stanford University",
-            country: "United States",
-            flag: "https://flagcdn.com/w40/us.png",
-            level: "PhD",
-            field: "Quantum Sciences",
-            duration: "5 Years",
-            mode: "On Campus",
-            tuition: "Fully Funded (Stipend)",
-            credits: "Doctoral Dissertation",
-            intakes: "September",
-            minGpa: "3.8 / 4.0",
-            englishReq: "TOEFL 105 or IELTS 8.0",
-            prerequisites: "Research publication track record in quantum mechanics or superconducting hardware.",
-            description: "Doctoral research program supported by federal energy laboratories and Silicon Valley quantum hardware consortiums.",
-            active: true
-        },
-        {
-            id: 8,
-            code: "FIN-302",
-            name: "B.Sc. in Quantitative Finance & FinTech",
-            university: "National University of Singapore",
-            country: "Singapore",
-            flag: "https://flagcdn.com/w40/sg.png",
-            level: "Bachelor",
-            field: "Finance & Economics",
-            duration: "4 Years",
-            mode: "On Campus",
-            tuition: "S$38,000 / year",
-            credits: "160 MCs",
-            intakes: "August",
-            minGpa: "3.6 / 4.0 (88%)",
-            englishReq: "IELTS 6.5 or TOEFL 90",
-            prerequisites: "Superior high school performance in advanced mathematics and statistics.",
-            description: "High-demand Asian banking hub curriculum in algorithmic high-frequency trading, blockchain architecture, and risk modeling.",
-            active: true
-        },
-        {
-            id: 9,
-            code: "CS-403",
-            name: "Master in Cyber Security & Network Defense",
-            university: "Nanyang Technological University",
-            country: "Singapore",
-            flag: "https://flagcdn.com/w40/sg.png",
-            level: "Master",
-            field: "Cyber Security",
-            duration: "1.5 Years",
-            mode: "Online",
-            tuition: "S$32,000 / year",
-            credits: "45 Credits",
-            intakes: "August, January",
-            minGpa: "3.2 / 4.0",
-            englishReq: "IELTS 6.5 or TOEFL 90",
-            prerequisites: "Bachelors in Computer Science, IT, or equivalent industry certifications (CISSP/CEH).",
-            description: "Deep-dive program into penetration testing, threat hunting, zero-trust cloud infrastructure, and cryptography.",
-            active: true
-        },
-        {
-            id: 10,
-            code: "ENG-502",
-            name: "M.Sc. in Automotive & Sustainable Mobility",
-            university: "Technical University of Munich",
-            country: "Germany",
-            flag: "https://flagcdn.com/w40/de.png",
-            level: "Master",
-            field: "Automotive Engineering",
-            duration: "2 Years",
-            mode: "On Campus",
-            tuition: "€1,500 / semester",
-            credits: "120 ECTS",
-            intakes: "October, April",
-            minGpa: "2.5 (German Scale ~ 80%)",
-            englishReq: "IELTS 6.5 or German B2",
-            prerequisites: "Undergraduate degree in Mechanical Engineering, Mechatronics, or Automotive systems.",
-            description: "German automotive excellence focusing on battery cell chemistry, EV powertrains, and autonomous driving telemetry.",
-            active: true
-        },
-        {
-            id: 11,
-            code: "BIO-601",
-            name: "Master of Molecular Biotechnology & Genomics",
-            university: "Heidelberg University",
-            country: "Germany",
-            flag: "https://flagcdn.com/w40/de.png",
-            level: "Master",
-            field: "Biotechnology & Life Sciences",
-            duration: "2 Years",
-            mode: "On Campus",
-            tuition: "€1,500 / semester",
-            credits: "120 ECTS",
-            intakes: "October",
-            minGpa: "2.3 (German Scale)",
-            englishReq: "IELTS 7.0 or TOEFL 95",
-            prerequisites: "Degree in Biochemistry, Molecular Biology, or Biotechnology.",
-            description: "Translational research laboratory program covering CRISPR gene editing, immuno-oncology, and synthetic biology.",
-            active: true
-        },
-        {
-            id: 12,
-            code: "MGT-201",
-            name: "Bachelor of Commerce & International Business",
-            university: "University of Melbourne",
-            country: "Australia",
-            flag: "https://flagcdn.com/w40/au.png",
-            level: "Bachelor",
-            field: "Business & Management",
-            duration: "3 Years",
-            mode: "On Campus",
-            tuition: "A$44,500 / year",
-            credits: "300 Points",
-            intakes: "February, July",
-            minGpa: "3.2 / 4.0 (80%)",
-            englishReq: "IELTS 6.5 (no band below 6.0)",
-            prerequisites: "Australian Year 12 or equivalent international senior high school certificate.",
-            description: "Comprehensive commercial leadership degree accredited by CPA Australia and AACSB international.",
-            active: true
-        },
-        {
-            id: 13,
-            code: "LAW-701",
-            name: "Master of Laws (LL.M.) in International Trade Law",
-            university: "University of Sydney",
-            country: "Australia",
-            flag: "https://flagcdn.com/w40/au.png",
-            level: "Master",
-            field: "Law & Jurisprudence",
-            duration: "1 Year",
-            mode: "Hybrid",
-            tuition: "A$48,000 / year",
-            credits: "48 Credit Points",
-            intakes: "March, August",
-            minGpa: "3.3 / 4.0",
-            englishReq: "IELTS 7.0 (no band below 6.5)",
-            prerequisites: "Bachelor of Laws (LL.B.) or Juris Doctor (J.D.) from recognized institution.",
-            description: "Specialized postgraduate law curriculum covering cross-border arbitration, maritime agreements, and WTO regulatory policy.",
-            active: true
-        },
-        {
-            id: 14,
-            code: "CS-305",
-            name: "M.Sc. in Cloud Computing & DevOps Architecture",
-            university: "Trinity College Dublin",
-            country: "Ireland",
-            flag: "https://flagcdn.com/w40/ie.png",
-            level: "Master",
-            field: "Computer Science & IT",
-            duration: "1 Year",
-            mode: "On Campus",
-            tuition: "€24,500 / year",
-            credits: "90 ECTS",
-            intakes: "September",
-            minGpa: "2.1 Honors (75%)",
-            englishReq: "IELTS 6.5 (min 6.0 in writing)",
-            prerequisites: "Bachelors in Computing or Software Development.",
-            description: "Co-designed with Dublin tech multinationals (Google, AWS, Microsoft) emphasizing Kubernetes, multi-cloud resilience, and CI/CD.",
-            active: true
-        },
-        {
-            id: 15,
-            code: "DIP-101",
-            name: "Diploma in International Hospitality & Tourism Management",
-            university: "McGill University",
-            country: "Canada",
-            flag: "https://flagcdn.com/w40/ca.png",
-            level: "Diploma",
-            field: "Hospitality & Tourism",
-            duration: "1 Year",
-            mode: "On Campus",
-            tuition: "$18,500 / year",
-            credits: "30 Credits",
-            intakes: "September, January, May",
-            minGpa: "2.8 / 4.0",
-            englishReq: "IELTS 6.0 or TOEFL 80",
-            prerequisites: "High school completion or 1 year of service sector experience.",
-            description: "Professional accelerated diploma with paid Canadian hospitality co-op placement opportunities.",
-            active: true
-        },
-        {
-            id: 16,
-            code: "ENV-202",
-            name: "B.Sc. in Environmental Sciences & Sustainability",
-            university: "University of Cambridge",
-            country: "United Kingdom",
-            flag: "https://flagcdn.com/w40/gb.png",
-            level: "Bachelor",
-            field: "Environmental Science",
-            duration: "3 Years",
-            mode: "On Campus",
-            tuition: "£36,000 / year",
-            credits: "180 Credits",
-            intakes: "October",
-            minGpa: "3.7 / 4.0",
-            englishReq: "IELTS 7.5 (min 7.0 in all bands)",
-            prerequisites: "A-Levels with Chemistry, Biology, and Geography.",
-            description: "Interdisciplinary study of climate adaptation, renewable energy transitions, biodiversity preservation, and geological surveys.",
-            active: true
-        },
-        {
-            id: 17,
-            code: "DIP-102",
-            name: "Professional Diploma in Digital Marketing & Growth Hacking",
-            university: "University of Melbourne",
-            country: "Australia",
-            flag: "https://flagcdn.com/w40/au.png",
-            level: "Diploma",
-            field: "Marketing & Media",
-            duration: "1 Year",
-            mode: "Online",
-            tuition: "A$16,800 / year",
-            credits: "50 Points",
-            intakes: "Quarterly (Jan, Apr, Jul, Oct)",
-            minGpa: "2.7 / 4.0",
-            englishReq: "IELTS 6.0",
-            prerequisites: "Secondary education completion.",
-            description: "Practical online credential covering programmatic ad spending, conversion optimization, SEO, and omnichannel analytics.",
-            active: true
-        },
-        {
-            id: 18,
-            code: "PHD-905",
-            name: "Ph.D. in Artificial Intelligence for Healthcare & Diagnostics",
-            university: "University of Toronto",
-            country: "Canada",
-            flag: "https://flagcdn.com/w40/ca.png",
-            level: "PhD",
-            field: "Health Informatics & AI",
-            duration: "4 Years",
-            mode: "On Campus",
-            tuition: "Fully Funded (Fellowship)",
-            credits: "Doctoral Thesis",
-            intakes: "September",
-            minGpa: "3.7 / 4.0",
-            englishReq: "IELTS 7.5 or TOEFL 100",
-            prerequisites: "M.Sc. in Computer Science or Biomedical Informatics.",
-            description: "Pioneering doctoral fellowship at Vector Institute combining medical image segmentation, drug discovery ML, and patient EHR predictive modeling.",
-            active: true
-        }
-    ];
+    const coursesBaseUrl = @json(url('admin/courses'));
+    const storeUrl = @json(route('admin.courses.store'));
 
-    // State Variables
-    let currentView = 'table';
-    let sortColumn = 'name';
-    let sortDirection = 'asc';
-    let currentPage = 1;
-    let perPage = 20;
-    let selectedCourseIds = new Set();
-    let deletingCourseId = null;
-
-    // DOM Ready
-    document.addEventListener('DOMContentLoaded', function() {
-        populateUniversityDropdowns();
-        renderCourses();
-        attachFilterListeners();
-    });
-
-    // Populate University Dropdown in Filter & Modal
-    function populateUniversityDropdowns() {
-        const uniFilter = document.getElementById('universityFilter');
-        const uniSelect = document.getElementById('courseUniversitySelect');
-
-        uniFilter.innerHTML = '<option value="ALL">All Universities</option>';
-        uniSelect.innerHTML = '<option value="">Select University...</option>';
-
-        universityDirectory.forEach(u => {
-            const opt1 = document.createElement('option');
-            opt1.value = u.name;
-            opt1.textContent = u.name + ' (' + u.country + ')';
-            uniFilter.appendChild(opt1);
-
-            const opt2 = document.createElement('option');
-            opt2.value = u.name;
-            opt2.textContent = u.name + ' (' + u.country + ')';
-            uniSelect.appendChild(opt2);
-        });
+    function findCourse(id) {
+        return courses.find(c => c.id === id);
     }
 
-    // Auto-sync Country when University is chosen in modal
-    function syncCountryFromUniversity(uniName) {
-        const found = universityDirectory.find(u => u.name === uniName);
-        const countryInput = document.getElementById('courseCountryInput');
-        if (found) {
-            countryInput.value = found.country;
-        } else {
-            countryInput.value = '';
-        }
+    function escapeHtml(value) {
+        const div = document.createElement('div');
+        div.innerText = value ?? '';
+        return div.innerHTML;
     }
 
-    // Filter listeners
-    function attachFilterListeners() {
-        document.getElementById('courseSearchInput').addEventListener('input', () => {
-            currentPage = 1;
-            renderCourses();
+    // ---- Search and filters (apply to the courses on this page) ----
+    function applyFilters() {
+        const query = document.getElementById('courseSearchInput').value.toLowerCase().trim();
+        const level = document.getElementById('levelFilter').value;
+        const university = document.getElementById('universityFilter').value;
+        const mode = document.getElementById('modeFilter').value;
+        const status = document.getElementById('statusFilter').value;
+        let visibleRows = 0;
+
+        document.querySelectorAll('.course-item').forEach(el => {
+            const matches = (!query || el.dataset.search.includes(query))
+                && (level === 'ALL' || el.dataset.level === level)
+                && (university === 'ALL' || el.dataset.university === university)
+                && (mode === 'ALL' || el.dataset.mode === mode)
+                && (status === 'ALL' || el.dataset.status === status);
+            el.style.display = matches ? '' : 'none';
+            if (matches && el.tagName === 'TR') visibleRows++;
         });
 
-        document.getElementById('topbarSearchInput').addEventListener('input', (e) => {
-            document.getElementById('courseSearchInput').value = e.target.value;
-            currentPage = 1;
-            renderCourses();
+        document.getElementById('noMatchRow').style.display =
+            courses.length > 0 && visibleRows === 0 ? '' : 'none';
+    }
+
+    function switchView(mode) {
+        const isTable = mode === 'table';
+        document.getElementById('tableViewSection').style.display = isTable ? 'block' : 'none';
+        document.getElementById('gridViewSection').style.display = isTable ? 'none' : 'grid';
+        document.getElementById('tableViewBtn').classList.toggle('active', isTable);
+        document.getElementById('gridViewBtn').classList.toggle('active', !isTable);
+    }
+
+    function exportCoursesCSV() {
+        const q = v => '"' + String(v ?? '').replace(/"/g, '""') + '"';
+        let csv = 'Course,University,Country,Level,Field,Duration,Study Mode,Tuition,Status\n';
+        courses.forEach(c => {
+            csv += [c.name, c.university, c.country, c.level, c.field, c.duration, c.mode,
+                    c.feeText, c.active ? 'Active' : 'Inactive'].map(q).join(',') + '\n';
         });
 
-        document.getElementById('levelFilter').addEventListener('change', () => {
-            currentPage = 1;
-            renderCourses();
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `INDIC_RMC_Courses_${new Date().toISOString().split('T')[0]}.csv`;
+        link.click();
+        showToast('Exported courses to CSV.');
+    }
+
+    // ---- Details ----
+    function viewCourseDetails(id) {
+        const c = findCourse(id);
+        if (!c) return;
+
+        document.getElementById('detailCourseName').innerText = c.name;
+        document.getElementById('detailCourseSubtitle').innerText =
+            [c.university, c.country].filter(Boolean).join(' • ');
+
+        const row = (label, value) =>
+            `<div class="detail-row"><span>${label}</span><strong>${escapeHtml(value || '—')}</strong></div>`;
+
+        const intakes = c.intakes.length
+            ? c.intakes.map(i => escapeHtml(i.name) + (i.status ? ` (${escapeHtml(i.status)})` : '')).join(', ')
+            : 'None added yet';
+
+        document.getElementById('detailModalBodyContent').innerHTML =
+            row('Degree level', c.level) +
+            row('Field of study', c.field) +
+            row('Duration', c.duration) +
+            row('Study mode', c.mode) +
+            row('Tuition fee', c.feeText || 'Not set') +
+            `<div class="detail-row"><span>Intakes</span><strong>${intakes}</strong></div>` +
+            row('Status', c.active ? 'Active' : 'Inactive') +
+            `<div style="font-size: 13px; color: #344054; line-height: 1.6; margin-top: 14px; white-space: pre-line;">${escapeHtml(c.description || 'No description yet.')}</div>`;
+
+        document.getElementById('detailEditBtn').onclick = () => {
+            closeModal('courseDetailsModal');
+            openEditCourseModal(id);
+        };
+
+        openModal('courseDetailsModal');
+    }
+
+    // ---- Add / edit ----
+    function clearFormErrors() {
+        const box = document.querySelector('#courseForm .form-errors');
+        if (box) box.remove();
+    }
+
+    function openAddCourseModal() {
+        clearFormErrors();
+        document.getElementById('courseForm').action = storeUrl;
+        document.getElementById('formMethod').value = 'POST';
+        document.getElementById('courseIdField').value = '';
+        document.getElementById('addEditModalTitle').innerText = 'Add New Course';
+
+        ['courseNameInput', 'courseUniversitySelect', 'courseFieldInput', 'courseDurationInput',
+         'courseTuitionInput', 'courseCurrencyInput', 'courseDescInput'].forEach(id => {
+            document.getElementById(id).value = '';
         });
+        document.getElementById('courseLevelSelect').value = 'Bachelor';
+        document.getElementById('courseModeSelect').value = 'On Campus';
+        document.getElementById('courseStatusSelect').value = '1';
+        document.getElementById('coursePeriodSelect').value = 'Year';
 
-        document.getElementById('universityFilter').addEventListener('change', () => {
-            currentPage = 1;
-            renderCourses();
-        });
-
-        document.getElementById('modeFilter').addEventListener('change', () => {
-            currentPage = 1;
-            renderCourses();
-        });
-
-        document.getElementById('statusFilter').addEventListener('change', () => {
-            currentPage = 1;
-            renderCourses();
-        });
-
-        // Global hotkey Ctrl+/ for quick search
-        document.addEventListener('keydown', (e) => {
-            if ((e.ctrlKey || e.metaKey) && e.key === '/') {
-                e.preventDefault();
-                document.getElementById('courseSearchInput').focus();
-            }
-            if (e.key === 'Escape') {
-                closeModal('addEditCourseModal');
-                closeModal('courseDetailsModal');
-                closeModal('deleteCourseModal');
-            }
-        });
+        openModal('addEditCourseModal');
     }
 
-    // Filter and Sort Data
-    function getFilteredCourses() {
-        const searchVal = (document.getElementById('courseSearchInput').value || '').toLowerCase().trim();
-        const levelVal = document.getElementById('levelFilter').value;
-        const uniVal = document.getElementById('universityFilter').value;
-        const modeVal = document.getElementById('modeFilter').value;
-        const statusVal = document.getElementById('statusFilter').value;
-
-        return coursesData.filter(c => {
-            const matchesSearch = !searchVal ||
-                c.name.toLowerCase().includes(searchVal) ||
-                c.code.toLowerCase().includes(searchVal) ||
-                c.field.toLowerCase().includes(searchVal) ||
-                c.university.toLowerCase().includes(searchVal) ||
-                c.country.toLowerCase().includes(searchVal);
-
-            const matchesLevel = (levelVal === 'ALL') || (c.level === levelVal);
-            const matchesUni = (uniVal === 'ALL') || (c.university === uniVal);
-            const matchesMode = (modeVal === 'ALL') || (c.mode === modeVal);
-            const matchesStatus = (statusVal === 'ALL') ||
-                (statusVal === 'Active' && c.active) ||
-                (statusVal === 'Inactive' && !c.active);
-
-            return matchesSearch && matchesLevel && matchesUni && matchesMode && matchesStatus;
-        }).sort((a, b) => {
-            let valA, valB;
-            if (sortColumn === 'name') {
-                valA = a.name.toLowerCase();
-                valB = b.name.toLowerCase();
-            } else if (sortColumn === 'university') {
-                valA = a.university.toLowerCase();
-                valB = b.university.toLowerCase();
-            } else if (sortColumn === 'level') {
-                valA = a.level.toLowerCase();
-                valB = b.level.toLowerCase();
-            } else if (sortColumn === 'tuition') {
-                valA = a.tuition.toLowerCase();
-                valB = b.tuition.toLowerCase();
-            } else {
-                valA = a.id;
-                valB = b.id;
-            }
-
-            if (valA < valB) return sortDirection === 'asc' ? -1 : 1;
-            if (valA > valB) return sortDirection === 'asc' ? 1 : -1;
-            return 0;
-        });
+    function setFormForEdit(id) {
+        document.getElementById('courseForm').action = coursesBaseUrl + '/' + id;
+        document.getElementById('formMethod').value = 'PUT';
+        document.getElementById('courseIdField').value = id;
+        document.getElementById('addEditModalTitle').innerText = 'Edit Course';
     }
 
-    // Render Master Method
-    function renderCourses() {
-        const filtered = getFilteredCourses();
-        const total = filtered.length;
+    function openEditCourseModal(id) {
+        const c = findCourse(id);
+        if (!c) return;
 
-        // Update badges
-        document.getElementById('totalCoursesBadge').textContent = total + ' Total Courses';
-        document.getElementById('navCourseCountBadge').textContent = coursesData.length;
+        clearFormErrors();
+        setFormForEdit(id);
+        document.getElementById('courseNameInput').value = c.name;
+        document.getElementById('courseUniversitySelect').value = c.universityId;
+        document.getElementById('courseLevelSelect').value = c.level;
+        document.getElementById('courseFieldInput').value = c.field || '';
+        document.getElementById('courseDurationInput').value = c.duration || '';
+        document.getElementById('courseModeSelect').value = c.mode || 'On Campus';
+        document.getElementById('courseStatusSelect').value = c.active ? '1' : '0';
+        document.getElementById('courseTuitionInput').value = c.feeAmount ?? '';
+        document.getElementById('courseCurrencyInput').value = c.feeCurrency || '';
+        document.getElementById('coursePeriodSelect').value = c.feePeriod || 'Year';
+        document.getElementById('courseDescInput').value = c.description || '';
 
-        // Pagination calculation
-        let displayList = filtered;
-        let startIdx = 0;
-        let endIdx = total;
-
-        if (perPage !== 'ALL') {
-            const pSize = parseInt(perPage, 10);
-            const totalPages = Math.ceil(total / pSize) || 1;
-            if (currentPage > totalPages) currentPage = totalPages;
-            startIdx = (currentPage - 1) * pSize;
-            endIdx = Math.min(startIdx + pSize, total);
-            displayList = filtered.slice(startIdx, endIdx);
-        }
-
-        renderTable(displayList);
-        renderGrid(displayList);
-        renderPagination(total, startIdx, endIdx);
+        openModal('addEditCourseModal');
     }
 
-    // Helper: Level badge class
-    function getLevelClass(level) {
-        const l = (level || '').toLowerCase();
-        if (l === 'bachelor') return 'ranking-pill bachelor';
-        if (l === 'master') return 'ranking-pill master';
-        if (l === 'mba') return 'ranking-pill mba';
-        if (l === 'phd') return 'ranking-pill phd';
-        if (l === 'diploma') return 'ranking-pill diploma';
-        return 'ranking-pill';
+    function openDeleteCourseModal(id) {
+        const c = findCourse(id);
+        if (!c) return;
+
+        document.getElementById('deleteForm').action = coursesBaseUrl + '/' + id;
+        document.getElementById('deleteCourseName').innerText = c.name;
+        openModal('deleteCourseModal');
     }
 
-    // Helper: Mode pill class
-    function getModeClass(mode) {
-        const m = (mode || '').toLowerCase();
-        if (m === 'on campus') return 'mode-pill on-campus';
-        if (m === 'online') return 'mode-pill online';
-        if (m === 'hybrid') return 'mode-pill hybrid';
-        return 'mode-pill';
-    }
-
-    // Render Table View
-    function renderTable(list) {
-        const tbody = document.getElementById('courseTableBody');
-        tbody.innerHTML = '';
-
-        if (list.length === 0) {
-            tbody.innerHTML = `
-                <tr>
-                    <td colspan="8" style="text-align: center; padding: 40px; color: #6b7280;">
-                        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" stroke-width="1.5" style="margin-bottom: 8px;">
-                            <circle cx="11" cy="11" r="8"/>
-                            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-                        </svg>
-                        <p style="font-size: 13px; font-weight: 500;">No degree programs match your search or filter criteria.</p>
-                        <button class="btn-secondary" onclick="resetFilters()" style="margin: 10px auto 0;">Reset Filters</button>
-                    </td>
-                </tr>
-            `;
-            return;
-        }
-
-        list.forEach(c => {
-            const tr = document.createElement('tr');
-
-            tr.innerHTML = `
-                <td>
-                    <input type="checkbox" class="row-checkbox" value="${c.id}" ${selectedCourseIds.has(c.id) ? 'checked' : ''} onchange="toggleSelectRow(${c.id}, this.checked)" style="cursor: pointer;">
-                </td>
-                <td>
-                    <div class="uni-identity">
-                        <div class="course-icon-thumb">
-                            ${c.code.split('-')[0] || 'CR'}
-                        </div>
-                        <div>
-                            <div class="uni-name-text">${escapeHtml(c.name)}</div>
-                            <div class="uni-meta-text">Code: <strong>${escapeHtml(c.code)}</strong> &bull; ${escapeHtml(c.credits || '')}</div>
-                        </div>
-                    </div>
-                </td>
-                <td>
-                    <div class="country-pill">
-                        <img src="${c.flag}" alt="${c.country}" class="country-flag-icon" onerror="this.style.display='none'">
-                        <span>${escapeHtml(c.university)}</span>
-                    </div>
-                    <div style="font-size: 10px; color: #8c96a8; margin-top: 2px;">${escapeHtml(c.country)}</div>
-                </td>
-                <td>
-                    <span class="${getLevelClass(c.level)}">${escapeHtml(c.level)}</span>
-                    <div style="font-size: 11px; color: #6b7280; margin-top: 3px;">${escapeHtml(c.field)}</div>
-                </td>
-                <td>
-                    <span class="${getModeClass(c.mode)}">${escapeHtml(c.mode)}</span>
-                    <div style="font-size: 11px; color: #8c96a8; margin-top: 3px;">${escapeHtml(c.duration)}</div>
-                </td>
-                <td>
-                    <strong style="color: #111827; font-size: 12px;">${escapeHtml(c.tuition)}</strong>
-                    <div style="font-size: 10px; color: #6b7280; margin-top: 2px;">Intakes: ${escapeHtml(c.intakes || 'Flexible')}</div>
-                </td>
-                <td>
-                    <span class="status-badge ${c.active ? 'active' : 'inactive'}">
-                        ${c.active ? 'Active' : 'Inactive'}
-                    </span>
-                </td>
-                <td>
-                    <div class="actions-cell">
-                        <button class="btn-view-courses" onclick="viewCourseDetails(${c.id})" title="View Requirements & Intakes">
-                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
-                                <circle cx="12" cy="12" r="3"/>
-                            </svg>
-                            Requirements
-                        </button>
-                        <button class="btn-icon-action" onclick="openEditCourseModal(${c.id})" title="Edit Program">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                            </svg>
-                        </button>
-                        <button class="btn-icon-action delete" onclick="openDeleteCourseModal(${c.id})" title="Deactivate">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <polyline points="3 6 5 6 21 6"/>
-                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                            </svg>
-                        </button>
-                    </div>
-                </td>
-            `;
-
-            tbody.appendChild(tr);
-        });
-    }
-
-    // Render Grid Cards View
-    function renderGrid(list) {
-        const grid = document.getElementById('gridViewSection');
-        grid.innerHTML = '';
-
-        if (list.length === 0) {
-            grid.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #6b7280;">No degree programs match your filter criteria.</div>';
-            return;
-        }
-
-        list.forEach(c => {
-            const card = document.createElement('div');
-            card.className = 'uni-grid-card';
-
-            card.innerHTML = `
-                <div class="card-top">
-                    <span class="${getLevelClass(c.level)}">${escapeHtml(c.level)}</span>
-                    <span class="status-badge ${c.active ? 'active' : 'inactive'}">
-                        ${c.active ? 'Active' : 'Inactive'}
-                    </span>
-                </div>
-
-                <div>
-                    <div style="font-size: 14px; font-weight: 700; color: #111827; line-height: 1.4;">
-                        ${escapeHtml(c.name)}
-                    </div>
-                    <div style="font-size: 11px; color: #f97316; font-weight: 600; margin-top: 2px;">
-                        Code: ${escapeHtml(c.code)}
-                    </div>
-                </div>
-
-                <div class="country-pill">
-                    <img src="${c.flag}" alt="${c.country}" class="country-flag-icon" onerror="this.style.display='none'">
-                    <div>
-                        <div style="font-weight: 600; color: #172033; font-size: 12px;">${escapeHtml(c.university)}</div>
-                        <div style="font-size: 10px; color: #8a93a3;">${escapeHtml(c.country)}</div>
-                    </div>
-                </div>
-
-                <div class="card-metric-grid">
-                    <div>
-                        <div class="card-metric-label">Tuition</div>
-                        <div class="card-metric-val">${escapeHtml(c.tuition)}</div>
-                    </div>
-                    <div>
-                        <div class="card-metric-label">Duration</div>
-                        <div class="card-metric-val">${escapeHtml(c.duration)}</div>
-                    </div>
-                    <div>
-                        <div class="card-metric-label">Study Mode</div>
-                        <div class="card-metric-val">${escapeHtml(c.mode)}</div>
-                    </div>
-                    <div>
-                        <div class="card-metric-label">Credits</div>
-                        <div class="card-metric-val">${escapeHtml(c.credits || 'N/A')}</div>
-                    </div>
-                </div>
-
-                <div style="font-size: 11px; color: #6b7280; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
-                    ${escapeHtml(c.description || 'Comprehensive curriculum with hands-on research and global employment pathways.')}
-                </div>
-
-                <div class="card-actions">
-                    <button class="btn-view-courses" onclick="viewCourseDetails(${c.id})" style="margin-right: auto;">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
-                            <circle cx="12" cy="12" r="3"/>
-                        </svg>
-                        Requirements
-                    </button>
-                    <button class="btn-icon-action" onclick="openEditCourseModal(${c.id})" title="Edit">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                        </svg>
-                    </button>
-                    <button class="btn-icon-action delete" onclick="openDeleteCourseModal(${c.id})" title="Deactivate">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <polyline points="3 6 5 6 21 6"/>
-                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                        </svg>
-                    </button>
-                </div>
-            `;
-
-            grid.appendChild(card);
-        });
-    }
-
-    // Render Pagination
-    function renderPagination(total, startIdx, endIdx) {
-        const info = document.getElementById('paginationInfo');
-        const controls = document.getElementById('paginationControls');
-
-        if (total === 0) {
-            info.textContent = 'Showing 0 to 0 of 0 programs';
-            controls.innerHTML = '';
-            return;
-        }
-
-        info.textContent = `Showing ${startIdx + 1} to ${endIdx} of ${total} programs`;
-
-        if (perPage === 'ALL') {
-            controls.innerHTML = '';
-            return;
-        }
-
-        const pSize = parseInt(perPage, 10);
-        const totalPages = Math.ceil(total / pSize);
-
-        let html = '';
-        html += `<button class="btn-secondary" style="height: 28px; padding: 0 8px; font-size: 11px;" ${currentPage === 1 ? 'disabled style="opacity: 0.5; cursor: default;"' : ''} onclick="gotoPage(${currentPage - 1})">Prev</button>`;
-
-        for (let i = 1; i <= totalPages; i++) {
-            if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
-                html += `<button class="btn-secondary ${i === currentPage ? 'active' : ''}" style="height: 28px; width: 28px; padding: 0; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; ${i === currentPage ? 'background: #f97316; color: #fff; border-color: #f97316;' : ''}" onclick="gotoPage(${i})">${i}</button>`;
-            } else if (i === currentPage - 2 || i === currentPage + 2) {
-                html += `<span style="padding: 0 4px; color: #9ca3af;">...</span>`;
-            }
-        }
-
-        html += `<button class="btn-secondary" style="height: 28px; padding: 0 8px; font-size: 11px;" ${currentPage === totalPages ? 'disabled style="opacity: 0.5; cursor: default;"' : ''} onclick="gotoPage(${currentPage + 1})">Next</button>`;
-
-        controls.innerHTML = html;
-    }
-
-    function gotoPage(p) {
-        currentPage = p;
-        renderCourses();
-    }
-
-    function changePerPage(val) {
-        perPage = val;
-        currentPage = 1;
-        renderCourses();
-    }
-
-    // Switch View
-    function switchView(view) {
-        currentView = view;
-        const tableSection = document.getElementById('tableViewSection');
-        const gridSection = document.getElementById('gridViewSection');
-        const tableBtn = document.getElementById('tableViewBtn');
-        const gridBtn = document.getElementById('gridViewBtn');
-
-        if (view === 'table') {
-            tableSection.style.display = 'block';
-            gridSection.style.display = 'none';
-            tableBtn.classList.add('active');
-            gridBtn.classList.remove('active');
-        } else {
-            tableSection.style.display = 'none';
-            gridSection.style.display = 'grid';
-            tableBtn.classList.remove('active');
-            gridBtn.classList.add('active');
-        }
-    }
-
-    // Sort Table
-    function sortTable(col) {
-        if (sortColumn === col) {
-            sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
-        } else {
-            sortColumn = col;
-            sortDirection = 'asc';
-        }
-        renderCourses();
-    }
-
-    // Reset Filters
-    function resetFilters() {
-        document.getElementById('courseSearchInput').value = '';
-        document.getElementById('topbarSearchInput').value = '';
-        document.getElementById('levelFilter').value = 'ALL';
-        document.getElementById('universityFilter').value = 'ALL';
-        document.getElementById('modeFilter').value = 'ALL';
-        document.getElementById('statusFilter').value = 'ALL';
-        currentPage = 1;
-        renderCourses();
-    }
-
-    // Modal Control Helpers
+    // ---- Helpers ----
     function openModal(id) {
         document.getElementById(id).classList.add('open');
     }
@@ -2182,313 +1661,30 @@
         document.getElementById(id).classList.remove('open');
     }
 
-    // Open Add Course Modal
-    function openAddCourseModal() {
-        document.getElementById('addEditModalTitle').textContent = 'Add New Degree Program';
-        document.getElementById('courseIdField').value = '';
-        document.getElementById('courseForm').reset();
-        document.getElementById('courseActiveCheckbox').checked = true;
-        document.getElementById('courseCountryInput').value = '';
-        openModal('addEditCourseModal');
-    }
-
-    // Open Edit Course Modal
-    function openEditCourseModal(id) {
-        const c = coursesData.find(item => item.id === id);
-        if (!c) return;
-
-        document.getElementById('addEditModalTitle').textContent = 'Edit Degree Program';
-        document.getElementById('courseIdField').value = c.id;
-        document.getElementById('courseCodeInput').value = c.code || '';
-        document.getElementById('courseNameInput').value = c.name || '';
-        document.getElementById('courseUniversitySelect').value = c.university || '';
-        document.getElementById('courseCountryInput').value = c.country || '';
-        document.getElementById('courseLevelSelect').value = c.level || 'Bachelor';
-        document.getElementById('courseFieldInput').value = c.field || '';
-        document.getElementById('courseModeSelect').value = c.mode || 'On Campus';
-        document.getElementById('courseDurationInput').value = c.duration || '';
-        document.getElementById('courseTuitionInput').value = c.tuition || '';
-        document.getElementById('courseCreditsInput').value = c.credits || '';
-        document.getElementById('courseIntakesInput').value = c.intakes || '';
-        document.getElementById('courseMinGpaInput').value = c.minGpa || '';
-        document.getElementById('courseEnglishReqInput').value = c.englishReq || '';
-        document.getElementById('coursePrereqInput').value = c.prerequisites || '';
-        document.getElementById('courseDescInput').value = c.description || '';
-        document.getElementById('courseActiveCheckbox').checked = !!c.active;
-
-        openModal('addEditCourseModal');
-    }
-
-    // Handle Save (Add or Update)
-    function handleSaveCourse(e) {
-        e.preventDefault();
-
-        const idVal = document.getElementById('courseIdField').value;
-        const code = document.getElementById('courseCodeInput').value.trim();
-        const name = document.getElementById('courseNameInput').value.trim();
-        const uni = document.getElementById('courseUniversitySelect').value;
-        const country = document.getElementById('courseCountryInput').value;
-        const level = document.getElementById('courseLevelSelect').value;
-        const field = document.getElementById('courseFieldInput').value.trim();
-        const mode = document.getElementById('courseModeSelect').value;
-        const duration = document.getElementById('courseDurationInput').value.trim();
-        const tuition = document.getElementById('courseTuitionInput').value.trim();
-        const credits = document.getElementById('courseCreditsInput').value.trim();
-        const intakes = document.getElementById('courseIntakesInput').value.trim();
-        const minGpa = document.getElementById('courseMinGpaInput').value.trim();
-        const englishReq = document.getElementById('courseEnglishReqInput').value.trim();
-        const prerequisites = document.getElementById('coursePrereqInput').value.trim();
-        const description = document.getElementById('courseDescInput').value.trim();
-        const active = document.getElementById('courseActiveCheckbox').checked;
-
-        const uniObj = universityDirectory.find(u => u.name === uni);
-        const flag = uniObj ? uniObj.flag : 'https://flagcdn.com/w40/un.png';
-
-        if (idVal) {
-            // Edit existing
-            const idx = coursesData.findIndex(c => c.id === parseInt(idVal, 10));
-            if (idx !== -1) {
-                coursesData[idx] = {
-                    ...coursesData[idx],
-                    code,
-                    name,
-                    university: uni,
-                    country,
-                    flag,
-                    level,
-                    field,
-                    mode,
-                    duration,
-                    tuition,
-                    credits,
-                    intakes,
-                    minGpa,
-                    englishReq,
-                    prerequisites,
-                    description,
-                    active
-                };
-                showToast('Degree program updated successfully!');
-            }
-        } else {
-            // Create new
-            const newId = coursesData.length > 0 ? Math.max(...coursesData.map(c => c.id)) + 1 : 1;
-            const newCourse = {
-                id: newId,
-                code,
-                name,
-                university: uni,
-                country,
-                flag,
-                level,
-                field,
-                mode,
-                duration,
-                tuition,
-                credits,
-                intakes,
-                minGpa,
-                englishReq,
-                prerequisites,
-                description,
-                active
-            };
-            coursesData.unshift(newCourse);
-            showToast('New degree program created successfully!');
-        }
-
-        closeModal('addEditCourseModal');
-        renderCourses();
-    }
-
-    // View Requirements & Details Modal
-    function viewCourseDetails(id) {
-        const c = coursesData.find(item => item.id === id);
-        if (!c) return;
-
-        document.getElementById('detailCourseName').textContent = c.name;
-        document.getElementById('detailCourseSubtitle').textContent = c.code + ' • ' + c.university + ' (' + c.country + ')';
-
-        const body = document.getElementById('detailModalBodyContent');
-        body.innerHTML = `
-            <div class="req-section">
-                <div class="req-section-title">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2">
-                        <circle cx="12" cy="12" r="10"/>
-                        <line x1="12" y1="16" x2="12" y2="12"/>
-                        <line x1="12" y1="8" x2="12.01" y2="8"/>
-                    </svg>
-                    Program Overview & Specifications
-                </div>
-                <div class="req-grid">
-                    <div class="req-item">
-                        <strong>Degree Level</strong>
-                        <span class="${getLevelClass(c.level)}">${escapeHtml(c.level)}</span>
-                    </div>
-                    <div class="req-item">
-                        <strong>Field of Study</strong>
-                        <span>${escapeHtml(c.field)}</span>
-                    </div>
-                    <div class="req-item">
-                        <strong>Annual Tuition Fee</strong>
-                        <span style="color: #059669; font-weight: 700;">${escapeHtml(c.tuition)}</span>
-                    </div>
-                    <div class="req-item">
-                        <strong>Duration & Mode</strong>
-                        <span>${escapeHtml(c.duration)} (${escapeHtml(c.mode)})</span>
-                    </div>
-                    <div class="req-item">
-                        <strong>Total Credits</strong>
-                        <span>${escapeHtml(c.credits || 'Not specified')}</span>
-                    </div>
-                    <div class="req-item">
-                        <strong>Semester Intakes</strong>
-                        <span>${escapeHtml(c.intakes || 'September, January')}</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="req-section">
-                <div class="req-section-title">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2">
-                        <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
-                        <path d="M6 12v5c3 3 9 3 12 0v-5"/>
-                    </svg>
-                    Academic & English Entry Requirements
-                </div>
-                <div class="req-grid">
-                    <div class="req-item" style="grid-column: 1 / -1;">
-                        <strong>Minimum GPA / Grade Requirement</strong>
-                        <span style="font-size: 13px; font-weight: 600; color: #111827;">${escapeHtml(c.minGpa || '3.0 / 4.0 (75%) or equivalent')}</span>
-                    </div>
-                    <div class="req-item" style="grid-column: 1 / -1;">
-                        <strong>English Language Proficiency</strong>
-                        <span>${escapeHtml(c.englishReq || 'IELTS 6.5 (min 6.0 in bands) / TOEFL iBT 90+')}</span>
-                    </div>
-                    <div class="req-item" style="grid-column: 1 / -1;">
-                        <strong>Prerequisites & Prior Qualifications</strong>
-                        <span>${escapeHtml(c.prerequisites || 'Recognized high school certificate or undergraduate degree in aligned discipline.')}</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="req-section">
-                <div class="req-section-title">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2">
-                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-                    </svg>
-                    Curriculum & Career Outlook
-                </div>
-                <p style="font-size: 12px; color: #4b5565; line-height: 1.6;">
-                    ${escapeHtml(c.description || 'Comprehensive curriculum preparing students for global industry certifications, advanced research fellowships, and high-impact international career trajectories.')}
-                </p>
-            </div>
-        `;
-
-        document.getElementById('detailEditBtn').onclick = function() {
-            closeModal('courseDetailsModal');
-            openEditCourseModal(c.id);
-        };
-
-        openModal('courseDetailsModal');
-    }
-
-    // Delete / Deactivate Course Modal
-    function openDeleteCourseModal(id) {
-        const c = coursesData.find(item => item.id === id);
-        if (!c) return;
-
-        deletingCourseId = id;
-        document.getElementById('deleteCourseName').textContent = c.name + ' (' + c.code + ')';
-
-        document.getElementById('confirmDeleteBtn').onclick = function() {
-            coursesData = coursesData.filter(item => item.id !== deletingCourseId);
-            selectedCourseIds.delete(deletingCourseId);
-            closeModal('deleteCourseModal');
-            showToast('Course program deactivated and removed from active listings.');
-            renderCourses();
-        };
-
-        openModal('deleteCourseModal');
-    }
-
-    // Checkbox selections
-    function toggleSelectAll(masterCheckbox) {
-        const isChecked = masterCheckbox.checked;
-        const visible = getFilteredCourses();
-        visible.forEach(c => {
-            if (isChecked) selectedCourseIds.add(c.id);
-            else selectedCourseIds.delete(c.id);
-        });
-        renderCourses();
-    }
-
-    function toggleSelectRow(id, isChecked) {
-        if (isChecked) selectedCourseIds.add(id);
-        else selectedCourseIds.delete(id);
-        renderCourses();
-    }
-
-    // Export CSV
-    function exportCoursesCSV() {
-        const list = getFilteredCourses();
-        if (list.length === 0) {
-            showToast('No course data available to export.');
-            return;
-        }
-
-        const headers = ["ID", "Code", "Course Name", "University", "Country", "Level", "Field", "Duration", "Study Mode", "Tuition", "Intakes", "Min GPA", "Status"];
-        const rows = list.map(c => [
-            c.id,
-            '"' + (c.code || '').replace(/"/g, '""') + '"',
-            '"' + (c.name || '').replace(/"/g, '""') + '"',
-            '"' + (c.university || '').replace(/"/g, '""') + '"',
-            '"' + (c.country || '').replace(/"/g, '""') + '"',
-            '"' + (c.level || '').replace(/"/g, '""') + '"',
-            '"' + (c.field || '').replace(/"/g, '""') + '"',
-            '"' + (c.duration || '').replace(/"/g, '""') + '"',
-            '"' + (c.mode || '').replace(/"/g, '""') + '"',
-            '"' + (c.tuition || '').replace(/"/g, '""') + '"',
-            '"' + (c.intakes || '').replace(/"/g, '""') + '"',
-            '"' + (c.minGpa || '').replace(/"/g, '""') + '"',
-            c.active ? 'Active' : 'Inactive'
-        ]);
-
-        const csvContent = "data:text/csv;charset=utf-8," + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
-        const encodedUri = encodeURI(csvContent);
-        const link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
-        link.setAttribute("download", "indic_rmc_courses_" + new Date().toISOString().slice(0, 10) + ".csv");
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-
-        showToast('Exported ' + list.length + ' courses to CSV!');
-    }
-
-    // Toast Notification
     function showToast(msg) {
         const toast = document.getElementById('toast');
-        const span = document.getElementById('toastMessage');
-        span.textContent = msg;
+        document.getElementById('toastMessage').innerText = msg;
         toast.style.display = 'flex';
-        clearTimeout(toast._timeout);
-        toast._timeout = setTimeout(() => {
-            toast.style.display = 'none';
-        }, 3200);
+        setTimeout(() => { toast.style.display = 'none'; }, 3200);
     }
 
-    // XSS sanitization helper
-    function escapeHtml(str) {
-        if (!str) return '';
-        return String(str)
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#039;');
-    }
+    document.addEventListener('DOMContentLoaded', () => {
+        ['courseSearchInput'].forEach(id => document.getElementById(id).addEventListener('input', applyFilters));
+        ['levelFilter', 'universityFilter', 'modeFilter', 'statusFilter'].forEach(id =>
+            document.getElementById(id).addEventListener('change', applyFilters));
+
+        @if (session('success'))
+            showToast(@json(session('success')));
+        @endif
+
+        // If saving failed validation, reopen the form with what was typed.
+        @if ($errors->any())
+            @if (old('edit_id'))
+                setFormForEdit({{ (int) old('edit_id') }});
+            @endif
+            openModal('addEditCourseModal');
+        @endif
+    });
 </script>
 
 </body>

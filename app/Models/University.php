@@ -23,8 +23,19 @@ class University extends Model
         'address',
         'ranking',
         'description',
+        'logo_image',
         'is_active',
     ];
+
+    /**
+     * Public URL of the uploaded logo, or null when none was uploaded.
+     */
+    public function getLogoUrlAttribute(): ?string
+    {
+        return $this->logo_image
+            ? asset('storage/' . $this->logo_image)
+            : null;
+    }
 
     protected function casts(): array
     {
