@@ -4,21 +4,33 @@ namespace App\Http\Controllers;
 
 use App\Models\Course;
 use App\Models\Scholarship;
-use App\Models\University;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class ScholarshipController extends Controller
 {
+    private const MESSAGES = [
+        'university_id.exists' => 'Please choose a university from the list.',
+        'course_id.exists' => 'Please choose a course from the list.',
+        'amount.numeric' => 'The award amount must be a number, for example 10000.',
+        'currency.required_with' => 'Please enter a currency for the award amount, for example USD.',
+        'currency.regex' => 'The currency must be a 3-letter code, for example USD, LKR or GBP.',
+        'award_type.required' => 'Please choose an award type.',
+        'award_type.in' => 'Please choose an award type from the list.',
+        'percentage.max' => 'The tuition coverage cannot be more than 100%.',
+        'application_deadline.date' => 'Please enter a valid deadline date.',
+    ];
+
     /**
      * Display all scholarships.
      */
     public function index()
     {
         $scholarships = Scholarship::with([
-            'university',
-            'course'
+            'university.country',
+            'course',
         ])
-            ->latest('scholarship_id')
+            ->orderBy('scholarship_name')
             ->paginate(20);
 
         return view(
@@ -27,26 +39,9 @@ class ScholarshipController extends Controller
         );
     }
 
-    /**
-     * Show create scholarship form.
-     */
     public function create()
     {
-        $universities = University::where('is_active', true)
-            ->orderBy('university_name')
-            ->get();
-
-        $courses = Course::where('is_active', true)
-            ->orderBy('course_name')
-            ->get();
-
-        return view(
-            'admin.scholarships.create',
-            compact(
-                'universities',
-                'courses'
-            )
-        );
+        return redirect()->route('admin.scholarships.index');
     }
 
     /**
@@ -54,54 +49,7 @@ class ScholarshipController extends Controller
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'university_id' => [
-                'nullable',
-                'integer',
-                'exists:universities,university_id'
-            ],
-            'course_id' => [
-                'nullable',
-                'integer',
-                'exists:courses,course_id'
-            ],
-            'scholarship_name' => [
-                'required',
-                'string',
-                'max:255'
-            ],
-            'description' => [
-                'nullable',
-                'string'
-            ],
-            'amount' => [
-                'nullable',
-                'numeric',
-                'min:0'
-            ],
-            'percentage' => [
-                'nullable',
-                'numeric',
-                'min:0',
-                'max:100'
-            ],
-            'eligibility' => [
-                'nullable',
-                'string'
-            ],
-            'application_deadline' => [
-                'nullable',
-                'date'
-            ],
-            'is_active' => [
-                'boolean'
-            ],
-        ]);
-
-        $validated['is_active'] =
-            $request->boolean('is_active');
-
-        Scholarship::create($validated);
+        Scholarship::create($this->validatedFields($request));
 
         return redirect()
             ->route('admin.scholarships.index')
@@ -111,43 +59,14 @@ class ScholarshipController extends Controller
             );
     }
 
-    /**
-     * Display a scholarship.
-     */
     public function show(Scholarship $scholarship)
     {
-        $scholarship->load([
-            'university',
-            'course'
-        ]);
-
-        return view(
-            'admin.scholarships.show',
-            compact('scholarship')
-        );
+        return redirect()->route('admin.scholarships.index');
     }
 
-    /**
-     * Show edit scholarship form.
-     */
     public function edit(Scholarship $scholarship)
     {
-        $universities = University::where('is_active', true)
-            ->orderBy('university_name')
-            ->get();
-
-        $courses = Course::where('is_active', true)
-            ->orderBy('course_name')
-            ->get();
-
-        return view(
-            'admin.scholarships.edit',
-            compact(
-                'scholarship',
-                'universities',
-                'courses'
-            )
-        );
+        return redirect()->route('admin.scholarships.index');
     }
 
     /**
@@ -157,54 +76,7 @@ class ScholarshipController extends Controller
         Request $request,
         Scholarship $scholarship
     ) {
-        $validated = $request->validate([
-            'university_id' => [
-                'nullable',
-                'integer',
-                'exists:universities,university_id'
-            ],
-            'course_id' => [
-                'nullable',
-                'integer',
-                'exists:courses,course_id'
-            ],
-            'scholarship_name' => [
-                'required',
-                'string',
-                'max:255'
-            ],
-            'description' => [
-                'nullable',
-                'string'
-            ],
-            'amount' => [
-                'nullable',
-                'numeric',
-                'min:0'
-            ],
-            'percentage' => [
-                'nullable',
-                'numeric',
-                'min:0',
-                'max:100'
-            ],
-            'eligibility' => [
-                'nullable',
-                'string'
-            ],
-            'application_deadline' => [
-                'nullable',
-                'date'
-            ],
-            'is_active' => [
-                'boolean'
-            ],
-        ]);
-
-        $validated['is_active'] =
-            $request->boolean('is_active');
-
-        $scholarship->update($validated);
+        $scholarship->update($this->validatedFields($request));
 
         return redirect()
             ->route('admin.scholarships.index')
@@ -215,19 +87,102 @@ class ScholarshipController extends Controller
     }
 
     /**
-     * Deactivate a scholarship.
+     * Delete a scholarship permanently.
+     * (To hide one without deleting it, set its Status to Inactive instead.)
      */
     public function destroy(Scholarship $scholarship)
     {
-        $scholarship->update([
-            'is_active' => false
-        ]);
+        $name = $scholarship->scholarship_name;
+
+        $scholarship->delete();
 
         return redirect()
             ->route('admin.scholarships.index')
             ->with(
                 'success',
-                'Scholarship deactivated successfully.'
+                'Scholarship "' . $name . '" deleted.'
             );
+    }
+
+    /**
+     * Validate the form and return the fields to save.
+     */
+    private function validatedFields(Request $request): array
+    {
+        $validated = $request->validate([
+            'university_id' => [
+                'nullable',
+                'integer',
+                'exists:universities,university_id'
+            ],
+            'course_id' => [
+                'nullable',
+                'integer',
+                'exists:courses,course_id'
+            ],
+            'scholarship_name' => [
+                'required',
+                'string',
+                'max:255'
+            ],
+            'award_type' => [
+                'required',
+                'in:' . implode(',', array_keys(Scholarship::AWARD_TYPES))
+            ],
+            'description' => [
+                'nullable',
+                'string'
+            ],
+            'amount' => [
+                'nullable',
+                'numeric',
+                'min:0',
+                'max:9999999999'
+            ],
+            'currency' => [
+                'nullable',
+                'required_with:amount',
+                'regex:/^[A-Za-z]{3}$/'
+            ],
+            'percentage' => [
+                'nullable',
+                'numeric',
+                'min:0',
+                'max:100'
+            ],
+            'eligibility' => [
+                'nullable',
+                'string'
+            ],
+            'application_deadline' => [
+                'nullable',
+                'date'
+            ],
+            'is_active' => [
+                'boolean'
+            ],
+        ], self::MESSAGES);
+
+        // A course always belongs to a university: fill in or check the university.
+        if (!empty($validated['course_id'])) {
+            $courseUniversity = Course::whereKey($validated['course_id'])->value('university_id');
+
+            if (empty($validated['university_id'])) {
+                $validated['university_id'] = $courseUniversity;
+            } elseif ((int) $validated['university_id'] !== (int) $courseUniversity) {
+                throw ValidationException::withMessages([
+                    'course_id' => 'The chosen course does not belong to the chosen university.',
+                ]);
+            }
+        }
+
+        // Currency only makes sense with an amount.
+        $validated['currency'] = ($validated['amount'] ?? null) !== null && !empty($validated['currency'])
+            ? strtoupper(trim($validated['currency']))
+            : null;
+
+        $validated['is_active'] = $request->boolean('is_active');
+
+        return $validated;
     }
 }

@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Country;
+use App\Models\Course;
 use App\Models\University;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class UniversityController extends Controller
@@ -29,6 +31,7 @@ class UniversityController extends Controller
     public function index()
     {
         $universities = University::with(['country', 'courses'])
+            ->withCount('scholarships')
             ->orderBy('university_name')
             ->paginate(20);
 
@@ -122,17 +125,62 @@ class UniversityController extends Controller
             );
     }
 
+    /**
+     * Delete a university permanently, together with its courses and the
+     * scholarships tied to it. Refused when students already use its courses,
+     * so their applications and recommendations are never damaged.
+     * (To hide a university without deleting it, set its status to Inactive.)
+     */
     public function destroy(University $university)
     {
-        $university->update([
-            'is_active' => false
-        ]);
+        $name = $university->university_name;
+        $courseIds = $university->courses()->pluck('course_id');
+
+        if ($courseIds->isNotEmpty()) {
+            $studentLinks =
+                DB::table('applications')->whereIn('preferred_course_id', $courseIds)->count()
+                + DB::table('recommendations')->whereIn('course_id', $courseIds)->count()
+                + DB::table('fund_requirements')->whereIn('selected_course_id', $courseIds)->count();
+
+            if ($studentLinks > 0) {
+                return redirect()
+                    ->route('admin.universities.index')
+                    ->with(
+                        'error',
+                        '"' . $name . '" can\'t be deleted because students have applications, '
+                        . 'recommendations or fund reports linked to its courses. '
+                        . 'Set it to Inactive instead to hide it from the website.'
+                    );
+            }
+        }
+
+        // Remember uploaded pictures so the files can be removed after the delete.
+        $files = Course::whereIn('course_id', $courseIds)
+            ->whereNotNull('course_image')
+            ->pluck('course_image')
+            ->push($university->logo_image)
+            ->filter()
+            ->all();
+
+        DB::transaction(function () use ($university) {
+            // Scholarships for this university only make sense with it.
+            $university->scholarships()->delete();
+
+            // Deleting the courses also removes their fees, intakes and requirements.
+            $university->courses()->delete();
+
+            $university->delete();
+        });
+
+        if ($files) {
+            Storage::disk('public')->delete($files);
+        }
 
         return redirect()
             ->route('admin.universities.index')
             ->with(
                 'success',
-                'University deactivated successfully.'
+                'University "' . $name . '" deleted.'
             );
     }
 

@@ -62,4 +62,13 @@ class University extends Model
             'university_id'
         );
     }
+
+    public function scholarships()
+    {
+        return $this->hasMany(
+            Scholarship::class,
+            'university_id',
+            'university_id'
+        );
+    }
 }
