@@ -70,6 +70,7 @@ class HomeController extends Controller
     public function universities()
     {
         $universities = University::where('is_active', true)
+            ->whereHas('country', fn ($query) => $query->where('is_active', true))
             ->with('country')
             ->orderBy('university_name')
             ->get();
@@ -87,7 +88,10 @@ class HomeController extends Controller
     public function courses()
     {
         $courses = Course::where('is_active', true)
-            ->with('university.country')
+            ->whereHas('university', fn ($query) => $query
+                ->where('is_active', true)
+                ->whereHas('country', fn ($query) => $query->where('is_active', true)))
+            ->with(['university.country', 'tuitionFees'])
             ->orderBy('course_name')
             ->get();
 

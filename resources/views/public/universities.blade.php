@@ -566,266 +566,64 @@
 
         <div class="university-grid">
 
+            @php
+                // Campus photos used as card backgrounds, picked by university.
+                $campusPhotos = [
+                    'https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=1200&q=85',
+                    'https://images.unsplash.com/photo-1498243691581-b145c3f54a5a?auto=format&fit=crop&w=1200&q=85',
+                    'https://images.unsplash.com/photo-1592280771190-3e2e4d571952?auto=format&fit=crop&w=1200&q=85',
+                    'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=1200&q=85',
+                    'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=1200&q=85',
+                    'https://images.unsplash.com/photo-1599458252573-56ae36120de1?auto=format&fit=crop&w=1200&q=85',
+                    'https://images.unsplash.com/photo-1568792923760-d70635a89fdc?auto=format&fit=crop&w=1200&q=85',
+                    'https://images.unsplash.com/photo-1606761568499-6d2451b23c66?auto=format&fit=crop&w=1200&q=85',
+                ];
+            @endphp
 
-            <!-- UNIVERSITY 1 -->
+            @forelse ($universities as $university)
+                @php
+                    // Use the image uploaded in the admin portal as the card background;
+                    // otherwise fall back to one of the campus photos.
+                    $photo = $university->logo_url
+                        ?: $campusPhotos[$university->university_id % count($campusPhotos)];
+                @endphp
 
-            <div
-                class="university-card"
-                style="
-                    background-image:
-                    url('https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=1200&q=85');
-                "
-            >
+                <div class="university-card" style="background-image: url('{{ $photo }}');">
 
-                <div class="university-content">
+                    <div class="university-content">
 
-                    <div class="country">
-                        STUDY IN AUSTRALIA
+                        <div class="country">
+                            STUDY IN {{ strtoupper($university->country?->country_name ?? 'ABROAD') }}{{ $university->city ? ' • ' . strtoupper($university->city) : '' }}
+                        </div>
+
+                        <h2>
+                            {{ $university->university_name }}
+                        </h2>
+
+                        @if ($university->ranking)
+                            <p style="margin: -6px 0 16px; font-size: 14px; color: #eeeeee;">
+                                World ranking #{{ $university->ranking }}
+                            </p>
+                        @endif
+
+                        @if ($university->website)
+                            <a href="{{ $university->website }}" target="_blank" rel="noopener" class="explore-link">
+                                Visit university website →
+                            </a>
+                        @else
+                            <a href="{{ url('/courses') }}" class="explore-link">
+                                Explore courses →
+                            </a>
+                        @endif
+
                     </div>
 
-                    <h2>
-                        University of Melbourne
-                    </h2>
-
-                    <a href="#" class="explore-link">
-                        Explore university →
-                    </a>
-
                 </div>
-
-            </div>
-
-
-            <!-- UNIVERSITY 2 -->
-
-            <div
-                class="university-card"
-                style="
-                    background-image:
-                    url('https://images.unsplash.com/photo-1498243691581-b145c3f54a5a?auto=format&fit=crop&w=1200&q=85');
-                "
-            >
-
-                <div class="university-content">
-
-                    <div class="country">
-                        STUDY IN AUSTRALIA
-                    </div>
-
-                    <h2>
-                        University of Sydney
-                    </h2>
-
-                    <a href="#" class="explore-link">
-                        Explore university →
-                    </a>
-
-                </div>
-
-            </div>
-
-
-            <!-- UNIVERSITY 3 -->
-
-            <div
-                class="university-card"
-                style="
-                    background-image:
-                    url('https://images.unsplash.com/photo-1592280771190-3e2e4d571952?auto=format&fit=crop&w=1200&q=85');
-                "
-            >
-
-                <div class="university-content">
-
-                    <div class="country">
-                        STUDY IN CANADA
-                    </div>
-
-                    <h2>
-                        University of Toronto
-                    </h2>
-
-                    <a href="#" class="explore-link">
-                        Explore university →
-                    </a>
-
-                </div>
-
-            </div>
-
-
-            <!-- UNIVERSITY 4 -->
-
-            <div
-                class="university-card"
-                style="
-                    background-image:
-                    url('https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=1200&q=85');
-                "
-            >
-
-                <div class="university-content">
-
-                    <div class="country">
-                        STUDY IN UNITED KINGDOM
-                    </div>
-
-                    <h2>
-                        University of Birmingham
-                    </h2>
-
-                    <a href="#" class="explore-link">
-                        Explore university →
-                    </a>
-
-                </div>
-
-            </div>
-
-
-            <!-- UNIVERSITY 5 -->
-
-            <div
-                class="university-card"
-                style="
-                    background-image:
-                    url('https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=1200&q=85');
-                "
-            >
-
-                <div class="university-content">
-
-                    <div class="country">
-                        STUDY IN NEW ZEALAND
-                    </div>
-
-                    <h2>
-                        University of Auckland
-                    </h2>
-
-                    <a href="#" class="explore-link">
-                        Explore university →
-                    </a>
-
-                </div>
-
-            </div>
-
-
-            <!-- UNIVERSITY 6 -->
-
-            <div
-                class="university-card"
-                style="
-                    background-image:
-                    url('https://images.unsplash.com/photo-1599458252573-56ae36120de1?auto=format&fit=crop&w=1200&q=85');
-                "
-            >
-
-                <div class="university-content">
-
-                    <div class="country">
-                        STUDY IN FINLAND
-                    </div>
-
-                    <h2>
-                        University of Helsinki
-                    </h2>
-
-                    <a href="#" class="explore-link">
-                        Explore university →
-                    </a>
-
-                </div>
-
-            </div>
-
-
-            <!-- UNIVERSITY 7 -->
-
-            <div
-                class="university-card"
-                style="
-                    background-image:
-                    url('https://images.unsplash.com/photo-1568792923760-d70635a89fdc?auto=format&fit=crop&w=1200&q=85');
-                "
-            >
-
-                <div class="university-content">
-
-                    <div class="country">
-                        STUDY IN FRANCE
-                    </div>
-
-                    <h2>
-                        Université Paris Cité
-                    </h2>
-
-                    <a href="#" class="explore-link">
-                        Explore university →
-                    </a>
-
-                </div>
-
-            </div>
-
-
-            <!-- UNIVERSITY 8 -->
-
-            <div
-                class="university-card"
-                style="
-                    background-image:
-                    url('https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=1200&q=85');
-                "
-            >
-
-                <div class="university-content">
-
-                    <div class="country">
-                        STUDY IN SINGAPORE
-                    </div>
-
-                    <h2>
-                        National University of Singapore
-                    </h2>
-
-                    <a href="#" class="explore-link">
-                        Explore university →
-                    </a>
-
-                </div>
-
-            </div>
-
-
-            <!-- UNIVERSITY 9 -->
-
-            <div
-                class="university-card"
-                style="
-                    background-image:
-                    url('https://images.unsplash.com/photo-1606761568499-6d2451b23c66?auto=format&fit=crop&w=1200&q=85');
-                "
-            >
-
-                <div class="university-content">
-
-                    <div class="country">
-                        STUDY IN USA
-                    </div>
-
-                    <h2>
-                        University of California
-                    </h2>
-
-                    <a href="#" class="explore-link">
-                        Explore university →
-                    </a>
-
-                </div>
-
-            </div>
+            @empty
+                <p style="grid-column: 1 / -1; text-align: center; color: #6b6d7c; padding: 40px 0;">
+                    New partner universities are coming soon.
+                </p>
+            @endforelse
 
         </div>
 

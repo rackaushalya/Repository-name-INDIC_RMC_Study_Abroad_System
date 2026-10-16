@@ -1113,12 +1113,12 @@
         <div class="section-heading">
 
             <h2>
-                Explore Popular Courses
+                Explore Available Courses
             </h2>
 
             <p>
-                Discover some of the most popular study areas chosen
-                by international students.
+                Browse the courses offered by our partner universities
+                around the world.
             </p>
 
         </div>
@@ -1126,314 +1126,77 @@
 
         <div class="courses-grid">
 
+            @php
+                // Pictures used at the top of each course card, picked by course.
+                $coursePhotos = [
+                    'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=1000&q=85',
+                    'https://images.unsplash.com/photo-1556761175-b413da4baf72?auto=format&fit=crop&w=1000&q=85',
+                    'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=1000&q=85',
+                    'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1000&q=85',
+                    'https://images.unsplash.com/photo-1561214115-f2f134cc4912?auto=format&fit=crop&w=1000&q=85',
+                    'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1000&q=85',
+                ];
+            @endphp
 
-            <!-- COMPUTER SCIENCE -->
+            @forelse ($courses as $course)
+                @php
+                    $photo = $course->university?->logo_url
+                        ?: $coursePhotos[$course->course_id % count($coursePhotos)];
 
-            <div class="course-card">
+                    $fee = $course->tuitionFees->sortByDesc('tuition_fee_id')->first();
+                    $feeLabel = null;
+                    if ($fee) {
+                        $amount = (float) $fee->amount;
+                        $feeLabel = trim($fee->currency . ' ' . number_format($amount, fmod($amount, 1) ? 2 : 0))
+                            . ($fee->fee_period && $fee->fee_period !== 'Other' ? ' / ' . strtolower($fee->fee_period) : '');
+                    }
+                @endphp
 
-                <div
-                    class="course-image"
-                    style="
-                        background-image:
-                        url('https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=1000&q=85');
-                    "
-                >
+                <div class="course-card">
 
-                    <div class="course-number">
-                        01 / TECHNOLOGY
+                    <div class="course-image" style="background-image: url('{{ $photo }}');">
+                        <div class="course-number">
+                            {{ str_pad($loop->iteration, 2, '0', STR_PAD_LEFT) }} / {{ strtoupper($course->field_of_study ?: $course->course_level) }}
+                        </div>
                     </div>
 
-                </div>
+                    <div class="course-content">
 
+                        <h3>
+                            {{ $course->course_name }}
+                        </h3>
 
-                <div class="course-content">
+                        <p>
+                            <strong>{{ $course->university?->university_name }}</strong>{{ $course->university?->country ? ', ' . $course->university->country->country_name : '' }}.
+                            {{ $course->description ? Str::limit($course->description, 120) : '' }}
+                        </p>
 
-                    <h3>
-                        Computer Science
-                    </h3>
+                        <div class="course-info">
 
-                    <p>
-                        Learn programming, software development,
-                        databases, artificial intelligence and modern
-                        computing.
-                    </p>
+                            <span class="info-pill">{{ $course->course_level }}</span>
 
-                    <div class="course-info">
+                            @if ($course->duration)
+                                <span class="info-pill">{{ $course->duration }}</span>
+                            @endif
 
-                        <span class="info-pill">
-                            Bachelor's
-                        </span>
+                            @if ($course->study_mode)
+                                <span class="info-pill">{{ $course->study_mode }}</span>
+                            @endif
 
-                        <span class="info-pill">
-                            3–4 Years
-                        </span>
+                            @if ($feeLabel)
+                                <span class="info-pill">{{ $feeLabel }}</span>
+                            @endif
 
-                        <span class="info-pill">
-                            IT
-                        </span>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <!-- BUSINESS -->
-
-            <div class="course-card">
-
-                <div
-                    class="course-image"
-                    style="
-                        background-image:
-                        url('https://images.unsplash.com/photo-1556761175-b413da4baf72?auto=format&fit=crop&w=1000&q=85');
-                    "
-                >
-
-                    <div class="course-number">
-                        02 / BUSINESS
-                    </div>
-
-                </div>
-
-
-                <div class="course-content">
-
-                    <h3>
-                        Business Management
-                    </h3>
-
-                    <p>
-                        Develop skills in management, marketing, finance,
-                        entrepreneurship and international business.
-                    </p>
-
-                    <div class="course-info">
-
-                        <span class="info-pill">
-                            Bachelor's
-                        </span>
-
-                        <span class="info-pill">
-                            3–4 Years
-                        </span>
-
-                        <span class="info-pill">
-                            Business
-                        </span>
+                        </div>
 
                     </div>
 
                 </div>
-
-            </div>
-
-
-            <!-- ENGINEERING -->
-
-            <div class="course-card">
-
-                <div
-                    class="course-image"
-                    style="
-                        background-image:
-                        url('https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=1000&q=85');
-                    "
-                >
-
-                    <div class="course-number">
-                        03 / ENGINEERING
-                    </div>
-
-                </div>
-
-
-                <div class="course-content">
-
-                    <h3>
-                        Engineering
-                    </h3>
-
-                    <p>
-                        Explore engineering disciplines including
-                        mechanical, civil, electrical and software
-                        engineering.
-                    </p>
-
-                    <div class="course-info">
-
-                        <span class="info-pill">
-                            Bachelor's
-                        </span>
-
-                        <span class="info-pill">
-                            3–4 Years
-                        </span>
-
-                        <span class="info-pill">
-                            Engineering
-                        </span>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <!-- HEALTH -->
-
-            <div class="course-card">
-
-                <div
-                    class="course-image"
-                    style="
-                        background-image:
-                        url('https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1000&q=85');
-                    "
-                >
-
-                    <div class="course-number">
-                        04 / HEALTH
-                    </div>
-
-                </div>
-
-
-                <div class="course-content">
-
-                    <h3>
-                        Health & Medicine
-                    </h3>
-
-                    <p>
-                        Explore academic pathways in healthcare,
-                        nursing, biomedical sciences and related fields.
-                    </p>
-
-                    <div class="course-info">
-
-                        <span class="info-pill">
-                            Undergraduate
-                        </span>
-
-                        <span class="info-pill">
-                            3–5 Years
-                        </span>
-
-                        <span class="info-pill">
-                            Health
-                        </span>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <!-- ARTS & DESIGN -->
-
-            <div class="course-card">
-
-                <div
-                    class="course-image"
-                    style="
-                        background-image:
-                        url('https://images.unsplash.com/photo-1561214115-f2f134cc4912?auto=format&fit=crop&w=1000&q=85');
-                    "
-                >
-
-                    <div class="course-number">
-                        05 / DESIGN
-                    </div>
-
-                </div>
-
-
-                <div class="course-content">
-
-                    <h3>
-                        Arts & Design
-                    </h3>
-
-                    <p>
-                        Build creative skills through architecture,
-                        interior design, graphic design and visual
-                        communication.
-                    </p>
-
-                    <div class="course-info">
-
-                        <span class="info-pill">
-                            Bachelor's
-                        </span>
-
-                        <span class="info-pill">
-                            3–4 Years
-                        </span>
-
-                        <span class="info-pill">
-                            Creative
-                        </span>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <!-- HOSPITALITY -->
-
-            <div class="course-card">
-
-                <div
-                    class="course-image"
-                    style="
-                        background-image:
-                        url('https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1000&q=85');
-                    "
-                >
-
-                    <div class="course-number">
-                        06 / HOSPITALITY
-                    </div>
-
-                </div>
-
-
-                <div class="course-content">
-
-                    <h3>
-                        Hospitality & Tourism
-                    </h3>
-
-                    <p>
-                        Prepare for careers in hotels, tourism, events,
-                        travel and international hospitality management.
-                    </p>
-
-                    <div class="course-info">
-
-                        <span class="info-pill">
-                            Bachelor's
-                        </span>
-
-                        <span class="info-pill">
-                            3–4 Years
-                        </span>
-
-                        <span class="info-pill">
-                            Tourism
-                        </span>
-
-                    </div>
-
-                </div>
-
-            </div>
+            @empty
+                <p style="grid-column: 1 / -1; text-align: center; color: #6b6d7c; padding: 40px 0;">
+                    New courses are coming soon.
+                </p>
+            @endforelse
 
         </div>
 
