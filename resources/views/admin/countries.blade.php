@@ -791,26 +791,39 @@
             .content { padding: 16px; }
             .form-grid { grid-template-columns: 1fr; }
         }
+
+        /* Database-backed page additions */
+        .badge-inactive { background: #f2f4f7; color: #475467; }
+        .form-errors { background: #fef2f2; border: 1px solid #fecaca; color: #b91c1c; border-radius: 8px; padding: 10px 14px; font-size: 12px; margin-bottom: 14px; }
+        .form-errors ul { margin: 4px 0 0 16px; padding: 0; }
+        .table-footer .portal-pager { width: 100%; }
+        .empty-state { text-align: center; padding: 40px; color: #8a93a3; font-size: 13px; }
     </style>
 @include('components.sidebar-style')
 </head>
 <body>
 
+@php
+    $allCountries = $countries->getCollection();
+    $totalCountries = $countries->total();
+    $countriesForJs = $allCountries->map(fn ($c) => [
+        'id' => $c->country_id,
+        'name' => $c->country_name,
+        'code' => $c->country_code,
+        'description' => $c->description,
+        'active' => (bool) $c->is_active,
+        'flag' => $c->flag_url,
+    ])->values();
+@endphp
+
 <div class="app">
 
-    <!-- =====================================================
-         SIDEBAR
-    ====================================================== -->
     @include('components.admin-sidebar')
 
-    <!-- =====================================================
-         MAIN CONTENT WRAPPER
-    ====================================================== -->
     <main class="main">
 
         <!-- TOPBAR -->
         <header class="topbar">
-
             <div class="search-box">
                 <span class="search-icon"><i class="bi bi-search"></i></span>
                 <input type="text" id="topbarSearchInput" placeholder="Search students, applications...">
@@ -821,11 +834,10 @@
                     {{ strtoupper(substr(auth()->user()->first_name ?? 'A', 0, 1)) }}
                 </div>
                 <div class="profile-info">
-                    <strong>{{ auth()->user()->first_name ?? 'Admin' }} {{ auth()->user()->last_name ?? 'User' }}</strong>
+                    <strong>{{ auth()->user()->first_name ?? 'Admin' }} {{ auth()->user()->last_name ?? '' }}</strong>
                     <span>Administrator</span>
                 </div>
             </div>
-
         </header>
 
         <!-- CONTENT SECTION -->
@@ -836,9 +848,9 @@
                 <div>
                     <h1>
                         Country Management
-                        <span class="title-badge" id="totalCountryBadge">12 Destinations</span>
+                        <span class="title-badge">{{ $totalCountries }} {{ Str::plural('Destination', $totalCountries) }}</span>
                     </h1>
-                    <p>Manage international study destinations, student visa rules, and living fund criteria.</p>
+                    <p>Manage the international study destinations stored in the system.</p>
                 </div>
             </div>
 
@@ -850,81 +862,150 @@
                             <circle cx="11" cy="11" r="7"/>
                             <path d="m20 20-4-4"/>
                         </svg>
-                        <input type="text" id="countrySearchInput" placeholder="Search by name, code, capital, or guidelines...">
+                        <input type="text" id="countrySearchInput" placeholder="Search by name, code or description...">
                     </div>
-
-                    <select id="regionFilterSelect" class="filter-select">
-                        <option value="ALL">Filter by Region</option>
-                        <option value="North America">North America</option>
-                        <option value="Europe">Europe</option>
-                        <option value="United Kingdom">United Kingdom</option>
-                        <option value="Oceania">Oceania</option>
-                        <option value="Asia-Pacific">Asia-Pacific</option>
-                        <option value="East Asia">East Asia</option>
-                    </select>
 
                     <select id="statusFilterSelect" class="filter-select">
                         <option value="ALL">Filter by Status</option>
                         <option value="Active">Active</option>
-                        <option value="Under Review">Under Review</option>
+                        <option value="Inactive">Inactive</option>
                     </select>
                 </div>
 
                 <div class="controls-right">
                     <div class="view-switcher">
-                        <button class="view-btn active" id="btnViewTable" onclick="switchView('table')">
+                        <button type="button" class="view-btn active" id="btnViewTable" onclick="switchView('table')">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg>
                             Table
                         </button>
-                        <button class="view-btn" id="btnViewCards" onclick="switchView('cards')">
+                        <button type="button" class="view-btn" id="btnViewCards" onclick="switchView('cards')">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
                             Cards
                         </button>
                     </div>
 
-                    <button class="btn-secondary" onclick="exportCSV()" title="Export destinations to CSV">
+                    <button type="button" class="btn-secondary" onclick="exportCSV()" title="Export the countries on this page to CSV">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                         Export CSV
                     </button>
 
-                    <button class="btn-orange" onclick="openAddModal()">
+                    <button type="button" class="btn-orange" onclick="openAddModal()">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                        + Add New Country
+                        Add New Country
                     </button>
                 </div>
             </div>
 
             <!-- CORE DATA CONTAINER -->
             <div class="card-container">
+
                 <!-- TABLE VIEW -->
                 <div class="table-responsive" id="tableViewContainer">
                     <table class="uni-table">
                         <thead>
                             <tr>
                                 <th style="width: 60px;">Flag</th>
-                                <th class="sortable" onclick="sortTable('name')">Country Name ↕</th>
-                                <th>ISO Code</th>
-                                <th class="sortable" onclick="sortTable('region')">Region ↕</th>
+                                <th>Country Name</th>
+                                <th>Code</th>
                                 <th>Status</th>
-                                <th style="min-width: 260px;">Visa Guidelines & Proof of Funds</th>
+                                <th style="min-width: 260px;">Description</th>
                                 <th style="text-align: right; width: 140px;">Actions</th>
                             </tr>
                         </thead>
                         <tbody id="countryTableBody">
-                            <!-- Populated dynamically -->
+                            @forelse ($allCountries as $country)
+                                <tr class="country-item"
+                                    data-search="{{ strtolower($country->country_name . ' ' . $country->country_code . ' ' . $country->description) }}"
+                                    data-status="{{ $country->is_active ? 'Active' : 'Inactive' }}">
+                                    <td>
+                                        <img data-flag-name="{{ $country->country_name }}" data-flag-code="{{ $country->country_code }}" data-flag-url="{{ $country->flag_url }}"
+                                             src="https://flagcdn.com/w80/un.png" alt="{{ $country->country_name }}" class="country-flag-lg">
+                                    </td>
+                                    <td>
+                                        <div class="country-name-text">{{ $country->country_name }}</div>
+                                        <div class="country-subtext">Added {{ optional($country->created_at)->format('d M Y') }}</div>
+                                    </td>
+                                    <td><span class="iso-badge">{{ $country->country_code ?: '—' }}</span></td>
+                                    <td>
+                                        <span class="badge-status {{ $country->is_active ? 'badge-active' : 'badge-inactive' }}">
+                                            {{ $country->is_active ? 'Active' : 'Inactive' }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="guidelines-summary" onclick="viewCountry({{ $country->country_id }})" title="Click to read the full description">
+                                            {{ $country->description ?: 'No description yet.' }}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="actions-cell">
+                                            <button type="button" class="btn-icon-action" onclick="viewCountry({{ $country->country_id }})" title="View details">
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                            </button>
+                                            <button type="button" class="btn-icon-action" onclick="openEditModal({{ $country->country_id }})" title="Edit country">
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                            </button>
+                                            @if ($country->is_active)
+                                                <button type="button" class="btn-icon-action delete" onclick="openDeleteModal({{ $country->country_id }})" title="Deactivate country">
+                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                                                </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr><td colspan="6" class="empty-state">No countries yet. Click <strong>Add New Country</strong> to create the first one.</td></tr>
+                            @endforelse
+                            <tr id="noMatchRow" style="display: none;"><td colspan="6" class="empty-state">No countries match your search or filter.</td></tr>
                         </tbody>
                     </table>
                 </div>
 
-                <!-- CARDS VIEW (Initially hidden) -->
+                <!-- CARDS VIEW -->
                 <div class="cards-grid" id="cardsViewContainer" style="display: none;">
-                    <!-- Populated dynamically -->
+                    @foreach ($allCountries as $country)
+                        <div class="country-card country-item"
+                             data-search="{{ strtolower($country->country_name . ' ' . $country->country_code . ' ' . $country->description) }}"
+                             data-status="{{ $country->is_active ? 'Active' : 'Inactive' }}"
+                             style="background:#fff; border:1px solid #e7e9ed; border-radius:10px; padding:16px;">
+                            <div style="display:flex; align-items:center; gap:12px; margin-bottom:10px;">
+                                <img data-flag-name="{{ $country->country_name }}" data-flag-code="{{ $country->country_code }}" data-flag-url="{{ $country->flag_url }}"
+                                     src="https://flagcdn.com/w80/un.png" alt="{{ $country->country_name }}" class="country-flag-lg">
+                                <div style="flex:1; min-width:0;">
+                                    <div class="country-name-text">{{ $country->country_name }}</div>
+                                    <span class="iso-badge">{{ $country->country_code ?: '—' }}</span>
+                                </div>
+                                <span class="badge-status {{ $country->is_active ? 'badge-active' : 'badge-inactive' }}">
+                                    {{ $country->is_active ? 'Active' : 'Inactive' }}
+                                </span>
+                            </div>
+                            <div class="guidelines-summary" onclick="viewCountry({{ $country->country_id }})">
+                                {{ $country->description ?: 'No description yet.' }}
+                            </div>
+                            <div class="actions-cell" style="margin-top:12px;">
+                                <button type="button" class="btn-icon-action" onclick="viewCountry({{ $country->country_id }})" title="View details">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                </button>
+                                <button type="button" class="btn-icon-action" onclick="openEditModal({{ $country->country_id }})" title="Edit country">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                </button>
+                                @if ($country->is_active)
+                                    <button type="button" class="btn-icon-action delete" onclick="openDeleteModal({{ $country->country_id }})" title="Deactivate country">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                                    </button>
+                                @endif
+                            </div>
+                        </div>
+                    @endforeach
                 </div>
 
                 <!-- TABLE FOOTER -->
                 <div class="table-footer">
-                    <div id="footerStatsText">Showing 12 destinations</div>
-                    <div>Click on any guideline excerpt to view complete embassy instructions.</div>
+                    @if ($countries->hasPages())
+                        {{ $countries->links('pagination.portal') }}
+                    @else
+                        <div>Showing {{ $totalCountries }} {{ Str::plural('destination', $totalCountries) }}</div>
+                        <div>Click a description to read it in full.</div>
+                    @endif
                 </div>
             </div>
 
@@ -933,126 +1014,86 @@
 </div>
 
 <!-- =====================================================
-     MODAL 1: ADD / EDIT COUNTRY
+     MODAL 1: ADD / EDIT COUNTRY (saves to the database)
 ====================================================== -->
 <div class="modal-backdrop" id="addEditModal">
     <div class="modal-window">
         <div class="modal-header">
             <div>
                 <h3 class="modal-title" id="addEditModalTitle">Add New Country</h3>
-                <div class="modal-subtitle">Configure an international destination for study abroad consultancies.</div>
+                <div class="modal-subtitle">Add a study destination to the system.</div>
             </div>
-            <button class="modal-close-btn" onclick="closeModal('addEditModal')">✕</button>
+            <button type="button" class="modal-close-btn" onclick="closeModal('addEditModal')">✕</button>
         </div>
-        <form id="countryForm" onsubmit="saveCountry(event)">
-            <input type="hidden" id="editCountryId">
+        <form id="countryForm" method="POST" action="{{ route('admin.countries.store') }}" enctype="multipart/form-data">
+            @csrf
+            <input type="hidden" name="_method" id="formMethod" value="POST">
+            <input type="hidden" name="edit_id" id="editCountryId" value="{{ old('edit_id') }}">
             <div class="modal-body">
+
+                @if ($errors->any())
+                    <div class="form-errors">
+                        Please fix the following:
+                        <ul>
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
+
                 <div class="form-grid">
                     <div class="form-group">
-                        <label class="form-label">Country Name *</label>
-                        <input type="text" id="countryNameInput" class="form-input" placeholder="e.g. Canada" required oninput="handleCountryNameInput(this.value)">
+                        <label class="form-label" for="countryNameInput">Country Name *</label>
+                        <input type="text" id="countryNameInput" name="country_name" class="form-input" placeholder="e.g. Canada"
+                               maxlength="100" required value="{{ old('country_name') }}" oninput="handleCountryNameInput(this.value)">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">ISO Alpha-3 Code *</label>
-                        <input type="text" id="countryCodeInput" class="form-input" placeholder="e.g. CAN" maxlength="3" required style="text-transform: uppercase;">
+                        <label class="form-label" for="countryCodeInput">Country Code *</label>
+                        <input type="text" id="countryCodeInput" name="country_code" class="form-input" placeholder="e.g. CAN"
+                               maxlength="10" required value="{{ old('country_code') }}" style="text-transform: uppercase;">
                     </div>
                 </div>
 
-                <!-- Desktop Country Image / Flag Upload Section (Identical to Universities) -->
+                <!-- FLAG UPLOAD -->
                 <div class="form-group" style="margin-bottom: 14px;">
-                    <div id="countryImageSection" style="background: #f9fafb; border: 1px dashed #d0d5dd; border-radius: 8px; padding: 10px 12px; transition: all 0.2s ease;">
+                    <div style="background: #f9fafb; border: 1px dashed #d0d5dd; border-radius: 8px; padding: 10px 12px;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                            <span style="font-size: 11px; font-weight: 600; color: #344054; display: flex; align-items: center; gap: 6px;">
-                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-                                    <circle cx="8.5" cy="8.5" r="1.5"/>
-                                    <polyline points="21 15 16 10 5 21"/>
-                                </svg>
-                                Country Flag / National Image
-                            </span>
-                            <span id="countryImgBadge" style="font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 4px; background: #e0f2fe; color: #0284c7;">
-                                Auto Flag
-                            </span>
+                            <span style="font-size: 11px; font-weight: 600; color: #344054;">Country Flag</span>
+                            <span id="flagBadge" style="font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 4px; background: #e0f2fe; color: #0284c7;">Automatic</span>
                         </div>
-
                         <div style="display: flex; align-items: center; gap: 12px;">
-                            <!-- Dropzone & Thumbnail Preview -->
-                            <div id="countryImgDropArea" class="country-img-dropzone" onclick="document.getElementById('countryImageFileInput').click()" title="Click to choose or drag & drop country image from desktop" style="cursor: pointer; position: relative; width: 64px; height: 42px; border-radius: 6px; overflow: hidden; border: 1px solid #d0d5dd; background: #ffffff; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">
-                                <img id="countryFlagPreviewImg" src="https://flagcdn.com/w80/un.png" alt="Country Preview" style="width: 100%; height: 100%; object-fit: cover;">
+                            <div onclick="document.getElementById('flagFileInput').click()" title="Choose a flag image"
+                                 style="cursor: pointer; width: 64px; height: 42px; border-radius: 6px; overflow: hidden; border: 1px solid #d0d5dd; background: #fff; flex-shrink: 0;">
+                                <img id="flagPreviewImg" src="https://flagcdn.com/w80/un.png" alt="Flag preview" style="width: 100%; height: 100%; object-fit: cover;">
                             </div>
-
-                            <!-- Upload Controls -->
                             <div style="flex: 1; min-width: 0;">
                                 <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-                                    <button type="button" class="btn-upload-logo" onclick="document.getElementById('countryImageFileInput').click()">
-                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                                            <polyline points="17 8 12 3 7 8"/>
-                                            <line x1="12" y1="3" x2="12" y2="15"/>
-                                        </svg>
-                                        Choose from Desktop
-                                    </button>
-                                    <button type="button" id="btnRemoveCountryImg" class="btn-remove-logo" style="display: none;" onclick="removeUploadedCountryImage(event)">
-                                        Reset to Auto Flag
-                                    </button>
+                                    <button type="button" class="btn-upload-logo" onclick="document.getElementById('flagFileInput').click()">Upload Flag Image</button>
+                                    <button type="button" id="btnUseAutoFlag" class="btn-remove-logo" style="display: none;" onclick="useAutomaticFlag()">Use Automatic Flag</button>
                                 </div>
                                 <div style="font-size: 11px; color: #697386; margin-top: 4px;">
-                                    Upload custom image or flag from desktop, or auto-detect from country name.
+                                    JPG, PNG, WEBP or GIF, up to 2 MB. Leave empty to pick a flag automatically from the country name.
                                 </div>
                             </div>
                         </div>
-                        <input type="file" id="countryImageFileInput" accept="image/*" style="display: none;" onchange="handleCountryImageFileSelect(event)">
-                    </div>
-                </div>
-
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label class="form-label">Capital City</label>
-                        <input type="text" id="capitalInput" class="form-input" placeholder="e.g. Ottawa">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Key Student Cities</label>
-                        <input type="text" id="citiesInput" class="form-input" placeholder="e.g. Toronto, Vancouver, Montreal">
-                    </div>
-                </div>
-
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label class="form-label">Region *</label>
-                        <select id="regionInput" class="form-select-modal" required>
-                            <option value="North America">North America</option>
-                            <option value="Europe">Europe</option>
-                            <option value="United Kingdom">United Kingdom</option>
-                            <option value="Oceania">Oceania</option>
-                            <option value="Asia-Pacific">Asia-Pacific</option>
-                            <option value="East Asia">East Asia</option>
-                            <option value="Middle East">Middle East</option>
-                            <option value="Latin America">Latin America</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Operational Status *</label>
-                        <select id="statusInput" class="form-select-modal" required>
-                            <option value="Active">Active</option>
-                            <option value="Under Review">Under Review</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label class="form-label">Visa Processing Time</label>
-                        <input type="text" id="procTimeInput" class="form-input" placeholder="e.g. 4 - 8 Weeks">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">Living Funds Required</label>
-                        <input type="text" id="fundsInput" class="form-input" placeholder="e.g. CAD $20,635 / yr">
+                        <input type="file" id="flagFileInput" name="flag_image" accept=".jpg,.jpeg,.png,.webp,.gif,image/jpeg,image/png,image/webp,image/gif" style="display: none;" onchange="handleFlagFileSelect(event)">
+                        <input type="hidden" name="remove_flag" id="removeFlagInput" value="0">
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Visa Guidelines & Embassy Rules *</label>
-                    <textarea id="guidelinesInput" class="form-textarea" placeholder="Detailed visa guidelines, proof of funds, and required test scores..." required></textarea>
+                    <label class="form-label" for="statusInput">Status *</label>
+                    <select id="statusInput" name="is_active" class="form-select-modal" required>
+                        <option value="1" @selected(old('is_active', '1') == '1')>Active</option>
+                        <option value="0" @selected(old('is_active') === '0')>Inactive</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="descriptionInput">Description</label>
+                    <textarea id="descriptionInput" name="description" class="form-textarea"
+                              placeholder="Visa rules, proof of funds, popular cities, or anything students should know...">{{ old('description') }}</textarea>
                 </div>
             </div>
             <div class="modal-footer">
@@ -1064,62 +1105,63 @@
 </div>
 
 <!-- =====================================================
-     MODAL 2: VIEW VISA GUIDELINES
+     MODAL 2: VIEW COUNTRY
 ====================================================== -->
-<div class="modal-backdrop" id="viewGuidelinesModal">
+<div class="modal-backdrop" id="viewCountryModal">
     <div class="modal-window" style="max-width: 600px;">
         <div class="modal-header">
             <div style="display: flex; align-items: center; gap: 12px;">
                 <img id="modalCountryFlag" src="" alt="Flag" style="width: 38px; height: 26px; border-radius: 4px; object-fit: cover; border: 1px solid #e4e7ec;">
                 <div>
-                    <h3 class="modal-title" id="guidelinesModalTitle">Visa Guidelines</h3>
-                    <div class="modal-subtitle" id="guidelinesModalSubtitle">Official embassy requirements & proof of funds.</div>
+                    <h3 class="modal-title" id="viewModalTitle">Country</h3>
+                    <div class="modal-subtitle" id="viewModalSubtitle"></div>
                 </div>
             </div>
-            <button class="modal-close-btn" onclick="closeModal('viewGuidelinesModal')">✕</button>
+            <button type="button" class="modal-close-btn" onclick="closeModal('viewCountryModal')">✕</button>
         </div>
         <div class="modal-body">
-            <div style="background: #fafbfc; border: 1px solid #e7e9ed; border-radius: 8px; padding: 14px 16px; margin-bottom: 16px;">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 12px;">
-                    <div><span style="color:#697386;">Estimated Processing:</span> <strong id="modalProcTime" style="color:#172033; display: block; margin-top: 2px;"></strong></div>
-                    <div><span style="color:#697386;">Funds Threshold:</span> <strong id="modalFunds" style="color:#172033; display: block; margin-top: 2px;"></strong></div>
-                </div>
-            </div>
-            <div style="font-size: 13px; line-height: 1.65; color: #344054; white-space: pre-line;" id="modalGuidelinesContent"></div>
+            <div style="font-size: 13px; line-height: 1.65; color: #344054; white-space: pre-line;" id="viewModalDescription"></div>
         </div>
         <div class="modal-footer">
-            <button type="button" class="btn-secondary" onclick="closeModal('viewGuidelinesModal')">Close</button>
+            <button type="button" class="btn-secondary" onclick="closeModal('viewCountryModal')">Close</button>
         </div>
     </div>
 </div>
 
 <!-- =====================================================
-     MODAL 3: DELETE CONFIRMATION
+     MODAL 3: DEACTIVATE CONFIRMATION
 ====================================================== -->
 <div class="modal-backdrop" id="deleteModal">
     <div class="modal-window" style="max-width: 420px; text-align: center;">
-        <div class="modal-body" style="padding-top: 28px;">
-            <div style="width: 48px; height: 48px; border-radius: 50%; background: #fef2f2; color: #dc2626; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; font-size: 22px;">⚠</div>
-            <h3 class="modal-title" style="margin-bottom: 8px;">Delete Country</h3>
-            <p style="font-size: 12px; color: #697386; line-height: 1.5;" id="deleteConfirmText">Are you sure you want to remove this country from the directory? This action cannot be undone.</p>
-        </div>
-        <div class="modal-footer" style="justify-content: center;">
-            <button type="button" class="btn-secondary" onclick="closeModal('deleteModal')">Cancel</button>
-            <button type="button" class="btn-danger" id="confirmDeleteBtn" onclick="confirmDelete()">Delete</button>
-        </div>
+        <form id="deleteForm" method="POST" action="">
+            @csrf
+            @method('DELETE')
+            <div class="modal-body" style="padding-top: 28px;">
+                <div style="width: 48px; height: 48px; border-radius: 50%; background: #fef2f2; color: #dc2626; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; font-size: 22px;">⚠</div>
+                <h3 class="modal-title" style="margin-bottom: 8px;">Deactivate Country</h3>
+                <p style="font-size: 12px; color: #697386; line-height: 1.5;" id="deleteConfirmText"></p>
+            </div>
+            <div class="modal-footer" style="justify-content: center;">
+                <button type="button" class="btn-secondary" onclick="closeModal('deleteModal')">Cancel</button>
+                <button type="submit" class="btn-danger">Deactivate</button>
+            </div>
+        </form>
     </div>
 </div>
 
 <!-- TOAST NOTIFICATION -->
 <div class="toast" id="toast">
-    <span id="toastMessage">Action completed successfully.</span>
+    <span id="toastMessage"></span>
 </div>
 
-<!-- =====================================================
-     INTERACTIVE CONTROLLER JAVASCRIPT
-====================================================== -->
 <script>
-    // 100+ Country ISO 2-letter mapping dictionary
+    // Countries on this page, straight from the database.
+    const countries = @json($countriesForJs);
+
+    const countriesBaseUrl = @json(url('admin/countries'));
+    const storeUrl = @json(route('admin.countries.store'));
+
+    // Country name -> 2-letter code, used only to show a flag picture.
     const countryIsoMap = {
         'afghanistan': 'af', 'albania': 'al', 'algeria': 'dz', 'andorra': 'ad', 'angola': 'ao',
         'argentina': 'ar', 'armenia': 'am', 'australia': 'au', 'austria': 'at', 'azerbaijan': 'az',
@@ -1146,181 +1188,15 @@
         'united states': 'us', 'usa': 'us', 'vietnam': 'vn', 'zimbabwe': 'zw'
     };
 
-    // Auto-suggest ISO Alpha-3 codes
+    // Suggested 3-letter codes while typing a name.
     const countryCodeMap = {
         'canada': 'CAN', 'united kingdom': 'GBR', 'uk': 'GBR', 'united states': 'USA', 'usa': 'USA',
         'australia': 'AUS', 'germany': 'DEU', 'ireland': 'IRL', 'new zealand': 'NZL', 'singapore': 'SGP',
         'france': 'FRA', 'netherlands': 'NLD', 'sweden': 'SWE', 'japan': 'JPN', 'italy': 'ITA',
         'spain': 'ESP', 'switzerland': 'CHE', 'china': 'CHN', 'south korea': 'KOR', 'malaysia': 'MYS',
-        'uae': 'ARE', 'united arab emirates': 'ARE', 'india': 'IND'
+        'uae': 'ARE', 'united arab emirates': 'ARE', 'india': 'IND', 'sri lanka': 'LKA'
     };
 
-    // Initial Countries Dataset (12 international destinations)
-    const initialCountries = [
-        {
-            id: "CTR-CAN-01",
-            code: "CAN",
-            name: "Canada",
-            capital: "Ottawa",
-            cities: "Toronto, Vancouver, Montreal",
-            region: "North America",
-            flag: "https://flagcdn.com/w80/ca.png",
-            visaGuidelines: "SDS stream for fast-track processing (20 days). Requires min IELTS 6.0 (CLB 7), upfront medical exam, and GIC financial proof of CAD $20,635. Post-Graduation Work Permit (PGWP) allows up to 3 years of work rights.",
-            processingTime: "4 - 8 Weeks",
-            fundsRequired: "CAD $20,635 + 1st yr tuition",
-            status: "Active"
-        },
-        {
-            id: "CTR-GBR-02",
-            code: "GBR",
-            name: "United Kingdom",
-            capital: "London",
-            cities: "London, Manchester, Edinburgh",
-            region: "United Kingdom",
-            flag: "https://flagcdn.com/w80/gb.png",
-            visaGuidelines: "Student Visa (Points-Based System: 70 points needed). CAS letter from licensed sponsor mandatory. Financial proof: £1,334/mo (London) or £1,023/mo (outside London) held for 28 consecutive days. Graduate Route offers 2-year post-study work visa.",
-            processingTime: "3 - 5 Weeks",
-            fundsRequired: "£9,207 - £12,006 living + tuition",
-            status: "Active"
-        },
-        {
-            id: "CTR-USA-03",
-            code: "USA",
-            name: "United States",
-            capital: "Washington, D.C.",
-            cities: "Boston, New York, San Francisco",
-            region: "North America",
-            flag: "https://flagcdn.com/w80/us.png",
-            visaGuidelines: "F-1 Academic Student Visa requires Form I-20 and SEVIS fee payment ($350). In-person embassy consular interview mandatory. STEM degree graduates eligible for up to 36 months of Optional Practical Training (OPT).",
-            processingTime: "4 - 6 Weeks",
-            fundsRequired: "1 full year estimated cost on I-20",
-            status: "Active"
-        },
-        {
-            id: "CTR-AUS-04",
-            code: "AUS",
-            name: "Australia",
-            capital: "Canberra",
-            cities: "Melbourne, Sydney, Brisbane",
-            region: "Oceania",
-            flag: "https://flagcdn.com/w80/au.png",
-            visaGuidelines: "Subclass 500 Student Visa. Genuine Student (GS) criterion applies. Financial requirement is AUD $29,710 for annual living costs. Overseas Student Health Cover (OSHC) mandatory. Temporary Graduate (Subclass 485) visa available.",
-            processingTime: "4 - 10 Weeks",
-            fundsRequired: "AUD $29,710 living + tuition",
-            status: "Active"
-        },
-        {
-            id: "CTR-DEU-05",
-            code: "DEU",
-            name: "Germany",
-            capital: "Berlin",
-            cities: "Munich, Berlin, Aachen",
-            region: "Europe",
-            flag: "https://flagcdn.com/w80/de.png",
-            visaGuidelines: "National Visa for Study (D-Visa). Blocked account (Sperrkonto) with €11,904/year required as living expense proof. Most public universities tuition-free. 18-month job seeker permit granted after graduation.",
-            processingTime: "6 - 12 Weeks",
-            fundsRequired: "€11,904 blocked account",
-            status: "Under Review"
-        },
-        {
-            id: "CTR-IRL-06",
-            code: "IRL",
-            name: "Ireland",
-            capital: "Dublin",
-            cities: "Dublin, Cork, Galway",
-            region: "Europe",
-            flag: "https://flagcdn.com/w80/ie.png",
-            visaGuidelines: "Stamp 2 Study Visa. Non-EEA students must demonstrate €10,000 immediately accessible funds plus evidence of €10,000 for each subsequent study year. Third Level Graduate Scheme allows 2-year post-study work for Master's graduates.",
-            processingTime: "5 - 8 Weeks",
-            fundsRequired: "€10,000 immediate access + tuition",
-            status: "Active"
-        },
-        {
-            id: "CTR-NZL-07",
-            code: "NZL",
-            name: "New Zealand",
-            capital: "Wellington",
-            cities: "Auckland, Christchurch",
-            region: "Oceania",
-            flag: "https://flagcdn.com/w80/nz.png",
-            visaGuidelines: "Fee Paying Student Visa. Requires NZD $20,000 per year living expenses plus prepaid tuition fee receipt. Post Study Work Visa available for degree level 7 and above for up to 3 years.",
-            processingTime: "4 - 8 Weeks",
-            fundsRequired: "NZD $20,000 living + tuition",
-            status: "Active"
-        },
-        {
-            id: "CTR-SGP-08",
-            code: "SGP",
-            name: "Singapore",
-            capital: "Singapore",
-            cities: "Singapore City",
-            region: "Asia-Pacific",
-            flag: "https://flagcdn.com/w80/sg.png",
-            visaGuidelines: "Student's Pass (STP) administered by ICA. Requires an In-Principle Approval (IPA) letter from accredited Institute of Higher Learning. Financial proof SGD $30,000 in bank deposit.",
-            processingTime: "2 - 4 Weeks",
-            fundsRequired: "SGD $30,000 bank proof",
-            status: "Active"
-        },
-        {
-            id: "CTR-FRA-09",
-            code: "FRA",
-            name: "France",
-            capital: "Paris",
-            cities: "Paris, Lyon, Toulouse",
-            region: "Europe",
-            flag: "https://flagcdn.com/w80/fr.png",
-            visaGuidelines: "Long-stay student visa (VLS-TS). Campus France procedure mandatory for EEF member countries. Proof of minimum €615/month living expenses. Post-study APS visa allows 1-year job search.",
-            processingTime: "3 - 6 Weeks",
-            fundsRequired: "€7,380 per academic year",
-            status: "Active"
-        },
-        {
-            id: "CTR-NLD-10",
-            code: "NLD",
-            name: "Netherlands",
-            capital: "Amsterdam",
-            cities: "Amsterdam, Rotterdam, Utrecht",
-            region: "Europe",
-            flag: "https://flagcdn.com/w80/nl.png",
-            visaGuidelines: "Entry visa (MVV) and Residence Permit (VVR) applied on student's behalf by Dutch university. IND requirement of approx €1,000/month living cost. 'Orientation Year' permits graduates 1 year work rights.",
-            processingTime: "4 - 6 Weeks",
-            fundsRequired: "€12,500 IND living proof",
-            status: "Active"
-        },
-        {
-            id: "CTR-SWE-11",
-            code: "SWE",
-            name: "Sweden",
-            capital: "Stockholm",
-            cities: "Stockholm, Gothenburg, Lund",
-            region: "Europe",
-            flag: "https://flagcdn.com/w80/se.png",
-            visaGuidelines: "Residence permit for higher education through Swedish Migration Agency. Financial maintenance minimum SEK 9,450/month. First tuition installment must be paid before permit issuance.",
-            processingTime: "6 - 10 Weeks",
-            fundsRequired: "SEK 94,500 for 10-month academic year",
-            status: "Active"
-        },
-        {
-            id: "CTR-JPN-12",
-            code: "JPN",
-            name: "Japan",
-            capital: "Tokyo",
-            cities: "Tokyo, Kyoto, Osaka",
-            region: "East Asia",
-            flag: "https://flagcdn.com/w80/jp.png",
-            visaGuidelines: "College Student Visa requires Certificate of Eligibility (COE) issued by Japanese Immigration. Financial proof of 2.0 - 2.5 million JPY. Permission to work part-time up to 28 hours/week.",
-            processingTime: "8 - 12 Weeks",
-            fundsRequired: "2.0 - 2.5 Million JPY bank statement",
-            status: "Active"
-        }
-    ];
-
-    let countries = [...initialCountries];
-    let activeSort = { column: 'name', ascending: true };
-    let deleteTargetId = null;
-    let currentCountryImageDataUrl = null;
-
-    // Resolve flag by country name or code
     function getCountryFlag(name = '', code = '') {
         const cleanName = (name || '').toLowerCase().trim();
         const cleanCode = (code || '').toLowerCase().trim();
@@ -1331,307 +1207,103 @@
         if (cleanCode.length === 2) {
             return 'https://flagcdn.com/w80/' + cleanCode + '.png';
         }
-        if (cleanCode.length === 3) {
-            for (const [n, iso] of Object.entries(countryIsoMap)) {
-                if (cleanName.includes(n) || n.includes(cleanName)) {
-                    return 'https://flagcdn.com/w80/' + iso + '.png';
-                }
+        for (const [n, iso] of Object.entries(countryIsoMap)) {
+            if (cleanName && (cleanName.includes(n) || n.includes(cleanName))) {
+                return 'https://flagcdn.com/w80/' + iso + '.png';
             }
         }
         return 'https://flagcdn.com/w80/un.png';
     }
 
-    // Handle Country image selected from desktop
-    function handleCountryImageFileSelect(event) {
+    // ---- Flag upload in the form ----
+     // ---- Flag upload in the form ----
+    let savedFlagUrl = null;   // flag already saved for the country being edited
+    let pickedFlagUrl = null;  // preview of a newly chosen file
+
+    function refreshFlagPreview() {
+        const name = document.getElementById('countryNameInput').value;
+        const code = document.getElementById('countryCodeInput').value;
+        const removing = document.getElementById('removeFlagInput').value === '1';
+        const custom = pickedFlagUrl || (!removing && savedFlagUrl);
+
+        document.getElementById('flagPreviewImg').src = custom || getCountryFlag(name, code);
+        document.getElementById('flagBadge').innerText = custom ? 'Uploaded' : 'Automatic';
+        document.getElementById('btnUseAutoFlag').style.display = custom ? 'inline-flex' : 'none';
+    }
+
+    function resetFlagInput(existingUrl) {
+        savedFlagUrl = existingUrl || null;
+        pickedFlagUrl = null;
+        document.getElementById('flagFileInput').value = '';
+        document.getElementById('removeFlagInput').value = '0';
+        refreshFlagPreview();
+    }
+
+    function handleFlagFileSelect(event) {
         const file = event.target.files && event.target.files[0];
         if (!file) return;
 
-        if (!file.type.startsWith('image/')) {
-            showToast('Please select a valid image file (PNG, JPG, SVG, WEBP).');
+        if (file.size > 2 * 1024 * 1024) {
+            event.target.value = '';
+            showToast('The flag image must be 2 MB or smaller.');
             return;
         }
 
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            currentCountryImageDataUrl = e.target.result;
-            updateCountryImagePreview();
-            showToast('Country image loaded from desktop!');
-        };
-        reader.readAsDataURL(file);
+        pickedFlagUrl = URL.createObjectURL(file);
+        document.getElementById('removeFlagInput').value = '0';
+        refreshFlagPreview();
     }
 
-    // Reset uploaded country image back to auto-detected flag
-    function removeUploadedCountryImage(event) {
-        if (event) event.stopPropagation();
-        currentCountryImageDataUrl = null;
-        const fileInput = document.getElementById('countryImageFileInput');
-        if (fileInput) fileInput.value = '';
-
-        updateCountryImagePreview();
-        showToast('Country image reset to auto flag.');
+    function useAutomaticFlag() {
+        pickedFlagUrl = null;
+        document.getElementById('flagFileInput').value = '';
+        document.getElementById('removeFlagInput').value = savedFlagUrl ? '1' : '0';
+        refreshFlagPreview();
     }
 
-    // Update Country Image preview & badge
-    function updateCountryImagePreview() {
-        const previewImg = document.getElementById('countryFlagPreviewImg');
-        const badge = document.getElementById('countryImgBadge');
-        const btnReset = document.getElementById('btnRemoveCountryImg');
-        if (!previewImg) return;
-
-        const countryName = document.getElementById('countryNameInput').value.trim();
-        const countryCode = document.getElementById('countryCodeInput').value.trim();
-
-        if (currentCountryImageDataUrl) {
-            previewImg.src = currentCountryImageDataUrl;
-            if (badge) {
-                badge.innerText = 'Custom Image';
-                badge.style.background = '#dcfce7';
-                badge.style.color = '#15803d';
-            }
-            if (btnReset) btnReset.style.display = 'inline-flex';
-        } else {
-            const flagUrl = getCountryFlag(countryName, countryCode);
-            previewImg.src = flagUrl;
-            if (badge) {
-                badge.innerText = 'Auto Flag';
-                badge.style.background = '#e0f2fe';
-                badge.style.color = '#0284c7';
-            }
-            if (btnReset) btnReset.style.display = 'none';
-        }
-    }
-
-    // Live typing in Country Name input
-    function handleCountryNameInput(val) {
-        const clean = (val || '').toLowerCase().trim();
+    function handleCountryNameInput(value) {
         const codeInput = document.getElementById('countryCodeInput');
-
-        // Auto-fill ISO code if empty
-        if (codeInput && !codeInput.value && countryCodeMap[clean]) {
-            codeInput.value = countryCodeMap[clean];
+        const suggestion = countryCodeMap[(value || '').toLowerCase().trim()];
+        if (suggestion && !codeInput.value) {
+            codeInput.value = suggestion;
         }
-
-        if (!currentCountryImageDataUrl) {
-            updateCountryImagePreview();
-        }
+        refreshFlagPreview();
     }
 
-    // Initialize
-    document.addEventListener('DOMContentLoaded', () => {
-        renderTable();
-        renderCards();
-
-        // Search listener
-        document.getElementById('countrySearchInput').addEventListener('input', applyFilters);
-        document.getElementById('topbarSearchInput').addEventListener('input', (e) => {
-            document.getElementById('countrySearchInput').value = e.target.value;
-            applyFilters();
-        });
-
-        // Filter listeners
-        document.getElementById('regionFilterSelect').addEventListener('change', applyFilters);
-        document.getElementById('statusFilterSelect').addEventListener('change', applyFilters);
-
-        // Drag & Drop for Country Image Dropzone
-        const dropArea = document.getElementById('countryImgDropArea');
-        if (dropArea) {
-            ['dragenter', 'dragover'].forEach(eventName => {
-                dropArea.addEventListener(eventName, (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    dropArea.classList.add('dragover');
-                }, false);
-            });
-
-            ['dragleave', 'drop'].forEach(eventName => {
-                dropArea.addEventListener(eventName, (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    dropArea.classList.remove('dragover');
-                }, false);
-            });
-
-            dropArea.addEventListener('drop', (e) => {
-                const dt = e.dataTransfer;
-                const files = dt.files;
-                if (files && files.length > 0) {
-                    const file = files[0];
-                    if (file.type.startsWith('image/')) {
-                        const reader = new FileReader();
-                        reader.onload = function(evt) {
-                            currentCountryImageDataUrl = evt.target.result;
-                            updateCountryImagePreview();
-                            showToast('Country image dropped from desktop!');
-                        };
-                        reader.readAsDataURL(file);
-                    } else {
-                        showToast('Please drop a valid image file.');
-                    }
-                }
-            }, false);
-        }
-    });
-
-    // Render Table
-    function renderTable(data = countries) {
-        const tbody = document.getElementById('countryTableBody');
-        tbody.innerHTML = '';
-
-        if (data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: #8a93a3;">No countries match your search or filter criteria.</td></tr>';
-            return;
-        }
-
-        data.forEach(c => {
-            const tr = document.createElement('tr');
-            const statusClass = c.status === 'Active' ? 'badge-status badge-active' : 'badge-status badge-review';
-            tr.innerHTML = `
-                <td>
-                    <img src="${c.flag}" alt="${c.name}" class="country-flag-lg">
-                </td>
-                <td>
-                    <div class="country-name-text">${c.name}</div>
-                    <div class="country-subtext">${c.capital ? 'Capital: ' + c.capital : c.cities || ''}</div>
-                </td>
-                <td>
-                    <span class="iso-badge">${c.code}</span>
-                </td>
-                <td>${c.region}</td>
-                <td>
-                    <span class="${statusClass}">${c.status}</span>
-                </td>
-                <td>
-                    <div class="guidelines-summary" onclick="viewGuidelines('${c.id}')" title="Click to view full embassy guidelines">
-                        ${c.visaGuidelines}
-                    </div>
-                </td>
-                <td>
-                    <div class="actions-cell">
-                        <button class="btn-icon-action" onclick="viewGuidelines('${c.id}')" title="View Visa Guidelines">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                        </button>
-                        <button class="btn-icon-action" onclick="openEditModal('${c.id}')" title="Edit country">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                        </button>
-                        <button class="btn-icon-action delete" onclick="openDeleteModal('${c.id}')" title="Delete country">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                        </button>
-                    </div>
-                </td>
-            `;
-            tbody.appendChild(tr);
-        });
-
-        updateStats(data.length);
+    function findCountry(id) {
+        return countries.find(c => c.id === id);
     }
 
-    // Render Cards
-    function renderCards(data = countries) {
-        const container = document.getElementById('cardsViewContainer');
-        container.innerHTML = '';
-
-        data.forEach(c => {
-            const card = document.createElement('div');
-            card.className = 'uni-grid-card';
-            const statusClass = c.status === 'Active' ? 'badge-status badge-active' : 'badge-status badge-review';
-            card.innerHTML = `
-                <div class="card-top">
-                    <img src="${c.flag}" class="country-flag-lg" alt="${c.name}">
-                    <div style="flex: 1;">
-                        <div class="country-name-text">${c.name}</div>
-                        <span class="iso-badge" style="margin-top: 3px;">${c.code}</span>
-                    </div>
-                    <span class="${statusClass}">${c.status}</span>
-                </div>
-                <div style="font-size: 11px; color: #4b5565;">
-                    <div><strong>Region:</strong> ${c.region}</div>
-                    <div style="margin-top: 3px;"><strong>Processing:</strong> ${c.processingTime || 'N/A'}</div>
-                    <div style="margin-top: 3px;"><strong>Funds:</strong> ${c.fundsRequired || 'N/A'}</div>
-                </div>
-                <div class="guidelines-summary" onclick="viewGuidelines('${c.id}')" style="margin-top: 4px;" title="Click to view full embassy guidelines">
-                    ${c.visaGuidelines}
-                </div>
-                <div class="card-actions">
-                    <button class="btn-icon-action" onclick="viewGuidelines('${c.id}')" title="View Visa Guidelines"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
-                    <button class="btn-icon-action" onclick="openEditModal('${c.id}')" title="Edit country"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
-                    <button class="btn-icon-action delete" onclick="openDeleteModal('${c.id}')" title="Delete country"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
-                </div>
-            `;
-            container.appendChild(card);
-        });
-    }
-
-    // Apply Filter & Search
+    // Search and status filter
     function applyFilters() {
         const query = document.getElementById('countrySearchInput').value.toLowerCase().trim();
-        const selectedRegion = document.getElementById('regionFilterSelect').value;
-        const selectedStatus = document.getElementById('statusFilterSelect').value;
+        const status = document.getElementById('statusFilterSelect').value;
+        let visibleRows = 0;
 
-        const filtered = countries.filter(c => {
-            const matchesQuery = !query ||
-                c.name.toLowerCase().includes(query) ||
-                c.code.toLowerCase().includes(query) ||
-                (c.visaGuidelines && c.visaGuidelines.toLowerCase().includes(query)) ||
-                (c.capital && c.capital.toLowerCase().includes(query)) ||
-                (c.cities && c.cities.toLowerCase().includes(query));
-
-            const matchesRegion = selectedRegion === 'ALL' || c.region === selectedRegion;
-            const matchesStatus = selectedStatus === 'ALL' || c.status === selectedStatus;
-
-            return matchesQuery && matchesRegion && matchesStatus;
+        document.querySelectorAll('.country-item').forEach(el => {
+            const matches = (!query || el.dataset.search.includes(query))
+                && (status === 'ALL' || el.dataset.status === status);
+            el.style.display = matches ? '' : 'none';
+            if (matches && el.tagName === 'TR') visibleRows++;
         });
 
-        renderTable(filtered);
-        renderCards(filtered);
+        document.getElementById('noMatchRow').style.display =
+            countries.length > 0 && visibleRows === 0 ? '' : 'none';
     }
 
-    // Sort Table
-    function sortTable(column) {
-        if (activeSort.column === column) {
-            activeSort.ascending = !activeSort.ascending;
-        } else {
-            activeSort.column = column;
-            activeSort.ascending = true;
-        }
-
-        countries.sort((a, b) => {
-            let valA = (a[column] || '').toLowerCase();
-            let valB = (b[column] || '').toLowerCase();
-
-            if (valA < valB) return activeSort.ascending ? -1 : 1;
-            if (valA > valB) return activeSort.ascending ? 1 : -1;
-            return 0;
-        });
-
-        applyFilters();
-    }
-
-    // Switch View
     function switchView(mode) {
-        const tableContainer = document.getElementById('tableViewContainer');
-        const cardsContainer = document.getElementById('cardsViewContainer');
-        const btnTable = document.getElementById('btnViewTable');
-        const btnCards = document.getElementById('btnViewCards');
-
-        if (mode === 'table') {
-            tableContainer.style.display = 'block';
-            cardsContainer.style.display = 'none';
-            btnTable.classList.add('active');
-            btnCards.classList.remove('active');
-        } else {
-            tableContainer.style.display = 'none';
-            cardsContainer.style.display = 'grid';
-            btnTable.classList.remove('active');
-            btnCards.classList.add('active');
-        }
+        const isTable = mode === 'table';
+        document.getElementById('tableViewContainer').style.display = isTable ? 'block' : 'none';
+        document.getElementById('cardsViewContainer').style.display = isTable ? 'none' : 'grid';
+        document.getElementById('btnViewTable').classList.toggle('active', isTable);
+        document.getElementById('btnViewCards').classList.toggle('active', !isTable);
     }
 
-    // Export CSV
     function exportCSV() {
-        let csv = 'Country Name,ISO Code,Region,Status,Processing Time,Funds Required,Visa Guidelines\n';
+        const q = v => '"' + String(v ?? '').replace(/"/g, '""') + '"';
+        let csv = 'Country Name,Code,Status,Description\n';
         countries.forEach(c => {
-            const safeGuidelines = (c.visaGuidelines || '').replace(/"/g, '""');
-            csv += `"${c.name}","${c.code}","${c.region}","${c.status}","${c.processingTime || ''}","${c.fundsRequired || ''}","${safeGuidelines}"\n`;
+            csv += [q(c.name), q(c.code), q(c.active ? 'Active' : 'Inactive'), q(c.description)].join(',') + '\n';
         });
 
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -1639,136 +1311,72 @@
         link.href = URL.createObjectURL(blob);
         link.download = `INDIC_RMC_Countries_${new Date().toISOString().split('T')[0]}.csv`;
         link.click();
-        showToast('Exported countries list to CSV.');
+        showToast('Exported countries to CSV.');
     }
 
-    // View Guidelines Modal
-    function viewGuidelines(id) {
-        const c = countries.find(item => item.id === id);
+    function viewCountry(id) {
+        const c = findCountry(id);
         if (!c) return;
 
-        document.getElementById('modalCountryFlag').src = c.flag;
-        document.getElementById('guidelinesModalTitle').innerText = `${c.name} - Visa Guidelines`;
-        document.getElementById('guidelinesModalSubtitle').innerText = `Region: ${c.region} • ISO Alpha-3: ${c.code}`;
-        document.getElementById('modalProcTime').innerText = c.processingTime || 'Standard 4 - 8 Weeks';
-        document.getElementById('modalFunds').innerText = c.fundsRequired || 'Tuition + Living Expenses';
-        document.getElementById('modalGuidelinesContent').innerText = c.visaGuidelines;
-
-        openModal('viewGuidelinesModal');
+        document.getElementById('modalCountryFlag').src = c.flag || getCountryFlag(c.name, c.code);
+        document.getElementById('viewModalTitle').innerText = c.name;
+        document.getElementById('viewModalSubtitle').innerText =
+            `Code: ${c.code || '—'} • ${c.active ? 'Active' : 'Inactive'}`;
+        document.getElementById('viewModalDescription').innerText = c.description || 'No description yet.';
+        openModal('viewCountryModal');
     }
 
-    // Add Country
+    function clearFormErrors() {
+        const box = document.querySelector('#countryForm .form-errors');
+        if (box) box.remove();
+    }
+
     function openAddModal() {
-        document.getElementById('countryForm').reset();
+        clearFormErrors();
+        const form = document.getElementById('countryForm');
+        form.action = storeUrl;
+        document.getElementById('formMethod').value = 'POST';
         document.getElementById('editCountryId').value = '';
-        currentCountryImageDataUrl = null;
-        const fileInput = document.getElementById('countryImageFileInput');
-        if (fileInput) fileInput.value = '';
-
+        document.getElementById('countryNameInput').value = '';
+        document.getElementById('countryCodeInput').value = '';
+        document.getElementById('statusInput').value = '1';
+        document.getElementById('descriptionInput').value = '';
+        resetFlagInput(null);
         document.getElementById('addEditModalTitle').innerText = 'Add New Country';
-        updateCountryImagePreview();
         openModal('addEditModal');
     }
 
-    // Edit Country
     function openEditModal(id) {
-        const c = countries.find(item => item.id === id);
+        const c = findCountry(id);
         if (!c) return;
 
-        document.getElementById('editCountryId').value = c.id;
+        clearFormErrors();
+        setFormForEdit(id);
         document.getElementById('countryNameInput').value = c.name;
-        document.getElementById('countryCodeInput').value = c.code;
-        document.getElementById('capitalInput').value = c.capital || '';
-        document.getElementById('citiesInput').value = c.cities || '';
-        document.getElementById('regionInput').value = c.region;
-        document.getElementById('statusInput').value = c.status;
-        document.getElementById('procTimeInput').value = c.processingTime || '';
-        document.getElementById('fundsInput').value = c.fundsRequired || '';
-        document.getElementById('guidelinesInput').value = c.visaGuidelines || '';
-
-        // If country has custom image (e.g. data URL or custom upload)
-        if (c.flag && c.flag.startsWith('data:image')) {
-            currentCountryImageDataUrl = c.flag;
-        } else {
-            currentCountryImageDataUrl = null;
-        }
-
-        const fileInput = document.getElementById('countryImageFileInput');
-        if (fileInput) fileInput.value = '';
-
-        document.getElementById('addEditModalTitle').innerText = 'Edit Country Details';
-        updateCountryImagePreview();
+        document.getElementById('countryCodeInput').value = c.code || '';
+        document.getElementById('statusInput').value = c.active ? '1' : '0';
+        document.getElementById('descriptionInput').value = c.description || '';
+        resetFlagInput(c.flag);
         openModal('addEditModal');
     }
 
-    // Save Country
-    function saveCountry(e) {
-        e.preventDefault();
-        const editId = document.getElementById('editCountryId').value;
-        const name = document.getElementById('countryNameInput').value.trim();
-        const code = document.getElementById('countryCodeInput').value.trim().toUpperCase();
-        const capital = document.getElementById('capitalInput').value.trim();
-        const cities = document.getElementById('citiesInput').value.trim();
-        const region = document.getElementById('regionInput').value;
-        const status = document.getElementById('statusInput').value;
-        const processingTime = document.getElementById('procTimeInput').value.trim();
-        const fundsRequired = document.getElementById('fundsInput').value.trim();
-        const visaGuidelines = document.getElementById('guidelinesInput').value.trim();
-
-        // Determine flag image: custom desktop uploaded image or auto flag
-        const flag = currentCountryImageDataUrl || getCountryFlag(name, code);
-
-        if (editId) {
-            const index = countries.findIndex(item => item.id === editId);
-            if (index !== -1) {
-                countries[index] = {
-                    ...countries[index],
-                    name, code, capital, cities, region, status, processingTime, fundsRequired, visaGuidelines, flag
-                };
-                showToast('Country details updated successfully!');
-            }
-        } else {
-            const newId = 'CTR-' + code + '-' + String(countries.length + 1).padStart(2, '0');
-            countries.unshift({
-                id: newId,
-                code,
-                name,
-                capital,
-                cities,
-                region,
-                status,
-                processingTime,
-                fundsRequired,
-                visaGuidelines,
-                flag
-            });
-            showToast('New destination added successfully!');
-        }
-
-        closeModal('addEditModal');
-        applyFilters();
+    function setFormForEdit(id) {
+        document.getElementById('countryForm').action = countriesBaseUrl + '/' + id;
+        document.getElementById('formMethod').value = 'PUT';
+        document.getElementById('editCountryId').value = id;
+        document.getElementById('addEditModalTitle').innerText = 'Edit Country';
     }
 
-    // Delete Modal
     function openDeleteModal(id) {
-        deleteTargetId = id;
-        const c = countries.find(item => item.id === id);
-        if (c) {
-            document.getElementById('deleteConfirmText').innerText = `Are you sure you want to remove "${c.name}" (${c.code}) from the directory? This action cannot be undone.`;
-        }
+        const c = findCountry(id);
+        if (!c) return;
+
+        document.getElementById('deleteForm').action = countriesBaseUrl + '/' + id;
+        document.getElementById('deleteConfirmText').innerText =
+            `"${c.name}" will be marked as inactive. You can switch it back to Active later with Edit.`;
         openModal('deleteModal');
     }
 
-    function confirmDelete() {
-        if (!deleteTargetId) return;
-        countries = countries.filter(item => item.id !== deleteTargetId);
-        deleteTargetId = null;
-        closeModal('deleteModal');
-        applyFilters();
-        showToast('Country removed from directory.');
-    }
-
-    // Modal Helpers
     function openModal(id) {
         document.getElementById(id).classList.add('open');
     }
@@ -1777,22 +1385,37 @@
         document.getElementById(id).classList.remove('open');
     }
 
-    // Toast
     function showToast(msg) {
         const toast = document.getElementById('toast');
         document.getElementById('toastMessage').innerText = msg;
         toast.style.display = 'flex';
-        setTimeout(() => {
-            toast.style.display = 'none';
-        }, 3200);
+        setTimeout(() => { toast.style.display = 'none'; }, 3200);
     }
 
-    // Update Counts & Stats
-    function updateStats(count) {
-        document.getElementById('totalCountryBadge').innerText = `${count} Destinations`;
-        document.getElementById('navCountryCountBadge').innerText = count;
-        document.getElementById('footerStatsText').innerText = `Showing ${count} destinations`;
-    }
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('img[data-flag-name]').forEach(img => {
+            img.src = img.dataset.flagUrl || getCountryFlag(img.dataset.flagName, img.dataset.flagCode);
+        });
+
+        document.getElementById('countrySearchInput').addEventListener('input', applyFilters);
+        document.getElementById('statusFilterSelect').addEventListener('change', applyFilters);
+        document.getElementById('countryCodeInput').addEventListener('input', refreshFlagPreview);
+
+        @if (session('success'))
+            showToast(@json(session('success')));
+        @endif
+
+        // If saving failed validation, reopen the form with what was typed.
+        @if ($errors->any())
+            @if (old('edit_id'))
+                setFormForEdit({{ (int) old('edit_id') }});
+                resetFlagInput((findCountry({{ (int) old('edit_id') }}) || {}).flag);
+            @else
+                resetFlagInput(null);
+            @endif
+            openModal('addEditModal');
+        @endif
+    });
 </script>
 
 </body>
