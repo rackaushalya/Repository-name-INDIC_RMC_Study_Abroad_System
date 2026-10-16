@@ -1273,7 +1273,7 @@
         return countries.find(c => c.id === id);
     }
 
-    // Search and status filter (applies to the countries shown on this page)
+    // Search and status filter
     function applyFilters() {
         const query = document.getElementById('countrySearchInput').value.toLowerCase().trim();
         const status = document.getElementById('statusFilterSelect').value;
