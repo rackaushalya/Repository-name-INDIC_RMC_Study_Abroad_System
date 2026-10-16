@@ -7,10 +7,23 @@ use App\Models\Country;
 use App\Models\Lead;
 use Illuminate\Http\Request;
 
+/**
+ * The "Lead Management" feature — the very first step of the CRM
+ * workflow. A Lead is someone who showed interest (via the website,
+ * a call, a walk-in, etc.) but hasn't become a full Student/Inquiry
+ * yet. This controller is a standard CRUD controller: Create, Read,
+ * Update, Delete — the 5 methods below map directly to those actions.
+ */
 class LeadController extends Controller
 {
     /**
-     * Display all leads.
+     * INDEX = list page. Shows every lead in a table.
+     *
+     * with(['interestedCountry', 'assignedConsultant.user']) eager
+     * loads the related Country and Consultant (and that consultant's
+     * User record, for their name) in the SAME query batch, instead of
+     * running one extra query per row — this avoids the classic
+     * "N+1 query" performance problem.
      */
     public function index()
     {
@@ -18,8 +31,8 @@ class LeadController extends Controller
             'interestedCountry',
             'assignedConsultant.user'
         ])
-            ->latest('lead_id')
-            ->paginate(20);
+            ->latest('lead_id') // newest leads first
+            ->paginate(20);     // 20 rows per page
 
         return view(
             'admin.leads.index',
@@ -28,7 +41,11 @@ class LeadController extends Controller
     }
 
     /**
-     * Show create lead form.
+     * CREATE = show the blank "Add Lead" form.
+     *
+     * Only active consultants and active countries are offered in the
+     * dropdowns, so you can't accidentally assign a lead to someone
+     * who's no longer working or a country that's been disabled.
      */
     public function create()
     {
@@ -51,7 +68,13 @@ class LeadController extends Controller
     }
 
     /**
-     * Store a new lead.
+     * STORE = handle the "Add Lead" form submission.
+     *
+     * validate() checks every field against the rules below BEFORE
+     * anything is saved. If any rule fails, Laravel automatically
+     * sends the admin back to the form with the error messages — the
+     * code after validate() only runs once all the data is confirmed
+     * clean.
      */
     public function store(Request $request)
     {
@@ -67,8 +90,8 @@ class LeadController extends Controller
                 'max:100'
             ],
             'email' => [
-                'nullable',
-                'email',
+                'nullable',       // optional
+                'email',          // but must be a valid email format if given
                 'max:255'
             ],
             'phone' => [
@@ -84,7 +107,7 @@ class LeadController extends Controller
             'interested_country_id' => [
                 'nullable',
                 'integer',
-                'exists:countries,country_id'
+                'exists:countries,country_id' // must be a real country row
             ],
             'interested_course' => [
                 'nullable',
@@ -93,6 +116,8 @@ class LeadController extends Controller
             ],
             'lead_status' => [
                 'required',
+                // the only 5 allowed values — matches the database's
+                // ENUM column definition exactly
                 'in:New,Contacted,Qualified,Converted,Lost'
             ],
             'assigned_consultant_id' => [
@@ -106,6 +131,10 @@ class LeadController extends Controller
             ],
         ]);
 
+        // $validated only contains the fields above — this is safer
+        // than Lead::create($request->all()), which would blindly
+        // trust every field the browser sent, including ones we
+        // never asked for.
         Lead::create($validated);
 
         return redirect()
@@ -117,13 +146,21 @@ class LeadController extends Controller
     }
 
     /**
-     * Display a lead.
+     * SHOW = view a single lead's full details.
+     *
+     * Laravel turns the {lead} segment of the URL (e.g.
+     * /admin/leads/7) straight into a Lead model automatically —
+     * this is called route model binding, so there's no manual
+     * Lead::find($id) needed here.
      */
     public function show(Lead $lead)
     {
         $lead->load([
             'interestedCountry',
-            'assignedConsultant.user'
+            'assignedConsultant.user',
+            // Needed so the detail page can show this lead's full
+            // communication log underneath its main details.
+            'communicationHistory.sender'
         ]);
 
         return view(
@@ -133,7 +170,7 @@ class LeadController extends Controller
     }
 
     /**
-     * Show edit lead form.
+     * EDIT = show the pre-filled "Edit Lead" form for one lead.
      */
     public function edit(Lead $lead)
     {
@@ -157,7 +194,9 @@ class LeadController extends Controller
     }
 
     /**
-     * Update a lead.
+     * UPDATE = handle the "Edit Lead" form submission.
+     * Same validation rules as store() above, but applied to an
+     * existing row instead of creating a new one.
      */
     public function update(
         Request $request,
@@ -225,7 +264,7 @@ class LeadController extends Controller
     }
 
     /**
-     * Delete a lead.
+     * DESTROY = delete a lead permanently.
      */
     public function destroy(Lead $lead)
     {

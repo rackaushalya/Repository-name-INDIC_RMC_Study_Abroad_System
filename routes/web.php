@@ -28,6 +28,11 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\DestinationController;
 use App\Http\Controllers\AdmissionRoadmapController;
 use App\Http\Controllers\ApplicationJourneyController;
+use App\Http\Controllers\CommunicationHistoryController;
+use App\Http\Controllers\CrmDashboardController;
+use App\Http\Controllers\CrmAnalyticsController;
+use App\Http\Controllers\CrmKpiController;
+use App\Http\Controllers\CrmNotificationController;
 
 
 /*
@@ -788,6 +793,82 @@ Route::middleware(['auth', 'role:Admin,SuperAdmin'])
             'show',
             'destroy'
         ]);
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Communication History / CRM
+        |--------------------------------------------------------------------------
+        */
+
+        Route::resource(
+            'communication-history',
+            CommunicationHistoryController::class
+        )->only([
+            'index',
+            'create',
+            'store',
+            'destroy'
+        ]);
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | CRM Dashboard
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get(
+            '/crm-dashboard',
+            [CrmDashboardController::class, 'index']
+        )->name('crm-dashboard');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Analytics Dashboard / CRM
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get(
+            '/analytics',
+            [CrmAnalyticsController::class, 'index']
+        )->name('analytics');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | KPI Reports / CRM
+        |--------------------------------------------------------------------------
+        */
+
+        Route::get(
+            '/kpi-reports',
+            [CrmKpiController::class, 'index']
+        )->name('kpi-reports');
+
+        Route::get(
+            '/kpi-reports/export',
+            [CrmKpiController::class, 'exportPdf']
+        )->name('kpi-reports.export');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Email Notifications / CRM
+        |--------------------------------------------------------------------------
+        */
+
+        Route::resource(
+            'notifications',
+            CrmNotificationController::class
+        )->only([
+            'index',
+            'create',
+            'store',
+            'destroy'
+        ]);
+
 
         /*
         |--------------------------------------------------------------------------

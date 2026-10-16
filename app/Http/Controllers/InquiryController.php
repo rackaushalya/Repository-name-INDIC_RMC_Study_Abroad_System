@@ -9,10 +9,20 @@ use App\Models\Student;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
+/**
+ * The "Inquiry Management" feature — the step after Lead Management.
+ * An Inquiry is a specific question/message tied to either a Lead
+ * (someone not yet a student) or a Student (someone already
+ * registered). Also a standard CRUD controller, plus one extra
+ * method (publicStore) for the public-facing contact form.
+ */
 class InquiryController extends Controller
 {
     /**
-     * Display all inquiries.
+     * INDEX = list page. Shows every inquiry, with its related Lead,
+     * Student (and that student's User, for their name), and assigned
+     * Consultant all loaded up front (eager loading) so the table can
+     * display names without extra per-row queries.
      */
     public function index()
     {
@@ -31,7 +41,10 @@ class InquiryController extends Controller
     }
 
     /**
-     * Show create inquiry form.
+     * CREATE = show the blank "Add Inquiry" form.
+     * Offers every lead, every student, and only active consultants
+     * as options, since an inquiry can be linked to a lead OR a
+     * student (see the check in store() below).
      */
     public function create()
     {
@@ -57,7 +70,7 @@ class InquiryController extends Controller
     }
 
     /**
-     * Store a new inquiry.
+     * STORE = handle the "Add Inquiry" form submission.
      */
     public function store(Request $request)
     {
@@ -92,6 +105,11 @@ class InquiryController extends Controller
             ],
         ]);
 
+        // Business rule that the database alone can't enforce:
+        // every inquiry must be tied to SOMEONE — either a lead or
+        // an already-registered student. If both are empty, reject
+        // the form and send the admin back with an explanation,
+        // keeping whatever they'd already typed (withInput()).
         if (
             empty($validated['lead_id']) &&
             empty($validated['student_id'])
@@ -115,14 +133,17 @@ class InquiryController extends Controller
     }
 
     /**
-     * Display an inquiry.
+     * SHOW = view a single inquiry's full details.
      */
     public function show(Inquiry $inquiry)
     {
         $inquiry->load([
             'lead',
             'student.user',
-            'assignedConsultant.user'
+            'assignedConsultant.user',
+            // Needed so the detail page can show this inquiry's full
+            // communication log underneath its main details.
+            'communicationHistory.sender'
         ]);
 
         return view(
@@ -132,7 +153,7 @@ class InquiryController extends Controller
     }
 
     /**
-     * Show edit inquiry form.
+     * EDIT = show the pre-filled "Edit Inquiry" form.
      */
     public function edit(Inquiry $inquiry)
     {
@@ -159,7 +180,8 @@ class InquiryController extends Controller
     }
 
     /**
-     * Update an inquiry.
+     * UPDATE = handle the "Edit Inquiry" form submission.
+     * Same validation and lead-or-student rule as store() above.
      */
     public function update(
         Request $request,
@@ -221,7 +243,7 @@ class InquiryController extends Controller
     }
 
     /**
-     * Delete an inquiry.
+     * DESTROY = delete an inquiry permanently.
      */
     public function destroy(Inquiry $inquiry)
     {
@@ -236,7 +258,15 @@ class InquiryController extends Controller
     }
 
     /**
-     * Create an inquiry from the public contact form.
+     * Separate from the admin CRUD above — this is the endpoint the
+     * PUBLIC website's contact form submits to, so a visitor (not an
+     * admin) can raise an inquiry themselves without logging into the
+     * admin portal.
+     *
+     * If the visitor happens to be logged in as a student already, we
+     * automatically attach their student_id so the inquiry shows up
+     * linked to their account; otherwise it's saved with no student
+     * attached, as a plain "New" inquiry for an admin to pick up.
      */
     public function publicStore(Request $request)
     {
@@ -266,7 +296,7 @@ class InquiryController extends Controller
                 $validated['inquiry_subject'],
             'inquiry_message' =>
                 $validated['inquiry_message'],
-            'inquiry_status' => 'New',
+            'inquiry_status' => 'New', // always starts as New
         ]);
 
         return back()->with(
