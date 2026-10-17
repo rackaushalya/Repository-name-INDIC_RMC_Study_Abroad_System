@@ -452,35 +452,11 @@
 
         <div class="countries-grid">
 
-            @php
-                // Country name / code -> 2-letter code, used to show a flag picture.
-                $flagCodes = [
-                    'argentina' => 'ar', 'australia' => 'au', 'austria' => 'at', 'bangladesh' => 'bd',
-                    'belgium' => 'be', 'brazil' => 'br', 'canada' => 'ca', 'china' => 'cn',
-                    'cyprus' => 'cy', 'czech republic' => 'cz', 'czechia' => 'cz', 'denmark' => 'dk',
-                    'estonia' => 'ee', 'finland' => 'fi', 'france' => 'fr', 'georgia' => 'ge',
-                    'germany' => 'de', 'greece' => 'gr', 'hong kong' => 'hk', 'hungary' => 'hu',
-                    'iceland' => 'is', 'india' => 'in', 'indonesia' => 'id', 'ireland' => 'ie',
-                    'italy' => 'it', 'japan' => 'jp', 'latvia' => 'lv', 'lithuania' => 'lt',
-                    'luxembourg' => 'lu', 'malaysia' => 'my', 'maldives' => 'mv', 'malta' => 'mt',
-                    'mauritius' => 'mu', 'netherlands' => 'nl', 'new zealand' => 'nz', 'norway' => 'no',
-                    'poland' => 'pl', 'portugal' => 'pt', 'qatar' => 'qa', 'romania' => 'ro',
-                    'russia' => 'ru', 'saudi arabia' => 'sa', 'singapore' => 'sg', 'slovakia' => 'sk',
-                    'slovenia' => 'si', 'south africa' => 'za', 'south korea' => 'kr', 'korea' => 'kr',
-                    'spain' => 'es', 'sri lanka' => 'lk', 'sweden' => 'se', 'switzerland' => 'ch',
-                    'taiwan' => 'tw', 'thailand' => 'th', 'turkey' => 'tr', 'ukraine' => 'ua',
-                    'united arab emirates' => 'ae', 'uae' => 'ae', 'united kingdom' => 'gb', 'uk' => 'gb',
-                    'united states' => 'us', 'usa' => 'us', 'vietnam' => 'vn',
-                ];
-            @endphp
 
             @forelse ($countries as $country)
                 @php
-                    $nameKey = strtolower(trim($country->country_name));
-                    $codeKey = strtolower(trim((string) $country->country_code));
-                    $flag = $flagCodes[$nameKey] ?? (strlen($codeKey) === 2 ? $codeKey : null);
-                    $flagSrc = $country->flag_url
-                        ?: ($flag ? 'https://flagcdn.com/w320/' . $flag . '.png' : null);
+                    // Uploaded flag, or the automatic one worked out from the country code/name.
+                    $flagSrc = $country->display_flag_url;
                 @endphp
 
                 <div class="country-card">

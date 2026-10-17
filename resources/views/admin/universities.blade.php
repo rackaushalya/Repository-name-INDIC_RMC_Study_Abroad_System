@@ -901,7 +901,6 @@
     $universitiesForJs = $allUniversities->map(fn ($u) => [
         'id' => $u->university_id,
         'name' => $u->university_name,
-        'code' => $u->university_code,
         'countryId' => $u->country_id,
         'country' => $u->country?->country_name,
         'countryCode' => $u->country?->country_code,
@@ -970,7 +969,7 @@
                             <circle cx="11" cy="11" r="7"/>
                             <path d="m20 20-4-4"/>
                         </svg>
-                        <input type="text" id="uniSearchInput" placeholder="Search by name, code, city or country...">
+                        <input type="text" id="uniSearchInput" placeholder="Search by name, city or country...">
                     </div>
 
                     <select id="countryFilterSelect" class="filter-select">
@@ -1039,7 +1038,7 @@
                         <tbody>
                             @forelse ($allUniversities as $uni)
                                 <tr class="uni-item"
-                                    data-search="{{ strtolower($uni->university_name . ' ' . $uni->university_code . ' ' . $uni->city . ' ' . $uni->country?->country_name) }}"
+                                    data-search="{{ strtolower($uni->university_name . ' ' . $uni->city . ' ' . $uni->country?->country_name) }}"
                                     data-country="{{ $uni->country_id }}"
                                     data-status="{{ $uni->is_active ? 'Active' : 'Inactive' }}">
                                     <td>
@@ -1052,13 +1051,13 @@
                                     <td>
                                         <div class="uni-name-text">{{ $uni->university_name }}</div>
                                         <div class="uni-meta-text">
-                                            {{ $uni->university_code ?: 'No code' }} • {{ $uni->courses->count() }} {{ Str::plural('course', $uni->courses->count()) }}
+                                            {{ $uni->courses->count() }} {{ Str::plural('course', $uni->courses->count()) }}
                                         </div>
                                     </td>
                                     <td>
                                         <span class="country-pill">
                                             <img class="country-flag-icon" alt=""
-                                                 data-flag-url="{{ $uni->country?->flag_url }}"
+                                                 data-flag-url="{{ $uni->country?->display_flag_url }}"
                                                  data-flag-name="{{ $uni->country?->country_name }}"
                                                  data-flag-code="{{ $uni->country?->country_code }}"
                                                  src="https://flagcdn.com/w80/un.png">
@@ -1114,7 +1113,7 @@
                 <div class="cards-grid" id="cardsViewContainer" style="display: none;">
                     @foreach ($allUniversities as $uni)
                         <div class="uni-grid-card uni-item"
-                             data-search="{{ strtolower($uni->university_name . ' ' . $uni->university_code . ' ' . $uni->city . ' ' . $uni->country?->country_name) }}"
+                             data-search="{{ strtolower($uni->university_name . ' ' . $uni->city . ' ' . $uni->country?->country_name) }}"
                              data-country="{{ $uni->country_id }}"
                              data-status="{{ $uni->is_active ? 'Active' : 'Inactive' }}">
                             <div class="card-top">
@@ -1127,7 +1126,7 @@
                                     <div class="uni-name-text">{{ $uni->university_name }}</div>
                                     <div class="uni-meta-text" style="display: flex; align-items: center; gap: 6px; margin-top: 2px;">
                                         <img class="country-flag-icon" alt=""
-                                             data-flag-url="{{ $uni->country?->flag_url }}"
+                                             data-flag-url="{{ $uni->country?->display_flag_url }}"
                                              data-flag-name="{{ $uni->country?->country_name }}"
                                              data-flag-code="{{ $uni->country?->country_code }}"
                                              src="https://flagcdn.com/w80/un.png">
@@ -1225,17 +1224,10 @@
                     </div>
                 </div>
 
-                <div class="form-grid">
-                    <div class="form-group">
-                        <label class="form-label" for="uniNameInput">University Name *</label>
-                        <input type="text" id="uniNameInput" name="university_name" class="form-input" placeholder="e.g. University of Toronto"
-                               maxlength="255" required value="{{ old('university_name') }}">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label" for="uniCodeInput">Short Code</label>
-                        <input type="text" id="uniCodeInput" name="university_code" class="form-input" placeholder="e.g. UOFT"
-                               maxlength="50" value="{{ old('university_code') }}" style="text-transform: uppercase;">
-                    </div>
+                <div class="form-group" style="margin-bottom: 14px;">
+                    <label class="form-label" for="uniNameInput">University Name *</label>
+                    <input type="text" id="uniNameInput" name="university_name" class="form-input" placeholder="e.g. University of Toronto"
+                           maxlength="255" required value="{{ old('university_name') }}">
                 </div>
 
                 <div class="form-grid">
@@ -1265,8 +1257,9 @@
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="uniWebsiteInput">Website</label>
-                        <input type="url" id="uniWebsiteInput" name="website" class="form-input" placeholder="https://www.university.edu"
-                               maxlength="255" value="{{ old('website') }}">
+                        <input type="text" inputmode="url" id="uniWebsiteInput" name="website" class="form-input" placeholder="https://www.university.edu"
+                               maxlength="255" value="{{ old('website') }}" autocomplete="url">
+                        <div id="websiteError" style="display: none; color: #b91c1c; font-size: 11px; margin-top: 4px;"></div>
                     </div>
                 </div>
 
@@ -1488,7 +1481,37 @@
     }
 
     // ---- Add / edit ----
+    // ---- Website check (same rule as the server) ----
+    const websitePattern = /^https?:\/\/([a-z0-9-]+\.)+[a-z]{2,}(:\d+)?(\/[^\s]*)?$/i;
+
+    // Adds https:// when it was typed without one, e.g. "www.utoronto.ca".
+    function normalizeWebsite(value) {
+        value = (value || '').trim();
+        if (value && !/^[a-z][a-z0-9+.-]*:\/\//i.test(value)) {
+            value = 'https://' + value;
+        }
+        return value;
+    }
+
+    function checkWebsite() {
+        const input = document.getElementById('uniWebsiteInput');
+        const error = document.getElementById('websiteError');
+        const value = normalizeWebsite(input.value);
+        const ok = value === '' || (websitePattern.test(value) && value.length <= 255);
+
+        error.innerText = ok ? '' : 'Please enter a valid website address, for example https://www.utoronto.ca';
+        error.style.display = ok ? 'none' : 'block';
+        input.style.borderColor = ok ? '' : '#dc2626';
+        return ok;
+    }
+
     function clearFormErrors() {
+        const websiteError = document.getElementById('websiteError');
+        if (websiteError) {
+            websiteError.style.display = 'none';
+            document.getElementById('uniWebsiteInput').style.borderColor = '';
+        }
+
         const box = document.querySelector('#uniForm .form-errors');
         if (box) box.remove();
     }
@@ -1501,7 +1524,7 @@
         document.getElementById('editUniId').value = '';
         document.getElementById('addEditModalTitle').innerText = 'Add New University';
 
-        ['uniNameInput', 'uniCodeInput', 'uniCountryInput', 'uniCityInput', 'uniRankingInput',
+        ['uniNameInput', 'uniCountryInput', 'uniCityInput', 'uniRankingInput',
          'uniWebsiteInput', 'uniAddressInput', 'uniDescriptionInput'].forEach(id => {
             document.getElementById(id).value = '';
         });
@@ -1525,7 +1548,6 @@
         clearFormErrors();
         setFormForEdit(id);
         document.getElementById('uniNameInput').value = uni.name;
-        document.getElementById('uniCodeInput').value = uni.code || '';
         document.getElementById('uniCountryInput').value = uni.countryId;
         document.getElementById('uniCityInput').value = uni.city || '';
         document.getElementById('uniRankingInput').value = uni.ranking || '';
@@ -1573,6 +1595,27 @@
     document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('img[data-flag-name]').forEach(img => {
             img.src = img.dataset.flagUrl || getCountryFlag(img.dataset.flagName, img.dataset.flagCode);
+        });
+
+        // Website: tidy up and check when leaving the box, re-check while fixing it,
+        // and stop the form from saving an invalid address.
+        const websiteInput = document.getElementById('uniWebsiteInput');
+        websiteInput.addEventListener('blur', () => {
+            // Only fill in https:// when that gives a valid address; otherwise leave the typing as it is.
+            if (checkWebsite()) {
+                websiteInput.value = normalizeWebsite(websiteInput.value);
+            }
+        });
+        websiteInput.addEventListener('input', () => {
+            if (document.getElementById('websiteError').style.display === 'block') checkWebsite();
+        });
+        document.getElementById('uniForm').addEventListener('submit', (e) => {
+            if (!checkWebsite()) {
+                e.preventDefault();
+                websiteInput.focus();
+                return;
+            }
+            websiteInput.value = normalizeWebsite(websiteInput.value);
         });
 
         document.getElementById('uniSearchInput').addEventListener('input', applyFilters);

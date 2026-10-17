@@ -6,6 +6,7 @@ use App\Models\Country;
 use App\Models\Course;
 use App\Models\Scholarship;
 use App\Models\University;
+use App\Support\CountryCodes;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -24,7 +25,25 @@ class CountryController extends Controller
         'flag_image.image' => 'The flag must be an image.',
         'flag_image.mimes' => 'The flag must be a JPG, PNG, WEBP or GIF image.',
         'flag_image.max' => 'The flag image must not be larger than 2 MB.',
+        'country_code.required' => 'We couldn\'t work out a code for this country name. Please type its 3-letter code (for example AFG).',
+        'country_code.unique' => 'Another country already uses this code.',
+        'country_name.unique' => 'This country has already been added.',
     ];
+
+    /**
+     * If the code box was left empty, fill it in from the country name
+     * (e.g. "Afghanistan" -> AFG). Codes are always saved in capitals.
+     */
+    private function fillCountryCode(Request $request): void
+    {
+        $code = strtoupper(trim((string) $request->input('country_code')));
+
+        if ($code === '') {
+            $code = CountryCodes::find($request->input('country_name'))['alpha3'] ?? '';
+        }
+
+        $request->merge(['country_code' => $code]);
+    }
 
     public function index()
     {
@@ -44,6 +63,8 @@ class CountryController extends Controller
 
     public function store(Request $request)
     {
+        $this->fillCountryCode($request);
+
         $validated = $request->validate([
             'country_name' => [
                 'required',
@@ -111,6 +132,8 @@ class CountryController extends Controller
         Request $request,
         Country $country
     ) {
+        $this->fillCountryCode($request);
+
         $validated = $request->validate([
             'country_name' => [
                 'required',

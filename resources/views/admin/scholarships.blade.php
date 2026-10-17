@@ -913,7 +913,7 @@
         .detail-heading { font-size: 12px; font-weight: 700; color: #111827; margin: 16px 0 6px; }
         .detail-text { font-size: 13px; color: #344054; line-height: 1.6; white-space: pre-line; }
         .table-footer .portal-pager { width: 100%; }
-        .amount-grid { display: grid; grid-template-columns: 2fr 1fr 1.4fr; gap: 10px; }
+        .amount-grid { display: grid; grid-template-columns: 1.3fr 1.6fr 1.2fr; gap: 10px; }
         @media (max-width: 750px) { .amount-grid { grid-template-columns: 1fr; } }
     </style>
 @include('components.sidebar-style')
@@ -929,6 +929,8 @@
     $courseOptions = \App\Models\Course::orderBy('course_name')->get();
 
     $awardTypes = \App\Models\Scholarship::AWARD_TYPES;
+    $popularCurrencies = \App\Support\CurrencyCodes::POPULAR;
+    $allCurrencies = \App\Support\CurrencyCodes::ALL;
 
     // Award value shown to people, e.g. "USD 10,000 + 50% tuition" (see the Scholarship model).
     $awardText = fn ($s) => $s->award_text;
@@ -1344,8 +1346,20 @@
                     <div class="amount-grid">
                         <input type="number" class="form-input" id="scholarshipAmountInput" name="amount" placeholder="Amount, e.g. 10000"
                                min="0" step="0.01" value="{{ old('amount') }}">
-                        <input type="text" class="form-input" id="scholarshipCurrencyInput" name="currency" placeholder="USD"
-                               maxlength="3" pattern="[A-Za-z]{3}" title="3-letter currency code, e.g. USD" value="{{ old('currency') }}" style="text-transform: uppercase;">
+                        <select class="form-select" id="scholarshipCurrencyInput" name="currency">
+                            <option value="">Currency...</option>
+                            <optgroup label="Common">
+                                @foreach ($popularCurrencies as $code)
+                                    <option value="{{ $code }}" @selected(old('currency') === $code)>{{ $code }} – {{ $allCurrencies[$code] }}</option>
+                                @endforeach
+                            </optgroup>
+                            <optgroup label="All currencies">
+                                @foreach ($allCurrencies as $code => $currencyName)
+                                    @continue(in_array($code, $popularCurrencies, true))
+                                    <option value="{{ $code }}" @selected(old('currency') === $code)>{{ $code }} – {{ $currencyName }}</option>
+                                @endforeach
+                            </optgroup>
+                        </select>
                         <input type="number" class="form-input" id="scholarshipPercentInput" name="percentage" placeholder="Tuition % (e.g. 50)"
                                min="0" max="100" step="0.01" value="{{ old('percentage') }}">
                     </div>
@@ -1608,7 +1622,10 @@
         filterCourseOptions();
         document.getElementById('scholarshipCourseSelect').value = s.courseId || '';
         document.getElementById('scholarshipAmountInput').value = s.amount ?? '';
-        document.getElementById('scholarshipCurrencyInput').value = s.currency || '';
+        // Older invalid codes (e.g. "5657786") leave the menu empty so a real currency must be chosen.
+        const currencySelect = document.getElementById('scholarshipCurrencyInput');
+        const savedCurrency = (s.currency || '').toUpperCase();
+        currencySelect.value = Array.from(currencySelect.options).some(o => o.value === savedCurrency) ? savedCurrency : '';
         document.getElementById('scholarshipPercentInput').value = s.percentage ?? '';
         document.getElementById('scholarshipDeadlineInput').value = s.deadline || '';
         document.getElementById('scholarshipStatusSelect').value = s.active ? '1' : '0';

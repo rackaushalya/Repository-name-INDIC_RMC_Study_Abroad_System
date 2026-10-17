@@ -22,7 +22,9 @@ class UniversityController extends Controller
     private const MESSAGES = [
         'country_id.required' => 'Please choose a country.',
         'country_id.exists' => 'Please choose a country from the list.',
-        'website.url' => 'The website must be a full address starting with http:// or https://.',
+        'website.url' => 'Please enter a valid website address, for example https://www.utoronto.ca',
+        'website.regex' => 'Please enter a valid website address, for example https://www.utoronto.ca',
+        'website.max' => 'The website address is too long.',
         'logo_image.image' => 'The university image must be an image file.',
         'logo_image.mimes' => 'The university image must be a JPG, PNG, WEBP or GIF image.',
         'logo_image.max' => 'The university image must not be larger than 2 MB.',
@@ -48,6 +50,8 @@ class UniversityController extends Controller
 
     public function store(Request $request)
     {
+        $this->normalizeWebsite($request);
+
         $validated = $request->validate(
             $this->rules(),
             self::MESSAGES
@@ -87,8 +91,10 @@ class UniversityController extends Controller
         Request $request,
         University $university
     ) {
+        $this->normalizeWebsite($request);
+
         $validated = $request->validate(
-            $this->rules($university),
+            $this->rules(),
             self::MESSAGES
         );
 
@@ -185,16 +191,25 @@ class UniversityController extends Controller
     }
 
     /**
-     * Validation rules shared by add and edit.
+     * Tidy the website before checking it: trim spaces and add https:// when
+     * it was typed without one (e.g. "www.utoronto.ca").
      */
-    private function rules(?University $university = null): array
+    private function normalizeWebsite(Request $request): void
     {
-        $uniqueCode = 'unique:universities,university_code';
+        $website = trim((string) $request->input('website'));
 
-        if ($university) {
-            $uniqueCode .= ',' . $university->university_id . ',university_id';
+        if ($website !== '' && !preg_match('#^[a-z][a-z0-9+.-]*://#i', $website)) {
+            $website = 'https://' . $website;
         }
 
+        $request->merge(['website' => $website === '' ? null : $website]);
+    }
+
+    /**
+     * Validation rules shared by add and edit.
+     */
+    private function rules(): array
+    {
         return [
             'country_id' => [
                 'required',
@@ -205,16 +220,13 @@ class UniversityController extends Controller
                 'string',
                 'max:255'
             ],
-            'university_code' => [
-                'nullable',
-                'string',
-                'max:50',
-                $uniqueCode
-            ],
             'website' => [
                 'nullable',
-                'url',
-                'max:255'
+                'max:255',
+                // Must be a real web address: http(s)://, a domain with a dot
+                // (e.g. utoronto.ca), and no spaces.
+                'url:http,https',
+                'regex:/^https?:\/\/([a-z0-9-]+\.)+[a-z]{2,}(:\d+)?(\/[^\s]*)?$/i',
             ],
             'city' => [
                 'nullable',

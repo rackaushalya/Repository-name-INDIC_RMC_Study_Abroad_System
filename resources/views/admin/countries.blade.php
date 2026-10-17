@@ -814,6 +814,7 @@
         'description' => $c->description,
         'active' => (bool) $c->is_active,
         'flag' => $c->flag_url,
+        'displayFlag' => $c->display_flag_url,
         'universityCount' => (int) $c->universities_count,
         'courseCount' => (int) $c->courses_count,
     ])->values();
@@ -927,7 +928,7 @@
                                     data-search="{{ strtolower($country->country_name . ' ' . $country->country_code . ' ' . $country->description) }}"
                                     data-status="{{ $country->is_active ? 'Active' : 'Inactive' }}">
                                     <td>
-                                        <img data-flag-name="{{ $country->country_name }}" data-flag-code="{{ $country->country_code }}" data-flag-url="{{ $country->flag_url }}"
+                                        <img data-flag-name="{{ $country->country_name }}" data-flag-code="{{ $country->country_code }}" data-flag-url="{{ $country->display_flag_url }}"
                                              src="https://flagcdn.com/w80/un.png" alt="{{ $country->country_name }}" class="country-flag-lg">
                                     </td>
                                     <td>
@@ -975,7 +976,7 @@
                              data-status="{{ $country->is_active ? 'Active' : 'Inactive' }}"
                              style="background:#fff; border:1px solid #e7e9ed; border-radius:10px; padding:16px;">
                             <div style="display:flex; align-items:center; gap:12px; margin-bottom:10px;">
-                                <img data-flag-name="{{ $country->country_name }}" data-flag-code="{{ $country->country_code }}" data-flag-url="{{ $country->flag_url }}"
+                                <img data-flag-name="{{ $country->country_name }}" data-flag-code="{{ $country->country_code }}" data-flag-url="{{ $country->display_flag_url }}"
                                      src="https://flagcdn.com/w80/un.png" alt="{{ $country->country_name }}" class="country-flag-lg">
                                 <div style="flex:1; min-width:0;">
                                     <div class="country-name-text">{{ $country->country_name }}</div>
@@ -1052,11 +1053,13 @@
                         <label class="form-label" for="countryNameInput">Country Name *</label>
                         <input type="text" id="countryNameInput" name="country_name" class="form-input" placeholder="e.g. Canada"
                                maxlength="100" required value="{{ old('country_name') }}" oninput="handleCountryNameInput(this.value)">
+                        <div id="countryNameHint" style="display: none; font-size: 11px; color: #697386; margin-top: 4px;"></div>
                     </div>
                     <div class="form-group">
-                        <label class="form-label" for="countryCodeInput">Country Code *</label>
-                        <input type="text" id="countryCodeInput" name="country_code" class="form-input" placeholder="e.g. CAN"
-                               maxlength="10" required value="{{ old('country_code') }}" style="text-transform: uppercase;">
+                        <label class="form-label" for="countryCodeInput">Country Code</label>
+                        <input type="text" id="countryCodeInput" name="country_code" class="form-input" placeholder="Filled in automatically"
+                               maxlength="10" value="{{ old('country_code') }}" style="text-transform: uppercase;"
+                               oninput="handleCountryCodeInput(this.value)">
                     </div>
                 </div>
 
@@ -1166,58 +1169,62 @@
     const countriesBaseUrl = @json(url('admin/countries'));
     const storeUrl = @json(route('admin.countries.store'));
 
-    // Country name -> 2-letter code, used only to show a flag picture.
-    const countryIsoMap = {
-        'afghanistan': 'af', 'albania': 'al', 'algeria': 'dz', 'andorra': 'ad', 'angola': 'ao',
-        'argentina': 'ar', 'armenia': 'am', 'australia': 'au', 'austria': 'at', 'azerbaijan': 'az',
-        'bahamas': 'bs', 'bahrain': 'bh', 'bangladesh': 'bd', 'barbados': 'bb', 'belarus': 'by',
-        'belgium': 'be', 'belize': 'bz', 'benin': 'bj', 'bhutan': 'bt', 'bolivia': 'bo',
-        'bosnia and herzegovina': 'ba', 'botswana': 'bw', 'brazil': 'br', 'brunei': 'bn', 'bulgaria': 'bg',
-        'cambodia': 'kh', 'cameroon': 'cm', 'canada': 'ca', 'chile': 'cl', 'china': 'cn',
-        'colombia': 'co', 'costa rica': 'cr', 'croatia': 'hr', 'cuba': 'cu', 'cyprus': 'cy',
-        'czech republic': 'cz', 'czechia': 'cz', 'denmark': 'dk', 'ecuador': 'ec', 'egypt': 'eg',
-        'estonia': 'ee', 'ethiopia': 'et', 'fiji': 'fj', 'finland': 'fi', 'france': 'fr',
-        'georgia': 'ge', 'germany': 'de', 'ghana': 'gh', 'greece': 'gr', 'hong kong': 'hk',
-        'hungary': 'hu', 'iceland': 'is', 'india': 'in', 'indonesia': 'id', 'iran': 'ir',
-        'iraq': 'iq', 'ireland': 'ie', 'israel': 'il', 'italy': 'it', 'jamaica': 'jm',
-        'japan': 'jp', 'jordan': 'jo', 'kazakhstan': 'kz', 'kenya': 'ke', 'kuwait': 'kw',
-        'latvia': 'lv', 'lebanon': 'lb', 'lithuania': 'lt', 'luxembourg': 'lu', 'malaysia': 'my',
-        'maldives': 'mv', 'malta': 'mt', 'mauritius': 'mu', 'mexico': 'mx', 'monaco': 'mc',
-        'morocco': 'ma', 'nepal': 'np', 'netherlands': 'nl', 'new zealand': 'nz', 'nigeria': 'ng',
-        'norway': 'no', 'oman': 'om', 'pakistan': 'pk', 'philippines': 'ph', 'poland': 'pl',
-        'portugal': 'pt', 'qatar': 'qa', 'romania': 'ro', 'russia': 'ru', 'saudi arabia': 'sa',
-        'serbia': 'rs', 'singapore': 'sg', 'slovakia': 'sk', 'slovenia': 'si', 'south africa': 'za',
-        'south korea': 'kr', 'korea': 'kr', 'spain': 'es', 'sri lanka': 'lk', 'sweden': 'se',
-        'switzerland': 'ch', 'taiwan': 'tw', 'thailand': 'th', 'turkey': 'tr', 'türkiye': 'tr',
-        'ukraine': 'ua', 'united arab emirates': 'ae', 'uae': 'ae', 'united kingdom': 'gb', 'uk': 'gb',
-        'united states': 'us', 'usa': 'us', 'vietnam': 'vn', 'zimbabwe': 'zw'
-    };
+    // Every country (ISO list shared with the server): [2-letter code, 3-letter code, [names]].
+    const allCountries = @json(\App\Support\CountryCodes::forJs());
 
-    // Suggested 3-letter codes while typing a name.
-    const countryCodeMap = {
-        'canada': 'CAN', 'united kingdom': 'GBR', 'uk': 'GBR', 'united states': 'USA', 'usa': 'USA',
-        'australia': 'AUS', 'germany': 'DEU', 'ireland': 'IRL', 'new zealand': 'NZL', 'singapore': 'SGP',
-        'france': 'FRA', 'netherlands': 'NLD', 'sweden': 'SWE', 'japan': 'JPN', 'italy': 'ITA',
-        'spain': 'ESP', 'switzerland': 'CHE', 'china': 'CHN', 'south korea': 'KOR', 'malaysia': 'MYS',
-        'uae': 'ARE', 'united arab emirates': 'ARE', 'india': 'IND', 'sri lanka': 'LKA'
-    };
+    // Lower case, no accents, letters and single spaces only (same as the server).
+    function normalizeName(value) {
+        return (value || '')
+            .toLowerCase()
+            .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^a-z]+/g, ' ')
+            .trim();
+    }
 
-    function getCountryFlag(name = '', code = '') {
-        const cleanName = (name || '').toLowerCase().trim();
-        const cleanCode = (code || '').toLowerCase().trim();
-
-        if (countryIsoMap[cleanName]) {
-            return 'https://flagcdn.com/w80/' + countryIsoMap[cleanName] + '.png';
-        }
-        if (cleanCode.length === 2) {
-            return 'https://flagcdn.com/w80/' + cleanCode + '.png';
-        }
-        for (const [n, iso] of Object.entries(countryIsoMap)) {
-            if (cleanName && (cleanName.includes(n) || n.includes(cleanName))) {
-                return 'https://flagcdn.com/w80/' + iso + '.png';
+    function editDistance(a, b) {
+        const row = Array.from({ length: b.length + 1 }, (_, i) => i);
+        for (let i = 1; i <= a.length; i++) {
+            let prev = row[0];
+            row[0] = i;
+            for (let j = 1; j <= b.length; j++) {
+                const temp = row[j];
+                row[j] = Math.min(row[j] + 1, row[j - 1] + 1, prev + (a[i - 1] === b[j - 1] ? 0 : 1));
+                prev = temp;
             }
         }
-        return 'https://flagcdn.com/w80/un.png';
+        return row[b.length];
+    }
+
+    // Find a country by code (2 or 3 letters) or by name; small spelling mistakes are allowed.
+    // Order: exact name, then code, then close spelling (a correct name beats a wrong code).
+    function lookupCountry(name = '', code = '') {
+        const wanted = normalizeName(name);
+        if (wanted) {
+            const exact = allCountries.find(c => c[2].some(n => normalizeName(n) === wanted));
+            if (exact) return exact;
+        }
+
+        const cleanCode = (code || '').trim().toUpperCase();
+        if (cleanCode) {
+            const byCode = allCountries.find(c => c[0] === cleanCode || c[1] === cleanCode);
+            if (byCode) return byCode;
+        }
+
+        if (wanted.length < 4) return null;
+
+        const allowed = Math.max(1, Math.floor(wanted.length / 5));
+        let best = null, bestDistance = Infinity, tie = false;
+        for (const c of allCountries) {
+            const d = Math.min(...c[2].map(n => editDistance(wanted, normalizeName(n))));
+            if (d < bestDistance) { best = c; bestDistance = d; tie = false; }
+            else if (d === bestDistance) { tie = true; }
+        }
+        return (best && !tie && bestDistance <= allowed) ? best : null;
+    }
+
+    function getCountryFlag(name = '', code = '') {
+        const match = lookupCountry(name, code);
+        return 'https://flagcdn.com/w80/' + (match ? match[0].toLowerCase() : 'un') + '.png';
     }
 
     // ---- Flag upload in the form ----
@@ -1265,12 +1272,49 @@
         refreshFlagPreview();
     }
 
+    // True once the admin types their own code, so we stop overwriting it.
+    let codeTypedByHand = false;
+
     function handleCountryNameInput(value) {
         const codeInput = document.getElementById('countryCodeInput');
-        const suggestion = countryCodeMap[(value || '').toLowerCase().trim()];
-        if (suggestion && !codeInput.value) {
-            codeInput.value = suggestion;
+        const hint = document.getElementById('countryNameHint');
+        const match = lookupCountry(value);
+
+        if (match && !codeTypedByHand) {
+            codeInput.value = match[1];
+        } else if (!match && !codeTypedByHand) {
+            codeInput.value = '';
         }
+
+        if (match && normalizeName(value) !== normalizeName(match[2][0])) {
+            // e.g. typed "Afghanisthan": offer the correct spelling.
+            hint.innerHTML = '';
+            hint.append('Recognised as ' + match[2][0] + ' (' + match[1] + '). ');
+            const link = document.createElement('a');
+            link.href = '#';
+            link.innerText = 'Use this spelling';
+            link.style.color = '#f97316';
+            link.style.fontWeight = '600';
+            link.onclick = (e) => {
+                e.preventDefault();
+                document.getElementById('countryNameInput').value = match[2][0];
+                handleCountryNameInput(match[2][0]);
+            };
+            hint.append(link);
+            hint.style.display = 'block';
+        } else if (!match && normalizeName(value).length >= 4) {
+            hint.innerText = 'Country not recognised. Check the spelling, or type the 3-letter code yourself.';
+            hint.style.display = 'block';
+        } else {
+            hint.style.display = 'none';
+        }
+
+        refreshFlagPreview();
+    }
+
+    function handleCountryCodeInput(value) {
+        // Clearing the box hands control back to the automatic code.
+        codeTypedByHand = (value || '').trim() !== '';
         refreshFlagPreview();
     }
 
@@ -1322,7 +1366,7 @@
         const c = findCountry(id);
         if (!c) return;
 
-        document.getElementById('modalCountryFlag').src = c.flag || getCountryFlag(c.name, c.code);
+        document.getElementById('modalCountryFlag').src = c.displayFlag || getCountryFlag(c.name, c.code);
         document.getElementById('viewModalTitle').innerText = c.name;
         document.getElementById('viewModalSubtitle').innerText =
             `Code: ${c.code || '—'} • ${c.active ? 'Active' : 'Inactive'}`;
@@ -1343,6 +1387,8 @@
         document.getElementById('editCountryId').value = '';
         document.getElementById('countryNameInput').value = '';
         document.getElementById('countryCodeInput').value = '';
+        codeTypedByHand = false;
+        document.getElementById('countryNameHint').style.display = 'none';
         document.getElementById('statusInput').value = '1';
         document.getElementById('descriptionInput').value = '';
         resetFlagInput(null);
@@ -1358,6 +1404,8 @@
         setFormForEdit(id);
         document.getElementById('countryNameInput').value = c.name;
         document.getElementById('countryCodeInput').value = c.code || '';
+        codeTypedByHand = !!c.code;
+        document.getElementById('countryNameHint').style.display = 'none';
         document.getElementById('statusInput').value = c.active ? '1' : '0';
         document.getElementById('descriptionInput').value = c.description || '';
         resetFlagInput(c.flag);
@@ -1410,7 +1458,6 @@
 
         document.getElementById('countrySearchInput').addEventListener('input', applyFilters);
         document.getElementById('statusFilterSelect').addEventListener('change', applyFilters);
-        document.getElementById('countryCodeInput').addEventListener('input', refreshFlagPreview);
 
         @if (session('success'))
             showToast(@json(session('success')));
