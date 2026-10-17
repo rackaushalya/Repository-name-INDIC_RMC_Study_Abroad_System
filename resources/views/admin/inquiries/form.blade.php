@@ -22,7 +22,7 @@
         @foreach ($students as $s)
             <option value="{{ $s->student_id }}"
                 @selected(old('student_id', $inquiry->student_id ?? '') == $s->student_id)>
-                {{ $s->user->name ?? 'Student #' . $s->student_id }}
+                {{ $s->user ? $s->user->first_name . ' ' . $s->user->last_name : 'Student #' . $s->student_id }}
             </option>
         @endforeach
     </select>
@@ -62,7 +62,7 @@
         @foreach ($consultants as $consultant)
             <option value="{{ $consultant->consultant_id }}"
                 @selected(old('assigned_consultant_id', $inquiry->assigned_consultant_id ?? '') == $consultant->consultant_id)>
-                {{ $consultant->user->name ?? 'Consultant #' . $consultant->consultant_id }}
+                {{ $consultant->user ? $consultant->user->first_name . ' ' . $consultant->user->last_name : 'Consultant #' . $consultant->consultant_id }}
             </option>
         @endforeach
     </select>
