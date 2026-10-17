@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Course;
 use App\Models\TuitionFee;
+use App\Support\CurrencyCodes;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -16,12 +17,20 @@ class CourseController extends Controller
 
     public const FEE_PERIODS = ['Year', 'Semester', 'Course', 'Other'];
 
+    public const DURATION_UNITS = ['weeks', 'months', 'years'];
+
     private const MESSAGES = [
         'university_id.required' => 'Please choose a university.',
         'university_id.exists' => 'Please choose a university from the list.',
         'tuition_amount.numeric' => 'The tuition fee must be a number, for example 38500.',
-        'tuition_currency.required_with' => 'Please enter a currency for the tuition fee, for example USD.',
-        'tuition_currency.regex' => 'The tuition currency must be a 3-letter code, for example USD, LKR or GBP.',
+        'tuition_currency.required_with' => 'Please choose a currency for the tuition fee.',
+        'tuition_currency.in' => 'Please choose a currency from the list.',
+        'duration_value.numeric' => 'The duration must be a number, for example 4 or 1.5.',
+        'duration_value.gt' => 'The duration must be more than 0.',
+        'duration_value.max' => 'The duration is too long. Please check the number.',
+        'duration_value.regex' => 'The duration can have at most one decimal place, for example 1.5.',
+        'duration_unit.required_with' => 'Please choose weeks, months or years for the duration.',
+        'duration_unit.in' => 'Please choose weeks, months or years for the duration.',
         'course_image.image' => 'The course image must be an image file.',
         'course_image.mimes' => 'The course image must be a JPG, PNG, WEBP or GIF image.',
         'course_image.max' => 'The course image must not be larger than 2 MB.',
@@ -50,6 +59,8 @@ class CourseController extends Controller
 
     public function store(Request $request)
     {
+        $this->tidyInput($request);
+
         $validated = $request->validate(
             $this->rules(),
             self::MESSAGES
@@ -90,6 +101,8 @@ class CourseController extends Controller
         Request $request,
         Course $course
     ) {
+        $this->tidyInput($request);
+
         $validated = $request->validate(
             $this->rules(),
             self::MESSAGES
@@ -207,10 +220,28 @@ class CourseController extends Controller
                 'string',
                 'max:150'
             ],
-            'duration' => [
+            // Duration = a number + weeks/months/years, saved as e.g. "4 years".
+            'duration_value' => [
+                'bail',
                 'nullable',
-                'string',
-                'max:100'
+                'numeric',
+                'gt:0',
+                'max:520',
+                'regex:/^\d+(\.\d)?$/',
+                // Sensible limits per unit: 10 years, 120 months or 520 weeks.
+                function ($attribute, $value, $fail) {
+                    $limits = ['years' => 10, 'months' => 120, 'weeks' => 520];
+                    $unit = request('duration_unit');
+
+                    if (isset($limits[$unit]) && (float) $value > $limits[$unit]) {
+                        $fail('A course can\'t be longer than ' . $limits[$unit] . ' ' . $unit . '. Please check the duration.');
+                    }
+                },
+            ],
+            'duration_unit' => [
+                'nullable',
+                'required_with:duration_value',
+                'in:' . implode(',', self::DURATION_UNITS)
             ],
             'study_mode' => [
                 'required',
@@ -234,7 +265,7 @@ class CourseController extends Controller
             'tuition_currency' => [
                 'nullable',
                 'required_with:tuition_amount',
-                'regex:/^[A-Za-z]{3}$/'
+                'in:' . implode(',', CurrencyCodes::codes())
             ],
             'tuition_period' => [
                 'nullable',
@@ -261,14 +292,51 @@ class CourseController extends Controller
             'course_name',
             'course_level',
             'field_of_study',
-            'duration',
             'study_mode',
             'description',
         ])->all();
 
+        $fields['duration'] = $this->durationText(
+            $validated['duration_value'] ?? null,
+            $validated['duration_unit'] ?? null
+        );
+
         $fields['is_active'] = $request->boolean('is_active');
 
         return $fields;
+    }
+
+    /**
+     * Tidy the form before checking it: currency in capitals ("lkr" -> "LKR"),
+     * duration unit in lower case.
+     */
+    private function tidyInput(Request $request): void
+    {
+        $request->merge([
+            'tuition_currency' => $request->filled('tuition_currency')
+                ? strtoupper(trim($request->input('tuition_currency')))
+                : null,
+            'duration_unit' => $request->filled('duration_unit')
+                ? strtolower(trim($request->input('duration_unit')))
+                : null,
+        ]);
+    }
+
+    /**
+     * Turn the number + unit into the saved text, e.g. (4, years) -> "4 years",
+     * (1, years) -> "1 year", (1.5, years) -> "1.5 years". Empty -> null.
+     */
+    private function durationText($value, ?string $unit): ?string
+    {
+        if ($value === null || $value === '' || !$unit) {
+            return null;
+        }
+
+        $number = (float) $value;
+        $shown = rtrim(rtrim(number_format($number, 1, '.', ''), '0'), '.');
+        $word = $number == 1 ? rtrim($unit, 's') : $unit;
+
+        return $shown . ' ' . $word;
     }
 
     /**

@@ -7,6 +7,7 @@ use App\Models\Course;
 use App\Models\RequiredDocument;
 use App\Models\Scholarship;
 use Illuminate\Support\Collection;
+use App\Support\CountryCodes;
 
 /**
  * Data behind the Study Destination Explorer: one summary per country that
@@ -34,19 +35,6 @@ class DestinationExplorer
         'india' => [20.6, 78.9], 'sri lanka' => [7.9, 80.8], 'dubai' => [25.2, 55.3],
         'uae' => [23.4, 53.8], 'united arab emirates' => [23.4, 53.8], 'russia' => [61.5, 105.3],
         'turkey' => [38.9, 35.2], 'south africa' => [-30.6, 22.9],
-    ];
-
-    /** ISO alpha-2 code by lower-case name, used for flag images. */
-    private const ALPHA2 = [
-        'uk' => 'gb', 'united kingdom' => 'gb', 'england' => 'gb', 'usa' => 'us', 'united states' => 'us',
-        'united states of america' => 'us', 'canada' => 'ca', 'australia' => 'au', 'new zealand' => 'nz',
-        'ireland' => 'ie', 'germany' => 'de', 'france' => 'fr', 'netherlands' => 'nl', 'sweden' => 'se',
-        'norway' => 'no', 'denmark' => 'dk', 'finland' => 'fi', 'italy' => 'it', 'spain' => 'es',
-        'switzerland' => 'ch', 'austria' => 'at', 'belgium' => 'be', 'poland' => 'pl', 'hungary' => 'hu',
-        'malta' => 'mt', 'cyprus' => 'cy', 'taiwan' => 'tw', 'japan' => 'jp', 'south korea' => 'kr',
-        'china' => 'cn', 'singapore' => 'sg', 'malaysia' => 'my', 'hong kong' => 'hk', 'india' => 'in',
-        'sri lanka' => 'lk', 'dubai' => 'ae', 'uae' => 'ae', 'united arab emirates' => 'ae', 'russia' => 'ru',
-        'turkey' => 'tr', 'south africa' => 'za',
     ];
 
     /** One colour per country, so a country looks the same on the map and on its card. */
@@ -213,16 +201,12 @@ class DestinationExplorer
     /** Two-letter flag code, or null when we cannot tell which country this is. */
     private function flagCode(Country $country): ?string
     {
-        // The name is more reliable than the stored code (the data has "SL" for Sri Lanka, which is Sierra Leone's code).
-        $byName = self::ALPHA2[mb_strtolower(trim($country->country_name))] ?? null;
+        // Shared country list: exact name first (more reliable than a stored code
+        // such as "SL" for Sri Lanka, which is really Sierra Leone), then code,
+        // then close spellings.
+        $match = CountryCodes::find($country->country_name, $country->country_code);
 
-        if ($byName) {
-            return $byName;
-        }
-
-        $code = mb_strtolower((string) $country->country_code);
-
-        return strlen($code) === 2 ? $code : null;
+        return $match ? strtolower($match['alpha2']) : null;
     }
 
     /** @return array{amount: float, currency: string}|null */

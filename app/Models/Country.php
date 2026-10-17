@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\CountryCodes;
 use Illuminate\Database\Eloquent\Model;
 
 class Country extends Model
@@ -30,6 +31,22 @@ class Country extends Model
         return $this->flag_image
             ? asset('storage/' . $this->flag_image)
             : null;
+    }
+
+    /**
+     * Automatic flag worked out from the country code or name, or null.
+     */
+    public function getAutoFlagUrlAttribute(): ?string
+    {
+        return CountryCodes::flagUrl($this->country_name, $this->country_code);
+    }
+
+    /**
+     * The flag to show: the uploaded one if there is one, otherwise the automatic one.
+     */
+    public function getDisplayFlagUrlAttribute(): ?string
+    {
+        return $this->flag_url ?: $this->auto_flag_url;
     }
 
     protected function casts(): array

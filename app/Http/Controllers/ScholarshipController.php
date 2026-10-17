@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Course;
 use App\Models\Scholarship;
+use App\Support\CurrencyCodes;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
@@ -13,8 +14,8 @@ class ScholarshipController extends Controller
         'university_id.exists' => 'Please choose a university from the list.',
         'course_id.exists' => 'Please choose a course from the list.',
         'amount.numeric' => 'The award amount must be a number, for example 10000.',
-        'currency.required_with' => 'Please enter a currency for the award amount, for example USD.',
-        'currency.regex' => 'The currency must be a 3-letter code, for example USD, LKR or GBP.',
+        'currency.required_with' => 'Please choose a currency for the award amount.',
+        'currency.in' => 'Please choose a currency from the list.',
         'award_type.required' => 'Please choose an award type.',
         'award_type.in' => 'Please choose an award type from the list.',
         'percentage.max' => 'The tuition coverage cannot be more than 100%.',
@@ -109,6 +110,13 @@ class ScholarshipController extends Controller
      */
     private function validatedFields(Request $request): array
     {
+        // Currency in capitals before checking ("lkr" -> "LKR").
+        $request->merge([
+            'currency' => $request->filled('currency')
+                ? strtoupper(trim($request->input('currency')))
+                : null,
+        ]);
+
         $validated = $request->validate([
             'university_id' => [
                 'nullable',
@@ -142,7 +150,7 @@ class ScholarshipController extends Controller
             'currency' => [
                 'nullable',
                 'required_with:amount',
-                'regex:/^[A-Za-z]{3}$/'
+                'in:' . implode(',', CurrencyCodes::codes())
             ],
             'percentage' => [
                 'nullable',

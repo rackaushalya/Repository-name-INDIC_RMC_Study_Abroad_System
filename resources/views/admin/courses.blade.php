@@ -946,7 +946,7 @@
         .image-preview { width: 96px; height: 60px; border-radius: 6px; object-fit: cover; border: 1px solid #e1e5eb; background: #fff; flex-shrink: 0; }
         .image-placeholder { width: 96px; height: 60px; border-radius: 6px; background: #f2f4f7; color: #98a2b3; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
         .btn-remove-image { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; border-radius: 6px; padding: 5px 10px; font-size: 11px; font-weight: 600; cursor: pointer; }
-        .tuition-grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 10px; }
+        .tuition-grid { display: grid; grid-template-columns: 1.3fr 1.5fr 1fr; gap: 10px; }
         @media (max-width: 750px) { .tuition-grid { grid-template-columns: 1fr; } }
     </style>
 @include('components.sidebar-style')
@@ -965,6 +965,9 @@
     $levels = \App\Http\Controllers\CourseController::LEVELS;
     $modes = \App\Http\Controllers\CourseController::MODES;
     $feePeriods = \App\Http\Controllers\CourseController::FEE_PERIODS;
+    $durationUnits = \App\Http\Controllers\CourseController::DURATION_UNITS;
+    $popularCurrencies = \App\Support\CurrencyCodes::POPULAR;
+    $allCurrencies = \App\Support\CurrencyCodes::ALL;
 
     $mainFee = fn ($course) => $course->tuitionFees->sortByDesc('tuition_fee_id')->first();
     $feeText = function ($fee) {
@@ -1415,8 +1418,16 @@
                     </div>
                     <div class="form-group">
                         <label class="form-label" for="courseDurationInput">Duration</label>
-                        <input type="text" class="form-input" id="courseDurationInput" name="duration" placeholder="e.g. 4 years"
-                               maxlength="100" value="{{ old('duration') }}">
+                        <div style="display: grid; grid-template-columns: 1fr 1.2fr; gap: 8px;">
+                            <input type="number" class="form-input" id="courseDurationInput" name="duration_value" placeholder="e.g. 4"
+                                   min="0.5" max="520" step="0.5" value="{{ old('duration_value') }}">
+                            <select class="form-select" id="courseDurationUnit" name="duration_unit">
+                                @foreach ($durationUnits as $unit)
+                                    <option value="{{ $unit }}" @selected(old('duration_unit', 'years') === $unit)>{{ ucfirst($unit) }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div id="durationOldText" style="display: none; font-size: 11px; color: #b45309; margin-top: 4px;"></div>
                     </div>
                 </div>
 
@@ -1443,8 +1454,20 @@
                     <div class="tuition-grid">
                         <input type="number" class="form-input" id="courseTuitionInput" name="tuition_amount" placeholder="Amount, e.g. 38500"
                                min="0" step="0.01" value="{{ old('tuition_amount') }}">
-                        <input type="text" class="form-input" id="courseCurrencyInput" name="tuition_currency" placeholder="USD"
-                               maxlength="3" pattern="[A-Za-z]{3}" title="3-letter currency code, e.g. USD" value="{{ old('tuition_currency') }}" style="text-transform: uppercase;">
+                        <select class="form-select" id="courseCurrencyInput" name="tuition_currency">
+                            <option value="">Currency...</option>
+                            <optgroup label="Common">
+                                @foreach ($popularCurrencies as $code)
+                                    <option value="{{ $code }}" @selected(old('tuition_currency') === $code)>{{ $code }} – {{ $allCurrencies[$code] }}</option>
+                                @endforeach
+                            </optgroup>
+                            <optgroup label="All currencies">
+                                @foreach ($allCurrencies as $code => $currencyName)
+                                    @continue(in_array($code, $popularCurrencies, true))
+                                    <option value="{{ $code }}" @selected(old('tuition_currency') === $code)>{{ $code }} – {{ $currencyName }}</option>
+                                @endforeach
+                            </optgroup>
+                        </select>
                         <select class="form-select" id="coursePeriodSelect" name="tuition_period">
                             @foreach ($feePeriods as $period)
                                 <option value="{{ $period }}" @selected(old('tuition_period', 'Year') === $period)>per {{ strtolower($period) }}</option>
@@ -1700,9 +1723,39 @@
         document.getElementById('courseModeSelect').value = 'On Campus';
         document.getElementById('courseStatusSelect').value = '1';
         document.getElementById('coursePeriodSelect').value = 'Year';
+        setDurationFields('');
 
         resetImageInput(null);
         openModal('addEditCourseModal');
+    }
+
+    // Split saved text like "4 years" back into the number box and unit menu.
+    function setDurationFields(text) {
+        const valueInput = document.getElementById('courseDurationInput');
+        const unitSelect = document.getElementById('courseDurationUnit');
+        const oldText = document.getElementById('durationOldText');
+        const match = /^\s*(\d+(?:\.\d+)?)\s*(week|month|year)s?\s*$/i.exec(text || '');
+
+        oldText.style.display = 'none';
+        if (match) {
+            valueInput.value = match[1];
+            unitSelect.value = match[2].toLowerCase() + 's';
+        } else {
+            valueInput.value = '';
+            unitSelect.value = 'years';
+            if (text) {
+                // Saved before this check existed and not in the new format.
+                oldText.innerText = 'Current value "' + text + '" is not a valid duration. Please enter a number and choose a unit.';
+                oldText.style.display = 'block';
+            }
+        }
+    }
+
+    // Select the saved currency; older invalid codes leave it empty so a real one must be chosen.
+    function setCurrencyField(code) {
+        const select = document.getElementById('courseCurrencyInput');
+        const wanted = (code || '').toUpperCase();
+        select.value = Array.from(select.options).some(o => o.value === wanted) ? wanted : '';
     }
 
     function setFormForEdit(id) {
@@ -1722,11 +1775,11 @@
         document.getElementById('courseUniversitySelect').value = c.universityId;
         document.getElementById('courseLevelSelect').value = c.level;
         document.getElementById('courseFieldInput').value = c.field || '';
-        document.getElementById('courseDurationInput').value = c.duration || '';
+        setDurationFields(c.duration);
         document.getElementById('courseModeSelect').value = c.mode || 'On Campus';
         document.getElementById('courseStatusSelect').value = c.active ? '1' : '0';
         document.getElementById('courseTuitionInput').value = c.feeAmount ?? '';
-        document.getElementById('courseCurrencyInput').value = c.feeCurrency || '';
+        setCurrencyField(c.feeCurrency);
         document.getElementById('coursePeriodSelect').value = c.feePeriod || 'Year';
         document.getElementById('courseDescInput').value = c.description || '';
 
