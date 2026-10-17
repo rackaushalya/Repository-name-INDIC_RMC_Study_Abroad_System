@@ -1060,6 +1060,7 @@
                         <input type="text" id="countryCodeInput" name="country_code" class="form-input" placeholder="Filled in automatically"
                                maxlength="10" value="{{ old('country_code') }}" style="text-transform: uppercase;"
                                oninput="handleCountryCodeInput(this.value)">
+                        <div id="countryCodeHint" style="display: none; font-size: 11px; color: #697386; margin-top: 4px;"></div>
                     </div>
                 </div>
 
@@ -1309,13 +1310,45 @@
             hint.style.display = 'none';
         }
 
+        updateCodeHint();
         refreshFlagPreview();
     }
 
     function handleCountryCodeInput(value) {
         // Clearing the box hands control back to the automatic code.
         codeTypedByHand = (value || '').trim() !== '';
+        updateCodeHint();
         refreshFlagPreview();
+    }
+
+    // When the code in the box differs from the one the name gives (e.g. an old "SL"
+    // for Sri Lanka), offer the right one with a click instead of overwriting it.
+    function updateCodeHint() {
+        const codeInput = document.getElementById('countryCodeInput');
+        const codeHint = document.getElementById('countryCodeHint');
+        const match = lookupCountry(document.getElementById('countryNameInput').value);
+        const code = (codeInput.value || '').trim().toUpperCase();
+
+        if (match && code && code !== match[1]) {
+            codeHint.innerHTML = '';
+            codeHint.append('Code for ' + match[2][0] + ' is ' + match[1] + '. ');
+            const link = document.createElement('a');
+            link.href = '#';
+            link.innerText = 'Use ' + match[1];
+            link.style.color = '#f97316';
+            link.style.fontWeight = '600';
+            link.onclick = (e) => {
+                e.preventDefault();
+                codeInput.value = match[1];
+                codeTypedByHand = false;
+                updateCodeHint();
+                refreshFlagPreview();
+            };
+            codeHint.append(link);
+            codeHint.style.display = 'block';
+        } else {
+            codeHint.style.display = 'none';
+        }
     }
 
     function findCountry(id) {
@@ -1389,6 +1422,7 @@
         document.getElementById('countryCodeInput').value = '';
         codeTypedByHand = false;
         document.getElementById('countryNameHint').style.display = 'none';
+        document.getElementById('countryCodeHint').style.display = 'none';
         document.getElementById('statusInput').value = '1';
         document.getElementById('descriptionInput').value = '';
         resetFlagInput(null);
@@ -1404,11 +1438,14 @@
         setFormForEdit(id);
         document.getElementById('countryNameInput').value = c.name;
         document.getElementById('countryCodeInput').value = c.code || '';
-        codeTypedByHand = !!c.code;
-        document.getElementById('countryNameHint').style.display = 'none';
+        // The saved code follows the name (like when adding) if it is empty or is the
+        // automatic code for that name; a custom code (e.g. for an unlisted country) is kept.
+        const autoMatch = lookupCountry(c.name);
+        codeTypedByHand = !!c.code && !(autoMatch && autoMatch[1] === String(c.code).toUpperCase());
         document.getElementById('statusInput').value = c.active ? '1' : '0';
         document.getElementById('descriptionInput').value = c.description || '';
         resetFlagInput(c.flag);
+        handleCountryNameInput(c.name); // fills an empty code, shows spelling and code hints
         openModal('addEditModal');
     }
 
