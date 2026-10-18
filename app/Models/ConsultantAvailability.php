@@ -14,6 +14,8 @@ class ConsultantAvailability extends Model
 
     protected $keyType = 'int';
 
+    public $timestamps = false;
+
     protected $fillable = [
         'consultant_id',
         'day_of_week',

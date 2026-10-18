@@ -423,9 +423,54 @@ Route::middleware(['auth', 'role:Consultant'])
         )->name('availability');
 
         Route::get(
+            '/students/{assignment}',
+            [ConsultantController::class, 'studentShow']
+        )->whereNumber('assignment')->name('students.show');
+
+        Route::get(
             '/appointments',
             [ConsultantController::class, 'appointments']
         )->name('appointments');
+
+        Route::patch(
+            '/appointments/{appointment}/status',
+            [ConsultantController::class, 'updateAppointmentStatus']
+        )->whereNumber('appointment')->name('appointments.status');
+
+        Route::get(
+            '/calendar',
+            [ConsultantController::class, 'calendar']
+        )->name('calendar');
+
+        Route::get(
+            '/consultations',
+            [ConsultantController::class, 'consultations']
+        )->name('consultations');
+
+        Route::get(
+            '/consultations/appointments/{appointment}/create',
+            [ConsultantController::class, 'consultationCreate']
+        )->whereNumber('appointment')->name('consultations.create');
+
+        Route::post(
+            '/consultations/appointments/{appointment}',
+            [ConsultantController::class, 'consultationStore']
+        )->whereNumber('appointment')->name('consultations.store');
+
+        Route::get(
+            '/consultations/{record}',
+            [ConsultantController::class, 'consultationShow']
+        )->whereNumber('record')->name('consultations.show');
+
+        Route::get(
+            '/consultations/{record}/edit',
+            [ConsultantController::class, 'consultationEdit']
+        )->whereNumber('record')->name('consultations.edit');
+
+        Route::put(
+            '/consultations/{record}',
+            [ConsultantController::class, 'consultationUpdate']
+        )->whereNumber('record')->name('consultations.update');
 
         Route::get(
             '/follow-ups',

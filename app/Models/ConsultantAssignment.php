@@ -14,13 +14,14 @@ class ConsultantAssignment extends Model
 
     protected $keyType = 'int';
 
+    public $timestamps = false;
+
     protected $fillable = [
-        'student_id',
+        'application_id',
         'consultant_id',
         'assigned_by',
         'assignment_status',
         'assigned_at',
-        'unassigned_at',
         'notes',
     ];
 
@@ -28,16 +29,15 @@ class ConsultantAssignment extends Model
     {
         return [
             'assigned_at' => 'datetime',
-            'unassigned_at' => 'datetime',
         ];
     }
 
-    public function student()
+    public function application()
     {
         return $this->belongsTo(
-            Student::class,
-            'student_id',
-            'student_id'
+            Application::class,
+            'application_id',
+            'application_id'
         );
     }
 

@@ -15,7 +15,6 @@ class FollowUp extends Model
     protected $keyType = 'int';
 
     protected $fillable = [
-        'student_id',
         'consultant_id',
         'application_id',
         'follow_up_date',
