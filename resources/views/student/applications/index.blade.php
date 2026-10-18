@@ -116,13 +116,7 @@
                                 @endphp
 
                                 <tr>
-                                    <td>
-                                        <a href="{{ route('student.applications.show', $application) }}"
-                                           class="pg-strong" style="color:#f97316;">
-                                            {{ $application->application_reference ?? '#' . $application->application_id }}
-                                        </a>
-                                        <span class="pg-sub">{{ $application->application_type ?? '' }}</span>
-                                    </td>
+                                    
 
                                     <td>
                                         <div class="pg-strong">{{ $application->preferredCountry->country_name ?? '—' }}</div>
@@ -136,7 +130,9 @@
                                     <td>
                                         @if ($journey)
                                             <div class="ap-progress">
-                                                <strong style="{{ $journey['next_action']['needs_action'] ? 'color:#d9560a;' : '' }}">{{ $journey['next_action']['label'] }}</strong>
+                                                <strong @if($journey['next_action']['needs_action']) style="color: #d9560a;" @endif>
+    {{ $journey['next_action']['title'] ?? '' }}
+</strong>{{ $journey['next_action']['label'] }}</strong>
 
                                                 @if ($nextDeadline)
                                                     <p>

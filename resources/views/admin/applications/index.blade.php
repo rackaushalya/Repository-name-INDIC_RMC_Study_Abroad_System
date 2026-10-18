@@ -140,12 +140,6 @@
                             @endphp
 
                             <tr>
-                                <td>
-                                    <a href="{{ route('admin.applications-show', $application) }}"
-                                       class="pg-strong" style="color:#f97316;">
-                                        {{ $application->application_reference ?? '#' . $application->application_id }}
-                                    </a>
-                                </td>
 
                                 <td>
                                     @if ($user)
