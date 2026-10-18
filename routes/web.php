@@ -422,6 +422,21 @@ Route::middleware(['auth', 'role:Consultant'])
             [ConsultantController::class, 'availability']
         )->name('availability');
 
+        Route::post(
+            '/availability',
+            [ConsultantController::class, 'storeAvailability']
+        )->name('availability.store');
+
+        Route::put(
+            '/availability/{availability}',
+            [ConsultantController::class, 'updateAvailability']
+        )->whereNumber('availability')->name('availability.update');
+
+        Route::delete(
+            '/availability/{availability}',
+            [ConsultantController::class, 'destroyAvailability']
+        )->whereNumber('availability')->name('availability.destroy');
+
         Route::get(
             '/students/{assignment}',
             [ConsultantController::class, 'studentShow']
